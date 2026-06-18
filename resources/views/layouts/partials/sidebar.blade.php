@@ -117,8 +117,23 @@
                     </div>
                     <!--end:Menu item-->
 
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
+                        <a class="menu-link {{ request()->routeIs('whatsapp.*') ? 'active' : '' }}" href="{{ route('whatsapp.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-whatsapp fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Koneksi WhatsApp</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
+
                     <!--begin:Menu item (Master Dropdown)-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*']) ? 'here' : '' }}">
+                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*']) ? 'here' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-abstract-26 fs-2">

@@ -19,9 +19,14 @@ Route::patch('/profile', [\App\Http\Controllers\InvestorDashboardController::cla
 Route::get('/autologin/{user}', [\App\Http\Controllers\AutoLoginController::class, 'handle'])->name('autologin')->middleware('signed');
 Route::post('/autologin/{user}/force', [\App\Http\Controllers\AutoLoginController::class, 'forceLogin'])->name('autologin.force')->middleware('signed');
 
+// WHATSAPP LOGIN & WEBHOOK
+Route::post('/whatsapp/webhook', [\App\Http\Controllers\WhatsappLoginController::class, 'handleWebhook']);
+Route::get('/login/whatsapp/{user}', [\App\Http\Controllers\WhatsappLoginController::class, 'autoLogin'])->name('whatsapp.login')->middleware('signed');
+
 // ADMIN / CONSOLE ROUTES
 Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
+    Route::get('/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
