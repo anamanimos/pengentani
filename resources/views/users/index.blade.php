@@ -46,9 +46,10 @@
                         <th class="min-w-50px">No</th>
                         <th class="min-w-200px">Nama Pengguna</th>
                         <th class="min-w-200px">Email</th>
-                        <th class="min-w-150px">Role</th>
+                        <th class="min-w-100px">Role</th>
+                        <th class="min-w-100px">Status</th>
                         <th class="min-w-150px">Tanggal Dibuat</th>
-                        <th class="text-end min-w-100px">Aksi</th>
+                        <th class="text-end min-w-150px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
@@ -82,9 +83,24 @@
                                 <span class="badge badge-light-secondary fw-bold fs-7">{{ ucfirst($user->role) }}</span>
                             @endif
                         </td>
+                        <td>
+                            @if($user->is_active)
+                                <span class="badge badge-light-success fw-bold fs-7">Aktif</span>
+                            @else
+                                <span class="badge badge-light-warning fw-bold fs-7">Nonaktif</span>
+                            @endif
+                        </td>
                         <td>{{ $user->created_at->format('d M Y H:i') }}</td>
                         <td class="text-end">
                             @if($user->id !== Auth::id())
+                                <form action="{{ route('users.toggle-active', $user) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-icon btn-light-{{ $user->is_active ? 'warning' : 'success' }} btn-sm me-1" title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                        <i class="ki-duotone ki-{{ $user->is_active ? 'cross-circle' : 'check-circle' }} fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                    </button>
+                                </form>
+
                                 <button type="button" class="btn btn-icon btn-light-info btn-sm me-1 copy-autologin-btn" data-url="{{ URL::signedRoute('autologin', ['user' => $user->id]) }}" title="Salin Link Auto-Login">
                                     <i class="ki-duotone ki-copy fs-2"><span class="path1"></span><span class="path2"></span></i>
                                 </button>

@@ -21,9 +21,7 @@ Route::post('/autologin/{user}/force', [\App\Http\Controllers\AutoLoginControlle
 
 // ADMIN / CONSOLE ROUTES
 Route::prefix('console')->middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('console.dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -42,7 +40,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
     
     // User Management
     Route::post('users/stop-impersonate', [\App\Http\Controllers\UserController::class, 'stopImpersonate'])->name('users.stop_impersonate');
-    Route::post('users/{user}/impersonate', [\App\Http\Controllers\UserController::class, 'impersonate'])->name('users.impersonate');
+    Route::post('/users/{user}/impersonate', [\App\Http\Controllers\UserController::class, 'impersonate'])->name('users.impersonate');
+    Route::patch('/users/{user}/toggle-active', [\App\Http\Controllers\UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::resource('users', \App\Http\Controllers\UserController::class);
     
     // Master Tanaman

@@ -1,236 +1,336 @@
-<!DOCTYPE html>
-<html lang="en">
-	<!--begin::Head-->
-	<head>
-		<title>Register - Pengen Tani</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
-		<!--begin::Fonts(mandatory for all pages)-->
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-		<!--end::Fonts-->
-		<!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
-		<link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
-		<link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
-		<!--end::Global Stylesheets Bundle-->
-	</head>
-	<!--end::Head-->
-	<!--begin::Body-->
-	<body id="kt_body" class="app-blank">
-		<!--begin::Theme mode setup on page load-->
-		<script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script>
-		<!--end::Theme mode setup on page load-->
-		<!--begin::Root-->
-		<div class="d-flex flex-column flex-root" id="kt_app_root">
-			<!--begin::Authentication - Sign-up -->
-			<div class="d-flex flex-column flex-lg-row flex-column-fluid">
-				<!--begin::Body-->
-				<div class="d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-1">
-					<!--begin::Form-->
-					<div class="d-flex flex-center flex-column flex-lg-row-fluid">
-						<!--begin::Wrapper-->
-						<div class="w-lg-500px p-10">
-							<!--begin::Form-->
-							<form class="form w-100" novalidate="novalidate" id="kt_sign_up_form" method="POST" action="{{ route('register') }}">
-                                @csrf
-								<!--begin::Heading-->
-								<div class="text-center mb-11">
-									<!--begin::Title-->
-									<h1 class="text-gray-900 fw-bolder mb-3">Sign Up</h1>
-									<!--end::Title-->
-									<!--begin::Subtitle-->
-									<div class="text-gray-500 fw-semibold fs-6">Pengen Tani System</div>
-									<!--end::Subtitle=-->
-								</div>
-								<!--begin::Heading-->
-								
-								<!--begin::Input group=-->
-								<div class="fv-row mb-8">
-									<!--begin::Name-->
-									<input type="text" placeholder="Name" name="name" value="{{ old('name') }}" autocomplete="name" class="form-control bg-transparent @error('name') is-invalid @enderror" />
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-									<!--end::Name-->
-								</div>
-								<!--end::Input group=-->
+@extends('layouts.investor')
 
-								<!--begin::Input group=-->
-								<div class="fv-row mb-8">
-									<!--begin::Email-->
-									<input type="email" placeholder="Email" name="email" value="{{ old('email') }}" autocomplete="email" class="form-control bg-transparent @error('email') is-invalid @enderror" />
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-									<!--end::Email-->
-								</div>
-                                <!--end::Input group=-->
-                                
-								<!--begin::Input group-->
-								<div class="fv-row mb-8" data-kt-password-meter="true">
-									<!--begin::Wrapper-->
-									<div class="mb-1">
-										<!--begin::Input wrapper-->
-										<div class="position-relative mb-3">
-											<input class="form-control bg-transparent @error('password') is-invalid @enderror" type="password" placeholder="Password" name="password" autocomplete="new-password" />
-											<span class="btn btn-sm btn-icon position-absolute translate-middle top-50 end-0 me-n2" data-kt-password-meter-control="visibility">
-												<i class="ki-duotone ki-eye-slash fs-2"></i>
-												<i class="ki-duotone ki-eye fs-2 d-none"></i>
-											</span>
-                                            @error('password')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-										</div>
-										<!--end::Input wrapper-->
-										<!--begin::Meter-->
-										<div class="d-flex align-items-center mb-3" data-kt-password-meter-control="highlight">
-											<div class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"></div>
-											<div class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"></div>
-											<div class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"></div>
-											<div class="flex-grow-1 bg-secondary bg-active-success rounded h-5px"></div>
-										</div>
-										<!--end::Meter-->
-									</div>
-									<!--end::Wrapper-->
-									<!--begin::Hint-->
-									<div class="text-muted">Use 8 or more characters with a mix of letters, numbers & symbols.</div>
-									<!--end::Hint-->
-								</div>
-								<!--end::Input group=-->
-                                
-								<!--begin::Input group=-->
-								<div class="fv-row mb-8">
-									<!--begin::Repeat Password-->
-									<input placeholder="Repeat Password" name="password_confirmation" type="password" autocomplete="new-password" class="form-control bg-transparent @error('password_confirmation') is-invalid @enderror" />
-                                    @error('password_confirmation')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-									<!--end::Repeat Password-->
-								</div>
-								<!--end::Input group=-->
+@section('content')
+<div class="auth-wrapper">
+    <!-- Animated background blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
+    <div class="glass-card login-box fade-in-up">
+        <div class="login-header">
+            <div class="logo-container zoom-in">
+                <img src="{{ asset('pengentani.png') }}" alt="Logo Pengen Tani">
+            </div>
+            <h2 class="welcome-text">Buat Akun Baru</h2>
+            <p class="subtitle-text">Bergabunglah dengan Pengen Tani</p>
+        </div>
 
-								<!--begin::Submit button-->
-								<div class="d-grid mb-10">
-									<button type="submit" id="kt_sign_up_submit" class="btn btn-primary">
-										<!--begin::Indicator label-->
-										<span class="indicator-label">Sign up</span>
-										<!--end::Indicator label-->
-									</button>
-								</div>
-								<!--end::Submit button-->
-								<!--begin::Sign up-->
-								<div class="text-gray-500 text-center fw-semibold fs-6">Already have an Account? 
-								<a href="{{ route('login') }}" class="link-primary fw-semibold">Sign in</a></div>
-								<!--end::Sign up-->
-							</form>
-							<!--end::Form-->
-						</div>
-						<!--end::Wrapper-->
-					</div>
-					<!--end::Form-->
-				</div>
-				<!--end::Body-->
-				<!--begin::Aside-->
-				<div class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2" style="background-image: url({{ asset('assets/media/misc/auth-bg.png') }})">
-					<!--begin::Content-->
-					<div class="d-flex flex-column flex-center py-7 py-lg-15 px-5 px-md-15 w-100">
-						<!--begin::Logo-->
-						<a href="{{ url('/') }}" class="mb-0 mb-lg-12">
-							<img alt="Logo" src="{{ asset('assets/media/logos/custom-1.png') }}" class="h-60px h-lg-75px" />
-						</a>
-						<!--end::Logo-->
-						<!--begin::Image-->
-						<img class="d-none d-lg-block mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20" src="{{ asset('assets/media/misc/auth-screens.png') }}" alt="" />
-						<!--end::Image-->
-						<!--begin::Title-->
-						<h1 class="d-none d-lg-block text-white fs-2qx fw-bolder text-center mb-7">Welcome to Pengen Tani</h1>
-						<!--end::Title-->
-						<!--begin::Text-->
-						<div class="d-none d-lg-block text-white fs-base text-center">Pengen Tani Registration Portal</div>
-						<!--end::Text-->
-					</div>
-					<!--end::Content-->
-				</div>
-				<!--end::Aside-->
-			</div>
-			<!--end::Authentication - Sign-up-->
-		</div>
-		<!--end::Root-->
-		<!--begin::Javascript-->
-		<script>var hostUrl = "{{ asset('assets/') }}";</script>
-		<!--begin::Global Javascript Bundle(mandatory for all pages)-->
-		<script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
-		<script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
-		<!--end::Global Javascript Bundle-->
-		<!--begin::Custom Javascript(used for this page only)-->
-		<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const form = document.getElementById('kt_sign_up_form');
-                const submitButton = document.getElementById('kt_sign_up_submit');
+        <form method="POST" action="{{ route('register') }}" class="modern-form" id="kt_sign_up_form">
+            @csrf
 
-                // Konfigurasi Toastr bawaan Metronic
-                toastr.options = {
-                    "closeButton": true,
-                    "debug": false,
-                    "newestOnTop": false,
-                    "progressBar": true,
-                    "positionClass": "toastr-top-right",
-                    "preventDuplicates": false,
-                    "onclick": null,
-                    "showDuration": "300",
-                    "hideDuration": "1000",
-                    "timeOut": "5000",
-                    "extendedTimeOut": "1000",
-                    "showEasing": "swing",
-                    "hideEasing": "linear",
-                    "showMethod": "fadeIn",
-                    "hideMethod": "fadeOut"
-                };
+            <!-- Name -->
+            <div class="input-group-modern">
+                <div class="input-icon">
+                    <i class="ki-duotone ki-user fs-3">
+                        <span class="path1"></span><span class="path2"></span>
+                    </i>
+                </div>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" class="modern-input" placeholder=" " />
+                <label for="name" class="floating-label">Nama Lengkap</label>
+            </div>
+            @if ($errors->has('name'))
+                <div class="error-text slide-down"><i class="ki-duotone ki-information-5"></i> {{ $errors->first('name') }}</div>
+            @endif
 
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
+            <!-- Email Address -->
+            <div class="input-group-modern form-margin-top">
+                <div class="input-icon">
+                    <i class="ki-duotone ki-sms fs-3">
+                        <span class="path1"></span><span class="path2"></span>
+                    </i>
+                </div>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" class="modern-input" placeholder=" " />
+                <label for="email" class="floating-label">Alamat Email</label>
+            </div>
+            @if ($errors->has('email'))
+                <div class="error-text slide-down"><i class="ki-duotone ki-information-5"></i> {{ $errors->first('email') }}</div>
+            @endif
 
-                    // Tampilkan loading state
-                    submitButton.setAttribute('data-kt-indicator', 'on');
-                    submitButton.disabled = true;
+            <!-- Password -->
+            <div class="input-group-modern form-margin-top">
+                <div class="input-icon">
+                    <i class="ki-duotone ki-lock-2 fs-3">
+                        <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+                    </i>
+                </div>
+                <input id="password" type="password" name="password" required autocomplete="new-password" class="modern-input" placeholder=" " />
+                <label for="password" class="floating-label">Kata Sandi (Min 8 Karakter)</label>
+            </div>
+            @if ($errors->has('password'))
+                <div class="error-text slide-down"><i class="ki-duotone ki-information-5"></i> {{ $errors->first('password') }}</div>
+            @endif
 
-                    // Bersihkan pesan error sebelumnya
-                    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-                    document.querySelectorAll('.invalid-feedback.ajax-error').forEach(el => el.remove());
+            <!-- Confirm Password -->
+            <div class="input-group-modern form-margin-top">
+                <div class="input-icon">
+                    <i class="ki-duotone ki-lock-2 fs-3">
+                        <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+                    </i>
+                </div>
+                <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" class="modern-input" placeholder=" " />
+                <label for="password_confirmation" class="floating-label">Ulangi Kata Sandi</label>
+            </div>
+            @if ($errors->has('password_confirmation'))
+                <div class="error-text slide-down"><i class="ki-duotone ki-information-5"></i> {{ $errors->first('password_confirmation') }}</div>
+            @endif
 
-                    axios.post(form.action, new FormData(form))
-                        .then(function (response) {
-                            toastr.success("Registrasi berhasil! Mengalihkan ke dashboard...", "Berhasil");
-                            setTimeout(function() {
-                                window.location.href = "{{ route('dashboard') }}";
-                            }, 1000);
-                        })
-                        .catch(function (error) {
-                            if (error.response && error.response.status === 422) {
-                                let errors = error.response.data.errors;
-                                for (let field in errors) {
-                                    let input = form.querySelector('[name="' + field + '"]');
-                                    if (input) {
-                                        input.classList.add('is-invalid');
-                                        let errorDiv = document.createElement('div');
-                                        errorDiv.className = 'invalid-feedback ajax-error';
-                                        errorDiv.innerHTML = errors[field][0];
-                                        input.parentNode.appendChild(errorDiv);
-                                    }
-                                    toastr.error(errors[field][0], "Validasi Gagal");
-                                }
-                            } else {
-                                toastr.error("Terjadi kesalahan sistem, silakan coba lagi nanti.", "Error");
+            <!-- Submit Button -->
+            <div class="submit-container form-margin-top-large">
+                <button type="submit" id="kt_sign_up_submit" class="btn-modern">
+                    <span class="indicator-label">Daftar Sekarang</span>
+                    <i class="ki-duotone ki-arrow-right fs-2 ms-2">
+                        <span class="path1"></span><span class="path2"></span>
+                    </i>
+                </button>
+            </div>
+            
+            <div class="register-prompt form-margin-top">
+                Sudah punya akun? <a href="{{ route('login') }}" class="register-link">Masuk di sini</a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
+@push('styles')
+<style>
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Outfit', sans-serif;
+    }
+    .blob {
+        position: absolute;
+        filter: blur(60px);
+        z-index: -1;
+        opacity: 0.6;
+        animation: float 10s infinite ease-in-out alternate;
+    }
+    .blob-1 {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        top: -10%;
+        left: -10%;
+        border-radius: 50%;
+    }
+    .blob-2 {
+        width: 250px;
+        height: 250px;
+        background: linear-gradient(135deg, #f59e0b 0%, #10b981 100%);
+        bottom: -5%;
+        right: -5%;
+        border-radius: 50%;
+        animation-delay: -5s;
+    }
+    @keyframes float {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(30px, 50px) scale(1.1); }
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        z-index: 10;
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+    .logo-container {
+        margin-bottom: 20px;
+    }
+    .logo-container img {
+        height: 85px;
+        max-width: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0px 8px 16px rgba(16, 185, 129, 0.2));
+    }
+    .welcome-text {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 5px;
+        letter-spacing: -0.5px;
+        margin-top: 0;
+    }
+    .subtitle-text {
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 400;
+        margin-top: 0;
+    }
+    .form-margin-top { margin-top: 20px; }
+    .form-margin-top-large { margin-top: 30px; }
+    .input-group-modern {
+        position: relative;
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        height: 60px;
+        box-sizing: border-box;
+    }
+    .input-group-modern:focus-within {
+        border-color: #10b981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        transform: translateY(-2px);
+    }
+    .input-icon {
+        padding: 0 0 0 15px;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        transition: color 0.3s ease;
+    }
+    .input-group-modern:focus-within .input-icon {
+        color: #10b981;
+    }
+    .modern-input {
+        width: 100%;
+        border: none;
+        background: transparent;
+        padding: 22px 15px 10px 15px;
+        font-size: 1rem;
+        color: #334155;
+        font-family: inherit;
+        font-weight: 500;
+    }
+    .modern-input:focus { outline: none; }
+    .floating-label {
+        position: absolute;
+        left: 45px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        pointer-events: none;
+        font-weight: 400;
+    }
+    .modern-input:focus ~ .floating-label,
+    .modern-input:not(:placeholder-shown) ~ .floating-label {
+        top: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #10b981;
+    }
+    .error-text {
+        color: #ef4444;
+        font-size: 0.85rem;
+        margin-top: 6px;
+        margin-left: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+    }
+    .btn-modern {
+        width: 100%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 14px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    .btn-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(16, 185, 129, 0.4);
+    }
+    .btn-modern:active {
+        transform: translateY(1px);
+        box-shadow: 0 5px 10px rgba(16, 185, 129, 0.3);
+    }
+    .register-prompt {
+        text-align: center;
+        color: #64748b;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+    .register-link {
+        color: #10b981;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.2s;
+    }
+    .register-link:hover { color: #059669; }
+    .fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .zoom-in { animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .slide-down { animation: slideDown 0.3s ease; }
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes zoomIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes slideDown { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('kt_sign_up_form');
+        const submitButton = document.getElementById('kt_sign_up_submit');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            // Basic UI indication
+            submitButton.innerHTML = '<span>Memproses...</span>';
+            submitButton.disabled = true;
+
+            // Bersihkan error
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.ajax-error').forEach(el => el.remove());
+
+            axios.post(form.action, new FormData(form))
+                .then(function (response) {
+                    alert("Registrasi berhasil! Akun Anda sedang menunggu aktivasi oleh Admin.");
+                    setTimeout(function() {
+                        window.location.href = "{{ route('login') }}";
+                    }, 1000);
+                })
+                .catch(function (error) {
+                    submitButton.innerHTML = '<span>Daftar Sekarang</span><i class="ki-duotone ki-arrow-right fs-2 ms-2"><span class="path1"></span><span class="path2"></span></i>';
+                    submitButton.disabled = false;
+                    
+                    if (error.response && error.response.status === 422) {
+                        let errors = error.response.data.errors;
+                        for (let field in errors) {
+                            let input = form.querySelector('[name="' + field + '"]');
+                            if (input) {
+                                let errorDiv = document.createElement('div');
+                                errorDiv.className = 'error-text slide-down ajax-error';
+                                errorDiv.innerHTML = '<i class="ki-duotone ki-information-5"></i> ' + errors[field][0];
+                                input.parentNode.insertAdjacentElement('afterend', errorDiv);
                             }
-                        })
-                        .finally(function () {
-                            submitButton.removeAttribute('data-kt-indicator');
-                            submitButton.disabled = false;
-                        });
+                        }
+                    } else {
+                        alert("Terjadi kesalahan sistem, silakan coba lagi.");
+                    }
                 });
-            });
-        </script>
-		<!--end::Custom Javascript-->
-	</body>
-	<!--end::Body-->
-</html>
+        });
+    });
+</script>
+@endpush

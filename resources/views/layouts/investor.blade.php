@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pengen Tani - Investor</title>
+    <link rel="shortcut icon" href="{{ asset('pengentani-icon.png') }}" />
     <link rel="stylesheet" href="{{ asset('css/investor-app.css') }}?v=1.2">
     <meta name="theme-color" content="#10b981">
     <!-- Include Metronic Plugins for Icons -->

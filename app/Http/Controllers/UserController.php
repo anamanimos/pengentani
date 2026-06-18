@@ -133,4 +133,16 @@ class UserController extends Controller
 
         return redirect()->back();
     }
+
+    public function toggleActive(User $user)
+    {
+        if ($user->id === Auth::id()) {
+            return redirect()->back()->with('error', 'Anda tidak dapat menonaktifkan akun sendiri.');
+        }
+
+        $user->update(['is_active' => !$user->is_active]);
+        $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return redirect()->back()->with('success', "Akun pengguna berhasil $status.");
+    }
 }
