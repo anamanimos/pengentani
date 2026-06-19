@@ -25,13 +25,18 @@ class WhatsappLoginController extends Controller
         $event = $request->input('event');
         $deviceId = $request->input('device_id');
         
-        if ($event !== 'message' || $deviceId !== 'tanisync') {
-            return response()->json(['status' => 'ignored']);
+        if ($event !== 'message') {
+            return response()->json(['status' => 'ignored_not_message']);
         }
 
         $payload = $request->input('payload');
         if (!$payload || !isset($payload['body']) || !isset($payload['from'])) {
             return response()->json(['status' => 'ignored_invalid_payload']);
+        }
+
+        // Prevent loops by ignoring messages sent from the bot itself
+        if (isset($payload['is_from_me']) && $payload['is_from_me'] === true) {
+            return response()->json(['status' => 'ignored_from_me']);
         }
 
         $body = trim($payload['body']);
