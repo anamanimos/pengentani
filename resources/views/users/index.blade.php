@@ -104,16 +104,14 @@
                                     </a>
                                 </div>
 
-                                @if($user->whatsapp)
                                 <div class="menu-item px-3">
                                     <form action="{{ route('users.send-invitation', $user) }}" method="POST" class="d-inline ajax-send-wa-form w-100">
                                         @csrf
-                                        <button type="submit" class="btn btn-active-light-primary menu-link px-3 w-100 text-start border-0 bg-transparent">
+                                        <button type="submit" class="btn btn-active-light-primary menu-link px-3 w-100 text-start border-0 bg-transparent" {{ !$user->whatsapp ? 'disabled' : '' }} title="{{ !$user->whatsapp ? 'Nomor WhatsApp belum diatur untuk pengguna ini' : 'Kirim Informasi Pendaftaran via WA' }}">
                                             <i class="ki-duotone ki-whatsapp fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> Kirim Info WA
                                         </button>
                                     </form>
                                 </div>
-                                @endif
 
                                 @if($user->id !== Auth::id())
                                     <div class="menu-item px-3">
