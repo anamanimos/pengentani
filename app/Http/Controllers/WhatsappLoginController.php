@@ -16,6 +16,9 @@ class WhatsappLoginController extends Controller
      */
     public function handleWebhook(Request $request)
     {
+        // Debugging: Log incoming webhook to wa.txt
+        @file_put_contents(storage_path('logs/wa.txt'), "[" . date('Y-m-d H:i:s') . "] " . json_encode($request->all()) . PHP_EOL, FILE_APPEND);
+
         // For testing/debugging, you might want to log incoming webhook payloads:
         // Log::info('WA Webhook: ', $request->all());
 
