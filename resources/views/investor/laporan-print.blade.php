@@ -294,13 +294,5 @@
         </div>
     </div>
 
-    <script>
-        // Opsional: Otomatis memicu dialog print saat halaman dimuat
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        };
-    </script>
 </body>
 </html>
