@@ -40,9 +40,9 @@ class PurchaseController extends Controller
                     $p->invoice_number,         // 4: No Nota
                     $item->purchase_category_id,// 5: Kategori Barang
                     $item->description,         // 6: Deskripsi
-                    $item->qty,                 // 7: Qty
-                    $item->unit_price,          // 8: Harga Satuan
-                    $item->total_price,         // 9: Total (Read-only view)
+                    (float) $item->qty,                 // 7: Qty
+                    (float) $item->unit_price,          // 8: Harga Satuan
+                    (float) $item->total_price,         // 9: Total (Read-only view)
                 ];
                 $totalPengeluaran += $item->total_price;
             }
