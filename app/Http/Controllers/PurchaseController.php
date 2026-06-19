@@ -34,7 +34,7 @@ class PurchaseController extends Controller
             foreach ($p->items as $item) {
                 $initialData[] = [
                     $item->id,                  // 0: Item ID
-                    $p->date,                   // 1: Tanggal
+                    $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : null,                   // 1: Tanggal
                     $p->pertanian_id,           // 2: Pertanian
                     $p->store_id,               // 3: Toko / Vendor
                     $p->invoice_number,         // 4: No Nota

@@ -136,7 +136,7 @@
                 $initialData = $jobs->map(function($job) {
                     return [
                         $job->id,
-                        $job->date,
+                        $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : null,
                         $job->pertanian_id,
                         $job->worker_id,
                         $job->job_category_id,
