@@ -49,4 +49,14 @@ class User extends Authenticatable
     {
         return $this->role === 'pekerja';
     }
+
+    public function jobs()
+    {
+        return $this->hasMany(WorkerJob::class, 'worker_id');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
 }
