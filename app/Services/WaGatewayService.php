@@ -17,6 +17,13 @@ class WaGatewayService
     public static function sendMessage(string $phone, string $message): bool
     {
         try {
+            // Normalize phone number (remove non-digits)
+            $phone = preg_replace('/[^0-9]/', '', $phone);
+            // Replace leading 0 with 62
+            if (substr($phone, 0, 1) === '0') {
+                $phone = '62' . substr($phone, 1);
+            }
+
             $username = env('WA_GATEWAY_USERNAME', 'admin');
             $password = env('WA_GATEWAY_PASSWORD', 'admin');
 
