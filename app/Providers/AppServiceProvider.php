@@ -19,14 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Login::class,
-            \App\Listeners\LogSuccessfulLogin::class
-        );
-
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Logout::class,
-            \App\Listeners\LogSuccessfulLogout::class
-        );
+        // Event listeners (LogSuccessfulLogin & LogSuccessfulLogout)
+        // are automatically discovered by Laravel 11. No need to register here.
     }
 }
