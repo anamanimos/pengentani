@@ -132,6 +132,21 @@
                     </div>
                     <!--end:Menu item-->
 
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
+                        <a class="menu-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}" href="{{ route('activity-logs.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-document fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Log Aktivitas</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
+
                     <!--begin:Menu item (Master Dropdown)-->
                     <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*']) ? 'here' : '' }}">
                         <span class="menu-link">
