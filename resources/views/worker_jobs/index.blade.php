@@ -189,7 +189,7 @@
                     { type: 'dropdown', title: 'Kategori Pekerjaan', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
-                    { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#.##0', decimal: ',' },
+                    { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0', decimal: ',' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses }
                 ],
                 onload: function() {

@@ -169,9 +169,9 @@
                     { type: 'text', title: 'No Nota', width: 120 }, // 4
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true, options: { newOptions: true } }, // 5
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 6
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#.##0', decimal: ',' }, // 7
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#.##0', decimal: ',' }, // 8
-                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#.##0', decimal: ',', readOnly: true } // 9
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0', decimal: ',' }, // 7
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0', decimal: ',' }, // 8
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', decimal: ',', readOnly: true } // 9
                 ],
                 onload: function() {
                     setTimeout(function() {
