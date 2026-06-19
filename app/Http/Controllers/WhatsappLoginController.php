@@ -77,14 +77,18 @@ class WhatsappLoginController extends Controller
     private function sendMessage($phone, $message)
     {
         try {
-            Http::withHeaders([
-                'X-Device-Id' => 'tanisync',
-                'Content-Type' => 'application/json',
-            ])->post('https://wag.anam.ch/send/message', [
-                'phone' => $phone,
-                'message' => $message,
-                'isGroup' => false,
-            ]);
+            $username = env('WA_GATEWAY_USERNAME', 'admin');
+            $password = env('WA_GATEWAY_PASSWORD', 'admin');
+
+            Http::withBasicAuth($username, $password)
+                ->withHeaders([
+                    'X-Device-Id' => 'tanisync',
+                    'Content-Type' => 'application/json',
+                ])->post('https://wag.anam.ch/send/message', [
+                    'phone' => $phone,
+                    'message' => $message,
+                    'isGroup' => false,
+                ]);
         } catch (\Exception $e) {
             Log::error("Failed to send WA message: " . $e->getMessage());
         }

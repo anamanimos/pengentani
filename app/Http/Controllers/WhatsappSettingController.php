@@ -18,10 +18,14 @@ class WhatsappSettingController extends Controller
         $jid = null;
 
         try {
+            $username = env('WA_GATEWAY_USERNAME', 'admin');
+            $password = env('WA_GATEWAY_PASSWORD', 'admin');
+
             // Check status
-            $response = Http::withHeaders([
-                'X-Device-Id' => 'tanisync',
-            ])->get('https://wag.anam.ch/app/status');
+            $response = Http::withBasicAuth($username, $password)
+                ->withHeaders([
+                    'X-Device-Id' => 'tanisync',
+                ])->get('https://wag.anam.ch/app/status');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -39,9 +43,10 @@ class WhatsappSettingController extends Controller
 
             // If disconnected, we try to generate a QR code for login
             if ($status === 'disconnected') {
-                $loginResponse = Http::withHeaders([
-                    'X-Device-Id' => 'tanisync',
-                ])->get('https://wag.anam.ch/app/login');
+                $loginResponse = Http::withBasicAuth($username, $password)
+                    ->withHeaders([
+                        'X-Device-Id' => 'tanisync',
+                    ])->get('https://wag.anam.ch/app/login');
 
                 if ($loginResponse->successful()) {
                     $loginData = $loginResponse->json();
