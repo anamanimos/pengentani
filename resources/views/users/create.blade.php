@@ -66,6 +66,17 @@
             </div>
 
             <div class="separator separator-dashed my-10"></div>
+            
+            <div class="row mb-8">
+                <div class="col-12">
+                    <label class="form-check form-check-custom form-check-solid">
+                        <input class="form-check-input" type="checkbox" name="send_wa" value="1" checked />
+                        <span class="form-check-label fw-semibold text-gray-700">
+                            Kirimkan informasi pendaftaran ke WhatsApp pengguna (Tautan Login Otomatis)
+                        </span>
+                    </label>
+                </div>
+            </div>
 
             <div class="d-flex justify-content-end">
                 <a href="{{ route('users.index') }}" class="btn btn-light me-3">Batal</a>

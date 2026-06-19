@@ -30,13 +30,17 @@ class UserController extends Controller
             'role' => 'required|string|in:admin,pengelola,investor,pekerja',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'whatsapp' => $request->whatsapp,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
+
+        if ($request->has('send_wa') && $user->whatsapp) {
+            $this->sendInvitation($user);
+        }
 
         if ($request->ajax()) {
             return response()->json([
@@ -46,6 +50,29 @@ class UserController extends Controller
         }
 
         return redirect()->route('users.index')->with('success', 'Pengguna berhasil ditambahkan.');
+    }
+
+    public function sendInvitation(User $user)
+    {
+        if (!$user->whatsapp) {
+            return redirect()->back()->with('error', 'Pengguna ini tidak memiliki nomor WhatsApp.');
+        }
+
+        $message = "Halo {$user->name}!\n\nAkun Anda telah didaftarkan di sistem PengenTani. Anda dapat masuk ke sistem dengan mudah, cukup balas pesan ini dengan mengetik kata *login*.\n\nKami akan membalas dengan tautan ajaib untuk masuk otomatis tanpa password.";
+        
+        $success = \App\Services\WaGatewayService::sendMessage($user->whatsapp, $message);
+
+        if (request()->ajax()) {
+            return response()->json([
+                'message' => $success ? 'Informasi pendaftaran berhasil dikirim via WhatsApp.' : 'Gagal mengirim WhatsApp.',
+            ], $success ? 200 : 500);
+        }
+
+        if ($success) {
+            return redirect()->back()->with('success', 'Informasi pendaftaran berhasil dikirim via WhatsApp.');
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengirim informasi pendaftaran via WhatsApp.');
     }
 
     public function edit(User $user)

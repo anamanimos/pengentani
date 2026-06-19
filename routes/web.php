@@ -48,6 +48,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('users/stop-impersonate', [\App\Http\Controllers\UserController::class, 'stopImpersonate'])->name('users.stop_impersonate');
     Route::post('/users/{user}/impersonate', [\App\Http\Controllers\UserController::class, 'impersonate'])->name('users.impersonate');
     Route::patch('/users/{user}/toggle-active', [\App\Http\Controllers\UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::post('/users/{user}/send-invitation', [\App\Http\Controllers\UserController::class, 'sendInvitation'])->name('users.send-invitation');
     Route::resource('users', \App\Http\Controllers\UserController::class);
     
     // Master Tanaman

@@ -58,12 +58,12 @@ class WhatsappLoginController extends Controller
                     ->first();
 
         if (!$user) {
-            $this->sendMessage($phoneNumber, "Nomor WhatsApp Anda tidak terdaftar di sistem kami.");
+            \App\Services\WaGatewayService::sendMessage($phoneNumber, "Nomor WhatsApp Anda tidak terdaftar di sistem kami.");
             return response()->json(['status' => 'user_not_found']);
         }
 
         if (!$user->is_active) {
-            $this->sendMessage($phoneNumber, "Akun Anda sedang menunggu persetujuan Admin.");
+            \App\Services\WaGatewayService::sendMessage($phoneNumber, "Akun Anda sedang menunggu persetujuan Admin.");
             return response()->json(['status' => 'user_inactive']);
         }
 
@@ -74,33 +74,12 @@ class WhatsappLoginController extends Controller
 
         $replyText = "Halo {$user->name}!\n\nBerikut adalah tautan login Anda:\n$loginUrl\n\nTautan ini hanya berlaku selama 5 menit dan hanya bisa digunakan satu kali.";
         
-        $this->sendMessage($phoneNumber, $replyText);
+        \App\Services\WaGatewayService::sendMessage($phoneNumber, $replyText);
 
         return response()->json(['status' => 'success']);
     }
 
-    /**
-     * Send a text message using the WA Gateway API.
-     */
-    private function sendMessage($phone, $message)
-    {
-        try {
-            $username = env('WA_GATEWAY_USERNAME', 'admin');
-            $password = env('WA_GATEWAY_PASSWORD', 'admin');
 
-            Http::withBasicAuth($username, $password)
-                ->withHeaders([
-                    'X-Device-Id' => 'tanisync',
-                    'Content-Type' => 'application/json',
-                ])->post('https://wag.anam.ch/send/message', [
-                    'phone' => $phone,
-                    'message' => $message,
-                    'isGroup' => false,
-                ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to send WA message: " . $e->getMessage());
-        }
-    }
 
     /**
      * Handle the auto login from the signed URL.

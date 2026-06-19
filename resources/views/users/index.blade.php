@@ -92,43 +92,67 @@
                         </td>
                         <td>{{ $user->created_at->format('d M Y H:i') }}</td>
                         <td class="text-end">
-                            @if($user->id !== Auth::id())
-                                <form action="{{ route('users.toggle-active', $user) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-icon btn-light-{{ $user->is_active ? 'warning' : 'success' }} btn-sm me-1" title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                        <i class="ki-duotone ki-{{ $user->is_active ? 'cross-circle' : 'check-circle' }} fs-2"><span class="path1"></span><span class="path2"></span></i>
-                                    </button>
-                                </form>
-
-                                <button type="button" class="btn btn-icon btn-light-info btn-sm me-1 copy-autologin-btn" data-url="{{ URL::signedRoute('autologin', ['user' => $user->id]) }}" title="Salin Link Auto-Login">
-                                    <i class="ki-duotone ki-copy fs-2"><span class="path1"></span><span class="path2"></span></i>
-                                </button>
-
-                                <form action="{{ route('users.impersonate', $user) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-icon btn-light-success btn-sm me-1" title="Login Sebagai">
-                                        <i class="ki-duotone ki-entrance-left fs-2"><span class="path1"></span><span class="path2"></span></i>
-                                    </button>
-                                </form>
-                            @endif
-
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-icon btn-light-primary btn-sm me-1" title="Edit">
-                                <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                            <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                Aksi <i class="ki-duotone ki-down fs-5 m-0"></i>
                             </a>
-                            @if($user->id !== Auth::id())
-                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-icon btn-light-danger btn-sm" title="Hapus">
-                                        <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
-                                    </button>
-                                </form>
-                            @else
-                                <button type="button" class="btn btn-icon btn-light btn-sm" disabled title="Tidak dapat menghapus diri sendiri">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
-                                </button>
-                            @endif
+                            <!--begin::Menu-->
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4" data-kt-menu="true">
+                                
+                                <div class="menu-item px-3">
+                                    <a href="{{ route('users.edit', $user) }}" class="menu-link px-3">
+                                        <i class="ki-duotone ki-pencil fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> Edit
+                                    </a>
+                                </div>
+
+                                @if($user->whatsapp)
+                                <div class="menu-item px-3">
+                                    <form action="{{ route('users.send-invitation', $user) }}" method="POST" class="d-inline ajax-send-wa-form w-100">
+                                        @csrf
+                                        <button type="submit" class="btn btn-active-light-primary menu-link px-3 w-100 text-start border-0 bg-transparent">
+                                            <i class="ki-duotone ki-whatsapp fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> Kirim Info WA
+                                        </button>
+                                    </form>
+                                </div>
+                                @endif
+
+                                @if($user->id !== Auth::id())
+                                    <div class="menu-item px-3">
+                                        <button type="button" class="btn btn-active-light-info menu-link px-3 w-100 text-start border-0 bg-transparent copy-autologin-btn" data-url="{{ URL::signedRoute('autologin', ['user' => $user->id]) }}">
+                                            <i class="ki-duotone ki-copy fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> Salin Link Login
+                                        </button>
+                                    </div>
+
+                                    <div class="menu-item px-3">
+                                        <form action="{{ route('users.impersonate', $user) }}" method="POST" class="d-inline w-100">
+                                            @csrf
+                                            <button type="submit" class="btn btn-active-light-success menu-link px-3 w-100 text-start border-0 bg-transparent">
+                                                <i class="ki-duotone ki-entrance-left fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> Login Sebagai
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <div class="menu-item px-3">
+                                        <form action="{{ route('users.toggle-active', $user) }}" method="POST" class="d-inline w-100">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-active-light-{{ $user->is_active ? 'warning' : 'success' }} menu-link px-3 w-100 text-start border-0 bg-transparent">
+                                                <i class="ki-duotone ki-{{ $user->is_active ? 'cross-circle' : 'check-circle' }} fs-4 me-2"><span class="path1"></span><span class="path2"></span></i> {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <div class="menu-item px-3">
+                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline delete-form w-100">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-active-light-danger menu-link px-3 w-100 text-start border-0 bg-transparent">
+                                                <i class="ki-duotone ki-trash fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                            <!--end::Menu-->
                         </td>
                     </tr>
                     @endforeach
@@ -226,6 +250,46 @@
                 }
                 textArea.remove();
             }
+        });
+        // AJAX Submit for Send WA Invitation
+        $('.ajax-send-wa-form').on('submit', function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let url = form.attr('action');
+
+            Swal.fire({
+                title: "Mengirim WhatsApp...",
+                text: "Mohon tunggu sebentar",
+                allowEscapeKey: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    Swal.fire({
+                        text: response.message || "Informasi pendaftaran berhasil dikirim via WhatsApp.",
+                        icon: "success",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok, Mengerti!",
+                        customClass: { confirmButton: "btn btn-primary" }
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        text: xhr.responseJSON?.message || "Gagal mengirim pesan WhatsApp.",
+                        icon: "error",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok",
+                        customClass: { confirmButton: "btn btn-danger" }
+                    });
+                }
+            });
         });
     });
 </script>
