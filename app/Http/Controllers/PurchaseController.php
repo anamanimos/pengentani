@@ -25,7 +25,7 @@ class PurchaseController extends Controller
             $query->where('pertanian_id', $request->pertanian_id);
         }
 
-        $purchases = $query->latest()->get();
+        $purchases = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->get();
         
         $initialData = [];
         $totalPengeluaran = 0;
