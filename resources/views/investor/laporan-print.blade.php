@@ -259,7 +259,7 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ \Carbon\Carbon::parse($job->date)->format('d M Y') }}</td>
                 <td>{{ $job->worker->name ?? '-' }}</td>
-                <td>{{ $job->jobCategory->name ?? '-' }}</td>
+                <td>{{ $job->category->name ?? '-' }}</td>
                 <td class="text-right text-danger">- {{ number_format($job->wage, 0, ',', '.') }}</td>
             </tr>
             @empty

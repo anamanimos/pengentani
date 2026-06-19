@@ -366,7 +366,7 @@ class InvestorDashboardController extends Controller
 
         // Ambil data pertanian dan relasinya
         $pertanian = \App\Models\Pertanian::where('uuid', $uuid)
-            ->with(['kebun', 'admin', 'incomes', 'purchases.items', 'purchases.store', 'workerJobs.worker', 'workerJobs.jobCategory'])
+            ->with(['kebun', 'admin', 'incomes', 'purchases.items', 'purchases.store', 'workerJobs.worker', 'workerJobs.category'])
             ->firstOrFail();
 
         // Pastikan user berhak melihat (sebagai admin, pengelola, atau investor)
