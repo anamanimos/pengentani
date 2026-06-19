@@ -359,4 +359,33 @@ class InvestorDashboardController extends Controller
             'withdrawals', 'ditarikTotal', 'sisaBisaDitarik'
         ));
     }
+
+    public function laporan($uuid)
+    {
+        $user = Auth::user();
+
+        // Ambil data pertanian dan relasinya
+        $pertanian = \App\Models\Pertanian::where('uuid', $uuid)
+            ->with(['kebun', 'admin', 'incomes', 'purchases.items', 'purchases.store', 'workerJobs.worker', 'workerJobs.jobCategory'])
+            ->firstOrFail();
+
+        // Pastikan user berhak melihat (sebagai admin, pengelola, atau investor)
+        $isInvestor = PertanianInvestor::where('pertanian_id', $pertanian->id)->where('user_id', $user->id)->exists();
+        $isAdmin = $pertanian->admin_id == $user->id;
+        $isPengelola = $pertanian->pengelola_id == $user->id;
+
+        if (!$isInvestor && !$isAdmin && !$isPengelola) {
+            abort(403, 'Anda tidak memiliki akses ke laporan proyek ini.');
+        }
+
+        // Hitung total
+        $totalIncome = $pertanian->incomes->sum('nominal');
+        $totalPurchase = $pertanian->purchases->sum(function($p) { return $p->items->sum('total_price'); });
+        $totalWorker = $pertanian->workerJobs->sum('wage');
+        $laba_sementara = $totalIncome - $totalPurchase - $totalWorker;
+
+        return view('investor.laporan-print', compact(
+            'user', 'pertanian', 'totalIncome', 'totalPurchase', 'totalWorker', 'laba_sementara'
+        ));
+    }
 }

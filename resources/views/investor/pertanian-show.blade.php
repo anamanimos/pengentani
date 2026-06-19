@@ -326,11 +326,16 @@
         </details>
 
         <div class="card-body" style="grid-template-columns: 1fr; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
-            <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-muted); font-size: 0.95rem;">Laba Sementara Proyek</span>
                 <span style="font-weight: 700; font-size: 1.1rem; color: {{ $inv->laba_sementara >= 0 ? 'var(--primary-dark)' : 'var(--danger)' }};">
                     Rp {{ number_format($inv->laba_sementara, 0, ',', '.') }}
                 </span>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="{{ route('investor.pertanian.laporan', $pertanian->uuid) }}" target="_blank" style="display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); width: 100%;">
+                    <i class="ki-duotone ki-document fs-4 me-2 text-white"><span class="path1"></span><span class="path2"></span></i> Unduh Detail Laporan Keuangan (PDF)
+                </a>
             </div>
         </div>
     </div>

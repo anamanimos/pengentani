@@ -251,6 +251,11 @@
                         Rp {{ number_format($labaBersih, 0, ',', '.') }}
                     </span>
                 </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="{{ route('investor.pertanian.laporan', $pertanian->uuid) }}" target="_blank" style="display: inline-block; background: var(--primary); color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); width: 100%;">
+                        <i class="ki-duotone ki-document fs-4 me-2 text-white"><span class="path1"></span><span class="path2"></span></i> Unduh Detail Laporan Keuangan (PDF)
+                    </a>
+                </div>
             </div>
         </div>
 

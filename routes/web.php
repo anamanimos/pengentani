@@ -8,6 +8,7 @@ Route::get('/', [\App\Http\Controllers\InvestorDashboardController::class, 'home
 Route::get('/dashboard', [\App\Http\Controllers\InvestorDashboardController::class, 'home'])->middleware(['auth', 'verified']);
 Route::get('/portofolio', [\App\Http\Controllers\InvestorDashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('investor.portfolio');
 Route::get('/investor/pertanian/{uuid}', [\App\Http\Controllers\InvestorDashboardController::class, 'show'])->middleware(['auth', 'verified'])->name('investor.pertanian.show');
+Route::get('/investor/pertanian/{uuid}/laporan', [\App\Http\Controllers\InvestorDashboardController::class, 'laporan'])->middleware(['auth', 'verified'])->name('investor.pertanian.laporan');
 Route::get('/peluang', [\App\Http\Controllers\InvestorDashboardController::class, 'opportunities'])->middleware(['auth', 'verified'])->name('investor.opportunities');
 Route::get('/penarikan', [\App\Http\Controllers\InvestorDashboardController::class, 'withdrawalHistory'])->middleware(['auth', 'verified'])->name('investor.withdrawals');
 Route::get('/project/{uuid}', [\App\Http\Controllers\InvestorDashboardController::class, 'projectDetail'])->middleware(['auth', 'verified'])->name('investor.project.detail');
