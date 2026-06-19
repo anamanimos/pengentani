@@ -89,8 +89,10 @@ class PurchaseController extends Controller
 
             $validPurchaseIds[$purchase->id] = $purchase;
 
-            $qty = (float) $row['qty'];
-            $unitPrice = (float) str_replace(',', '', $row['unit_price']);
+            $qtyStr = str_replace(['.', ','], ['', '.'], $row['qty']);
+            $qty = (float) $qtyStr;
+            $unitPriceStr = str_replace(['.', ','], ['', '.'], $row['unit_price']);
+            $unitPrice = (float) $unitPriceStr;
             $totalPrice = $qty * $unitPrice;
 
             $catId = $row['category_id'];

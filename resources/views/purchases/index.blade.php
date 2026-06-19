@@ -138,8 +138,10 @@
                 let data = spreadsheet.getData();
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let qty = parseFloat(data[i][7]);
-                    let price = parseFloat(data[i][8]);
+                    let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/\./g, '').replace(',', '.') : '0';
+                    let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/\./g, '').replace(',', '.') : '0';
+                    let qty = parseFloat(qtyStr);
+                    let price = parseFloat(priceStr);
                     if(!isNaN(qty) && !isNaN(price)) {
                         let rowTotal = qty * price;
                         // update row total cell if empty or different
