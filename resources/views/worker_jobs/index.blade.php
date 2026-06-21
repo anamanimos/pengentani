@@ -767,14 +767,22 @@
                 }, 1500);
             }
 
+            // Cek local storage saat load
+            if (localStorage.getItem('hideUsageAlert') === 'true') {
+                $('#usage-alert').removeClass('d-flex').addClass('d-none');
+                $('#btn-show-alert').removeClass('d-none');
+            }
+
             $('#btn-close-alert').click(function() {
                 $('#usage-alert').removeClass('d-flex').addClass('d-none');
                 $('#btn-show-alert').removeClass('d-none');
+                localStorage.setItem('hideUsageAlert', 'true');
             });
 
             $('#btn-show-alert').click(function() {
                 $('#usage-alert').removeClass('d-none').addClass('d-flex');
                 $('#btn-show-alert').addClass('d-none');
+                localStorage.removeItem('hideUsageAlert');
             });
 
             // Auto-update dropdown options every 5 seconds
