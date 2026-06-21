@@ -514,6 +514,22 @@
                         updateTotalAndRow();
                         autoSave();
                     }
+
+                    // Auto insert row if last row is filled
+                    var totalRows = instance.rows.length;
+                    if (parseInt(y) === totalRows - 1) {
+                        var rowData = instance.getRowData(y);
+                        var hasData = false;
+                        for (var i = 1; i < rowData.length; i++) {
+                            if (rowData[i] !== null && rowData[i] !== '') {
+                                hasData = true;
+                                break;
+                            }
+                        }
+                        if (hasData) {
+                            instance.insertRow();
+                        }
+                    }
                 },
                 oninsertrow: function() {
                     updateTotalAndRow();
