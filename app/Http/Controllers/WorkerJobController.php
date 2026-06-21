@@ -58,6 +58,11 @@ class WorkerJobController extends Controller
         try {
             $savedData = [];
             foreach ($request->data as $row) {
+                // Skip incomplete rows
+                if (empty($row['pertanian_id']) || empty($row['worker_id']) || empty($row['job_category_id']) || empty($row['date'])) {
+                    continue;
+                }
+
                 if (!empty($row['id'])) {
                     $job = WorkerJob::find($row['id']);
                     if ($job) {

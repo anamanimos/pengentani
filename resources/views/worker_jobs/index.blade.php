@@ -652,7 +652,7 @@
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
-                        if (row[1] || row[2] || row[3] || row[4] || row[5] || row[6] || row[7] || row[8]) { // Save if any field is filled
+                        if (row[0] || (row[1] && row[2] && row[3] && row[4])) { // Save if has ID or all required fields are filled
                             var cleanWage = row[7] ? row[7].toString().replace(/\D/g, '') : null;
                             validData.push({
                                 index: i,

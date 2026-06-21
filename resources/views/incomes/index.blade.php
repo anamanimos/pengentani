@@ -608,7 +608,7 @@
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
-                        if (row[1] || row[2] || row[3] || row[4] || row[5] || row[6]) {
+                        if (row[0] || (row[1] && row[2])) { // Save if has ID or required fields are filled
                             let cleanAmount = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
                             validData.push({
                                 index: i,

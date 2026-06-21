@@ -42,6 +42,11 @@ class IncomeController extends Controller
         try {
             $savedData = [];
             foreach ($request->data as $index => $row) {
+                // Skip incomplete rows
+                if (empty($row['pertanian_id']) || empty($row['date'])) {
+                    continue;
+                }
+
                 if (!empty($row['id'])) {
                     $income = \App\Models\Income::find($row['id']);
                     if ($income) {
