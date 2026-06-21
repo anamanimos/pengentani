@@ -31,14 +31,33 @@
     </button>
 </div>
 
-<div class="position-relative">
-    <div class="d-flex justify-content-end mb-2">
+<div class="position-relative" id="spreadsheet-wrapper">
+    <!-- Fullscreen Header -->
+    <div class="spreadsheet-fs-header d-none">
+        <div class="d-flex align-items-center">
+            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pendapatan</h5>
+            <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <h6 class="m-0 text-gray-700">Total: <span class="total-amount-fs text-success fw-bolder">Rp 0</span></h6>
+            <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
+                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
+            </button>
+            <button type="button" class="btn btn-sm btn-light-primary" id="btn-exit-fullscreen" title="Keluar Fullscreen">
+                <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i> Keluar Fullscreen
+            </button>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end mb-2 gap-2">
         <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
             <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
         </button>
+        <button type="button" class="btn btn-sm btn-light-primary" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
+            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
+        </button>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
-    <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" style="bottom: 0;">
+    <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
         <h4 class="m-0 text-gray-800">Total Pendapatan: <span id="total-amount" class="text-success fw-bolder ms-2">Rp 0</span></h4>
     </div>
 </div>
@@ -92,6 +111,49 @@
     <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jexcel.css" type="text/css" />
     <link rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
     <style>
+        /* Fullscreen Mode */
+        #spreadsheet-wrapper.fullscreen-mode {
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 1060;
+            background-color: var(--bs-body-bg, #fff);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        [data-bs-theme="dark"] #spreadsheet-wrapper.fullscreen-mode {
+            background-color: #1e1e2d;
+        }
+        #spreadsheet-wrapper.fullscreen-mode .spreadsheet-fs-header {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--bs-border-color, #e4e6ef);
+            background-color: var(--bs-body-bg, #fff);
+            flex-shrink: 0;
+        }
+        [data-bs-theme="dark"] #spreadsheet-wrapper.fullscreen-mode .spreadsheet-fs-header {
+            border-bottom-color: #2b2b40;
+            background-color: #1e1e2d;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #spreadsheet {
+            flex: 1;
+            overflow: auto;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #spreadsheet-footer {
+            flex-shrink: 0;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #btn-toggle-fullscreen {
+            display: none !important;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #btn-global-reset-filter {
+            display: none !important;
+        }
+
         .jexcel > thead > tr:first-child > td {
             font-size: 14px;
             font-weight: 600;
@@ -978,6 +1040,52 @@
                     hideFloatingSummary();
                 }
             });
+            // Fullscreen toggle
+            var savedTableHeight = null;
+
+            function enterFullscreen() {
+                var wrapper = $('#spreadsheet-wrapper');
+                wrapper.addClass('fullscreen-mode');
+                var el = document.getElementById('spreadsheet');
+                if (el && el.jexcel) {
+                    savedTableHeight = el.jexcel.options.tableHeight;
+                }
+                resizeSpreadsheetForFullscreen();
+                $('.total-amount-fs').text($('#total-amount').text());
+                $('body').css('overflow', 'hidden');
+            }
+
+            function exitFullscreen() {
+                var wrapper = $('#spreadsheet-wrapper');
+                wrapper.removeClass('fullscreen-mode');
+                var el = document.getElementById('spreadsheet');
+                if (el && el.jexcel && savedTableHeight) {
+                    el.jexcel.options.tableHeight = savedTableHeight;
+                    el.jexcel.setHeight();
+                }
+                $('body').css('overflow', '');
+            }
+
+            function resizeSpreadsheetForFullscreen() {
+                var el = document.getElementById('spreadsheet');
+                if (!el || !el.jexcel) return;
+                var headerH = $('.spreadsheet-fs-header').outerHeight() || 50;
+                var footerH = $('#spreadsheet-footer').outerHeight() || 50;
+                var toolbarH = $('#spreadsheet-wrapper > .d-flex.justify-content-end.mb-2').outerHeight() || 0;
+                var availableH = window.innerHeight - headerH - footerH - toolbarH - 2;
+                el.jexcel.options.tableHeight = availableH + 'px';
+                el.jexcel.setHeight();
+            }
+
+            $('#btn-toggle-fullscreen').click(function() { enterFullscreen(); });
+            $('#btn-exit-fullscreen').click(function() { exitFullscreen(); });
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $('#spreadsheet-wrapper').hasClass('fullscreen-mode')) exitFullscreen();
+            });
+            $(window).on('resize', function() {
+                if ($('#spreadsheet-wrapper').hasClass('fullscreen-mode')) resizeSpreadsheetForFullscreen();
+            });
+
         });
     </script>
 @endpush
