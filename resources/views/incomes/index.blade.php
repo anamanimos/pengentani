@@ -150,6 +150,157 @@
             background-color: #151521 !important;
             color: #ffffff !important;
         }
+
+        /* jSuites Dropdown responsive & theme overrides */
+        .jdropdown-container,
+        .jdropdown-picker,
+        .jdropdown-picker .jdropdown-container,
+        .jdropdown-searchbar,
+        .jdropdown-searchbar.jdropdown-focus {
+            background-color: #ffffff !important;
+            color: #181C32 !important;
+        }
+
+        .jdropdown-header,
+        .jdropdown-picker .jdropdown-header,
+        .jdropdown-container-header,
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header {
+            background-color: #ffffff !important;
+            color: #181C32 !important;
+            border-bottom: 1px solid #f1f3f9 !important;
+        }
+
+        .jdropdown-content,
+        .jdropdown-picker .jdropdown-content,
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-content {
+            background-color: #ffffff !important;
+        }
+
+        .jdropdown-item,
+        .jdropdown-picker .jdropdown-item,
+        .jdropdown-searchbar .jdropdown-item {
+            background-color: #ffffff !important;
+            color: #181C32 !important;
+            border-bottom: 1px solid #f1f3f9 !important;
+        }
+
+        .jdropdown-item:hover,
+        .jdropdown-cursor,
+        .jdropdown-picker .jdropdown-cursor,
+        .jdropdown-searchbar .jdropdown-cursor {
+            background-color: #f1f3f9 !important;
+            color: #181C32 !important;
+        }
+
+        .jdropdown-selected,
+        .jdropdown-picker .jdropdown-selected,
+        .jdropdown-searchbar .jdropdown-selected {
+            background-color: #3e97ff !important;
+            color: #ffffff !important;
+        }
+
+        .jdropdown-searchbar .jdropdown-group,
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-group {
+            background-color: #ffffff !important;
+        }
+
+        .jdropdown-group-name,
+        .jdropdown-picker .jdropdown-group-name,
+        .jdropdown-searchbar .jdropdown-group-name {
+            background-color: #f8f9fa !important;
+            color: #5e6278 !important;
+            border-top: 1px solid #f1f3f9 !important;
+            border-bottom: 1px solid #f1f3f9 !important;
+        }
+
+        .jdropdown-picker .jdropdown-close,
+        .jdropdown-searchbar .jdropdown-close {
+            background-color: #ffffff !important;
+            color: #3e97ff !important;
+        }
+
+        .jdropdown-container input,
+        .jdropdown-searchbar input {
+            background-color: #ffffff !important;
+            color: #181C32 !important;
+            border: 1px solid #e4e6ef !important;
+        }
+
+        /* Dark Mode */
+        [data-bs-theme="dark"] .jdropdown-container,
+        [data-bs-theme="dark"] .jdropdown-picker,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-container,
+        [data-bs-theme="dark"] .jdropdown-searchbar,
+        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus {
+            background-color: #1e1e2d !important;
+            color: #dbdbf4 !important;
+            border: 1px solid #2b2b40 !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-header,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-header,
+        [data-bs-theme="dark"] .jdropdown-container-header,
+        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header {
+            background-color: #2b2b40 !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid #151521 !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-content,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-content,
+        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus .jdropdown-content {
+            background-color: #1e1e2d !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-item,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-item,
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-item {
+            background-color: #1e1e2d !important;
+            color: #dbdbf4 !important;
+            border-bottom: 1px solid #151521 !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-item:hover,
+        [data-bs-theme="dark"] .jdropdown-cursor,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-cursor,
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-cursor {
+            background-color: rgba(9, 132, 227, 0.15) !important;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-selected,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-selected,
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-selected {
+            background-color: rgba(9, 132, 227, 0.25) !important;
+            color: #ffffff !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-group,
+        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus .jdropdown-group {
+            background-color: #1e1e2d !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-group-name,
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-group-name,
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-group-name {
+            background-color: #2b2b40 !important;
+            color: #ffffff !important;
+            border-top: 1px solid #151521 !important;
+            border-bottom: 1px solid #151521 !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-picker .jdropdown-close,
+        [data-bs-theme="dark"] .jdropdown-searchbar .jdropdown-close {
+            background-color: #2b2b40 !important;
+            color: #3b82f6 !important;
+        }
+
+        [data-bs-theme="dark"] .jdropdown-container input,
+        [data-bs-theme="dark"] .jdropdown-searchbar input {
+            background-color: #151521 !important;
+            color: #ffffff !important;
+            border: 1px solid #2b2b40 !important;
+        }
     </style>
 @endpush
 
