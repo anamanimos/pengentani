@@ -116,6 +116,9 @@
             color: #dbdbf4;
             border-color: #151521 !important;
         }
+        [data-bs-theme="dark"] .jexcel td {
+            border-color: #151521 !important;
+        }
         [data-bs-theme="dark"] .jexcel > thead > tr:first-child > td {
             background-color: #2b2b40;
             color: #ffffff;
