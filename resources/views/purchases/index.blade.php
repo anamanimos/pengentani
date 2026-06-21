@@ -171,32 +171,20 @@
             background-color: rgba(0, 0, 0, 0.4) !important;
         }
 
-        /* Make container act as the bottom-sheet itself */
-        .jdropdown-searchbar.jdropdown-focus .jdropdown-container {
-            position: absolute !important;
-            bottom: 0px !important;
-            top: auto !important;
-            left: 0px !important;
-            width: 100% !important;
-            height: 50vh !important; /* Setengah layar */
-            border-top-left-radius: 16px !important;
-            border-top-right-radius: 16px !important;
-            box-shadow: 0px -5px 15px rgba(0, 0, 0, 0.15) !important;
-            overflow: hidden !important;
-            display: block !important;
-            margin-top: 0px !important;
-        }
-
-        /* Position the search header at the top of the bottom sheet */
+        /* Position the search header at the top of the 50vh bottom sheet (bottom: 50vh) */
         .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header {
             position: absolute !important;
-            top: 0px !important;
+            bottom: 50vh !important; /* Duduk tepat di atas area setengah layar */
+            top: auto !important;
             left: 0px !important;
             width: 100% !important;
             height: 56px !important;
             z-index: 9002 !important;
             padding: 10px !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,.05) !important;
+            box-shadow: 0 -2px 10px rgba(0,0,0,.05) !important;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            border-bottom: 1px solid #f1f3f9 !important;
         }
 
         .jdropdown-searchbar.jdropdown-focus .jdropdown-header {
@@ -220,16 +208,27 @@
             box-shadow: none !important;
         }
 
-        /* Make the content list scrollable inside the bottom sheet */
-        .jdropdown-searchbar.jdropdown-focus .jdropdown-content {
+        /* Make container act as the bottom-sheet scrollable list */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-container {
             position: absolute !important;
-            top: 56px !important;
             bottom: 0px !important;
+            top: auto !important;
             left: 0px !important;
             width: 100% !important;
-            height: calc(100% - 56px) !important;
+            height: 50vh !important; /* Setengah layar */
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15) !important;
             overflow-y: auto !important;
+            display: block !important;
+            margin-top: 0px !important;
+            border-top-left-radius: 0px !important; /* Header has the rounded corners now */
+            border-top-right-radius: 0px !important;
+        }
+
+        /* Make the content list scrollable inside the bottom sheet */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-content {
+            height: 100% !important;
             max-height: none !important;
+            overflow-y: auto !important;
             margin-top: 0px !important;
             padding-bottom: 20px !important;
         }
