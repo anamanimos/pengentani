@@ -306,7 +306,7 @@
                 if ((e.which === 46 || e.which === 8) && spreadsheet && spreadsheet.selectedRow !== null && spreadsheet.selectedRow !== undefined && spreadsheet.selectedRow !== false) {
                     e.preventDefault();
                     e.stopPropagation();
-                    var selectedRows = spreadsheet.getSelectedRows();
+                    var selectedRows = spreadsheet.getSelectedRows(true);
                     if (selectedRows && selectedRows.length > 0) {
                         var rowsToDelete = [...selectedRows].sort(function(a, b) { return b - a; });
                         rowsToDelete.forEach(function(rowNum) {
