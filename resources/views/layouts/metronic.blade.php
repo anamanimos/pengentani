@@ -20,6 +20,7 @@
 <body id="kt_app_body" data-kt-app-layout="light-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" class="app-default">
     <!--begin::Theme mode setup on page load-->
     <script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script>
+    <script>if (localStorage.getItem("sidebar_minimize_state") === "on") { document.body.setAttribute("data-kt-app-sidebar-minimize", "on"); }</script>
     <!--end::Theme mode setup on page load-->
     <!--begin::App-->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
@@ -97,6 +98,19 @@
     <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
     <!--end::Global Javascript Bundle-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var toggleBtn = document.getElementById("kt_app_sidebar_toggle");
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function() {
+                    setTimeout(function() {
+                        var isMinimized = document.body.getAttribute("data-kt-app-sidebar-minimize") === "on";
+                        localStorage.setItem("sidebar_minimize_state", isMinimized ? "on" : "off");
+                    }, 100);
+                });
+            }
+        });
+    </script>
     @stack('scripts')
     <!--end::Javascript-->
 </body>
