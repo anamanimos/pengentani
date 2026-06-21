@@ -149,10 +149,14 @@
             function updateTotal() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
+                let rows = $('#spreadsheet > div > table > tbody > tr');
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let val = parseFloat(data[i][6]);
-                    if(!isNaN(val)) total += val;
+                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                        let amountStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/[^0-9.-]/g, '') : '0';
+                        let val = parseFloat(amountStr);
+                        if(!isNaN(val)) total += val;
+                    }
                 }
                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
             }
@@ -268,6 +272,7 @@
                         }
                     }
                 });
+                applyAllFilters();
             }, 100);
 
             // Initial total calculation
@@ -349,7 +354,15 @@
 
             // Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
-            let activeFilters = {};
+             let activeFilters = {};
+             try {
+                 const stored = localStorage.getItem('incomes_filters');
+                 if (stored) {
+                     activeFilters = JSON.parse(stored);
+                 }
+             } catch (e) {
+                 console.error('Failed to load activeFilters:', e);
+             }
             let datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
                 dateFormat: "Y-m-d",
@@ -427,6 +440,11 @@
             });
 
             function applyAllFilters() {
+                try {
+                    localStorage.setItem('incomes_filters', JSON.stringify(activeFilters));
+                } catch(e) {
+                    console.error('Failed to save activeFilters:', e);
+                }
                 let data = spreadsheet.getData();
                 let rows = $('#spreadsheet > div > table > tbody > tr');
                 

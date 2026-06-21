@@ -136,25 +136,28 @@
             function updateTotalAndRow() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
-                let total = 0;
-                for(let i=0; i<data.length; i++) {
-                    let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                    let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
-                    let qty = parseFloat(qtyStr);
-                    let price = parseFloat(priceStr);
-                    if(!isNaN(qty) && !isNaN(price)) {
-                        let rowTotal = qty * price;
-                        // update row total cell if empty or different
-                        let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
-                        let currentTotal = parseFloat(currentTotalStr);
-                        if(currentTotal !== rowTotal) {
-                            spreadsheet.setValueFromCoords(9, i, rowTotal, true);
-                        }
-                        total += rowTotal;
-                    }
-                }
-                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
-            }
+                 let rows = $('#spreadsheet > div > table > tbody > tr');
+                 let total = 0;
+                 for(let i=0; i<data.length; i++) {
+                     let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                     let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
+                     let qty = parseFloat(qtyStr);
+                     let price = parseFloat(priceStr);
+                     if(!isNaN(qty) && !isNaN(price)) {
+                         let rowTotal = qty * price;
+                         // update row total cell if empty or different
+                         let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
+                         let currentTotal = parseFloat(currentTotalStr);
+                         if(currentTotal !== rowTotal) {
+                             spreadsheet.setValueFromCoords(9, i, rowTotal, true);
+                         }
+                         if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                             total += rowTotal;
+                         }
+                     }
+                 }
+                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
+             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                 data: initialData,
@@ -187,6 +190,7 @@
                                 }
                             }
                         });
+                        applyAllFilters();
                     }, 100);
                 },
                 minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
@@ -377,7 +381,15 @@
 
             // Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
-            let activeFilters = {};
+             let activeFilters = {};
+             try {
+                 const stored = localStorage.getItem('purchases_filters');
+                 if (stored) {
+                     activeFilters = JSON.parse(stored);
+                 }
+             } catch (e) {
+                 console.error('Failed to load activeFilters:', e);
+             }
             let datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
                 dateFormat: "Y-m-d",
@@ -455,6 +467,11 @@
             });
 
             function applyAllFilters() {
+                try {
+                    localStorage.setItem('purchases_filters', JSON.stringify(activeFilters));
+                } catch(e) {
+                    console.error('Failed to save activeFilters:', e);
+                }
                 let data = spreadsheet.getData();
                 let rows = $('#spreadsheet > div > table > tbody > tr');
                 

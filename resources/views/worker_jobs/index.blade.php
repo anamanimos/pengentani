@@ -166,11 +166,14 @@
             function updateTotal() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
+                let rows = $('#spreadsheet > div > table > tbody > tr');
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                    let val = parseInt(wageStr, 10);
-                    if(!isNaN(val)) total += val;
+                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                        let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                        let val = parseInt(wageStr, 10);
+                        if(!isNaN(val)) total += val;
+                    }
                 }
                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
             }
@@ -208,6 +211,7 @@
                                 }
                             }
                         });
+                        applyAllFilters();
                     }, 100);
                 },
                 minDimensions: [9, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
@@ -410,6 +414,14 @@
             // Universal Column Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
             let activeFilters = {}; // Stores active filters by column index
+            try {
+                const stored = localStorage.getItem('worker_jobs_filters');
+                if (stored) {
+                    activeFilters = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error('Failed to load activeFilters:', e);
+            }
             let datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
                 dateFormat: "Y-m-d",
@@ -495,6 +507,11 @@
             });
 
             function applyAllFilters() {
+                try {
+                    localStorage.setItem('worker_jobs_filters', JSON.stringify(activeFilters));
+                } catch(e) {
+                    console.error('Failed to save activeFilters:', e);
+                }
                 let data = spreadsheet.getData();
                 let rows = $('#spreadsheet > div > table > tbody > tr');
                 
