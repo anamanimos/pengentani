@@ -106,6 +106,48 @@
         .jexcel > tbody > tr > td {
             font-size: 13px;
         }
+
+        /* Dark Mode overrides for Jspreadsheet */
+        [data-bs-theme="dark"] .jexcel_container {
+            background-color: #1e1e2d;
+        }
+        [data-bs-theme="dark"] .jexcel {
+            background-color: #1e1e2d;
+            color: #dbdbf4;
+            border-color: #2b2b40;
+        }
+        [data-bs-theme="dark"] .jexcel > thead > tr:first-child > td {
+            background-color: #2b2b40;
+            color: #ffffff;
+            border-bottom: 1px solid #363654;
+            border-right: 1px solid #363654;
+        }
+        [data-bs-theme="dark"] .jexcel > tbody > tr > td {
+            background-color: #1e1e2d;
+            color: #dbdbf4;
+            border-bottom: 1px solid #2b2b40;
+            border-right: 1px solid #2b2b40;
+        }
+        [data-bs-theme="dark"] .jexcel > tbody > tr > td.jexcel_row {
+            background-color: #2b2b40;
+            color: #a1a5b7;
+            border-right: 1px solid #363654;
+        }
+        [data-bs-theme="dark"] .jexcel_selectall {
+            background-color: #2b2b40;
+            border-right: 1px solid #363654;
+            border-bottom: 1px solid #363654;
+        }
+        [data-bs-theme="dark"] .jexcel .jexcel_selected {
+            background-color: rgba(9, 132, 227, 0.25) !important;
+            color: #ffffff !important;
+        }
+        [data-bs-theme="dark"] .jexcel input,
+        [data-bs-theme="dark"] .jexcel select,
+        [data-bs-theme="dark"] .jexcel textarea {
+            background-color: #151521 !important;
+            color: #ffffff !important;
+        }
     </style>
 @endpush
 
