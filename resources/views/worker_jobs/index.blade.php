@@ -242,33 +242,64 @@
                     autoSave();
                 },
                 onbeforedeleterow: function(instance, rowNumber) {
-                    var id = instance.getValueFromCoords(0, rowNumber);
+                    // Always block native delete — we handle it via SweetAlert
+                    var id = spreadsheet.getValueFromCoords(0, rowNumber);
+                    
                     if (id) {
-                        return confirm("Anda akan menghapus baris yang sudah tersimpan di database. Apakah Anda yakin?");
+                        // Row has a DB record — show confirmation
+                        Swal.fire({
+                            title: 'Apakah Anda yakin?',
+                            text: 'Data pekerjaan ini akan dihapus secara permanen dari database.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Hapus!',
+                            cancelButtonText: 'Batal',
+                            customClass: {
+                                confirmButton: 'btn btn-danger',
+                                cancelButton: 'btn btn-light'
+                            }
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                // Delete from DB first
+                                $.ajax({
+                                    url: '{{ url("worker-jobs") }}/' + id,
+                                    type: 'POST',
+                                    data: {
+                                        _method: 'DELETE',
+                                        _token: '{{ csrf_token() }}'
+                                    },
+                                    success: function() {
+                                        // Now delete from spreadsheet (bypass onbeforedeleterow by temporarily allowing it)
+                                        spreadsheet.options.onbeforedeleterow = null;
+                                        spreadsheet.deleteRow(rowNumber);
+                                        spreadsheet.options.onbeforedeleterow = workerJobBeforeDeleteRow;
+                                        updateTotal();
+                                        toastr.success('Data pekerjaan berhasil dihapus.');
+                                    },
+                                    error: function() {
+                                        toastr.error('Gagal menghapus data di database. Harap muat ulang halaman.');
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        // Empty row — delete immediately without confirmation
+                        setTimeout(function() {
+                            spreadsheet.options.onbeforedeleterow = null;
+                            spreadsheet.deleteRow(rowNumber);
+                            spreadsheet.options.onbeforedeleterow = workerJobBeforeDeleteRow;
+                            updateTotal();
+                        }, 0);
                     }
-                    return true;
+                    return false; // Always block the native delete
                 },
                 ondeleterow: function(instance, rowNumber, numOfRows, rowDOMElement, rowData) {
                     updateTotal();
-                    var id = rowData[0];
-                    if (id) {
-                        $.ajax({
-                            url: '{{ url("worker-jobs") }}/' + id,
-                            type: 'POST',
-                            data: {
-                                _method: 'DELETE',
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function() {
-                                toastr.success('Data pekerjaan berhasil dihapus.');
-                            },
-                            error: function() {
-                                toastr.error('Gagal menghapus data di database. Harap muat ulang halaman.');
-                            }
-                        });
-                    }
                 }
             });
+
+            // Store the handler reference for re-assignment after programmatic deletes
+            var workerJobBeforeDeleteRow = spreadsheet.options.onbeforedeleterow;
 
             // Initial total calculation
             updateTotal();
