@@ -187,34 +187,58 @@
                     updateTotal();
                     autoSave();
                 },
-                onbeforedeleterow: function(instance, rowNumber) {
-                    var id = instance.getValueFromCoords(0, rowNumber);
+                 onbeforedeleterow: function(instance, rowNumber) {
+                    var id = spreadsheet.getValueFromCoords(0, rowNumber);
                     if (id) {
-                        return confirm("Anda akan menghapus baris yang sudah tersimpan di database. Apakah Anda yakin?");
+                        Swal.fire({
+                            title: 'Apakah Anda yakin?',
+                            text: 'Data pendapatan ini akan dihapus secara permanen dari database.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Hapus!',
+                            cancelButtonText: 'Batal',
+                            customClass: {
+                                confirmButton: 'btn btn-danger',
+                                cancelButton: 'btn btn-light'
+                            }
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '{{ url("console/incomes") }}/' + id,
+                                    type: 'POST',
+                                    data: {
+                                        _method: 'DELETE',
+                                        _token: '{{ csrf_token() }}'
+                                    },
+                                    success: function() {
+                                        spreadsheet.options.onbeforedeleterow = null;
+                                        spreadsheet.deleteRow(rowNumber);
+                                        spreadsheet.options.onbeforedeleterow = incomeBeforeDeleteRow;
+                                        updateTotal();
+                                        toastr.success('Data pendapatan berhasil dihapus.');
+                                    },
+                                    error: function() {
+                                        toastr.error('Gagal menghapus data di database. Harap muat ulang halaman.');
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        setTimeout(function() {
+                            spreadsheet.options.onbeforedeleterow = null;
+                            spreadsheet.deleteRow(rowNumber);
+                            spreadsheet.options.onbeforedeleterow = incomeBeforeDeleteRow;
+                            updateTotal();
+                        }, 0);
                     }
-                    return true;
+                    return false;
                 },
                 ondeleterow: function(instance, rowNumber, numOfRows, rowDOMElement, rowData) {
                     updateTotal();
-                    var id = rowData[0];
-                    if (id) {
-                        $.ajax({
-                            url: '{{ url("incomes") }}/' + id,
-                            type: 'POST',
-                            data: {
-                                _method: 'DELETE',
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function() {
-                                toastr.success('Data pendapatan berhasil dihapus.');
-                            },
-                            error: function() {
-                                toastr.error('Gagal menghapus data di database. Harap muat ulang halaman.');
-                            }
-                        });
-                    }
                 }
             });
+
+            var incomeBeforeDeleteRow = spreadsheet.options.onbeforedeleterow;
 
             setTimeout(function() {
                 var headers = $('#spreadsheet > div > table > thead > tr:first-child > td');

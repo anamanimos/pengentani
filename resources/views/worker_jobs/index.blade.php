@@ -262,7 +262,7 @@
                             if (result.isConfirmed) {
                                 // Delete from DB first
                                 $.ajax({
-                                    url: '{{ url("worker-jobs") }}/' + id,
+                                    url: '{{ url("console/worker-jobs") }}/' + id,
                                     type: 'POST',
                                     data: {
                                         _method: 'DELETE',
