@@ -114,29 +114,30 @@
         [data-bs-theme="dark"] .jexcel {
             background-color: #1e1e2d;
             color: #dbdbf4;
-            border-color: #2b2b40;
+            border-color: rgba(255, 255, 255, 0.1) !important;
         }
         [data-bs-theme="dark"] .jexcel > thead > tr:first-child > td {
             background-color: #2b2b40;
             color: #ffffff;
-            border-bottom: 1px solid #363654;
-            border-right: 1px solid #363654;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
         }
         [data-bs-theme="dark"] .jexcel > tbody > tr > td {
             background-color: #1e1e2d;
             color: #dbdbf4;
-            border-bottom: 1px solid #2b2b40;
-            border-right: 1px solid #2b2b40;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
         }
         [data-bs-theme="dark"] .jexcel > tbody > tr > td.jexcel_row {
             background-color: #2b2b40;
             color: #a1a5b7;
-            border-right: 1px solid #363654;
+            border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
         }
         [data-bs-theme="dark"] .jexcel_selectall {
             background-color: #2b2b40;
-            border-right: 1px solid #363654;
-            border-bottom: 1px solid #363654;
+            border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
         }
         [data-bs-theme="dark"] .jexcel .jexcel_selected {
             background-color: rgba(9, 132, 227, 0.25) !important;
