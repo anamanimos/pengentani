@@ -522,6 +522,17 @@
                     if(match) rows.eq(i).show();
                     else rows.eq(i).hide();
                 }
+
+                // Recalculate total based on visible rows only
+                let filteredTotal = 0;
+                for(let i = 0; i < data.length; i++) {
+                    if(rows.eq(i).is(':visible')) {
+                        let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                        let val = parseInt(wageStr, 10);
+                        if(!isNaN(val)) filteredTotal += val;
+                    }
+                }
+                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
             }
         });
     </script>

@@ -483,6 +483,21 @@
                     if(match) rows.eq(i).show();
                     else rows.eq(i).hide();
                 }
+
+                // Recalculate total based on visible rows only
+                let filteredTotal = 0;
+                for(let i = 0; i < data.length; i++) {
+                    if(rows.eq(i).is(':visible')) {
+                        let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                        let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
+                        let qty = parseFloat(qtyStr);
+                        let price = parseFloat(priceStr);
+                        if(!isNaN(qty) && !isNaN(price)) {
+                            filteredTotal += qty * price;
+                        }
+                    }
+                }
+                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
             }
         });
     </script>
