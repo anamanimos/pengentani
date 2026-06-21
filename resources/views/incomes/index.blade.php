@@ -14,6 +14,9 @@
     <a href="{{ route('tengkulaks.index') }}" class="btn btn-light-success btn-sm me-3 fw-bold">
         <i class="ki-duotone ki-address-book fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kelola Tengkulak
     </a>
+    <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
+        <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
+    </button>
     <button type="button" id="btn-show-alert" class="btn btn-icon btn-light-info btn-sm me-3 d-none" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
@@ -51,9 +54,6 @@
     <div class="d-flex justify-content-end mb-2 gap-2">
         <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
             <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
-        </button>
-        <button type="button" class="btn btn-sm btn-light-primary" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
-            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
         </button>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
@@ -653,6 +653,12 @@
                     }
                 });
                 applyAllFilters();
+                
+                // Scroll to bottom (WhatsApp style)
+                var contentDiv = document.querySelector('.jexcel_content');
+                if (contentDiv) {
+                    contentDiv.scrollTop = contentDiv.scrollHeight;
+                }
             }, 100);
 
             // Initial total calculation

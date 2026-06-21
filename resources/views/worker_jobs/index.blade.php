@@ -25,6 +25,9 @@
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
         </button>
     </form>
+    <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
+        <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
+    </button>
     <a href="{{ route('job-categories.index') }}" class="btn btn-primary btn-sm">
         <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Kategori
     </a>
@@ -62,9 +65,6 @@
     <div class="d-flex justify-content-end mb-2 gap-2">
         <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
             <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
-        </button>
-        <button type="button" class="btn btn-sm btn-light-primary" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
-            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
         </button>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
@@ -575,6 +575,12 @@
                             }
                         });
                         applyAllFilters();
+                        
+                        // Scroll to bottom (WhatsApp style)
+                        var contentDiv = document.querySelector('.jexcel_content');
+                        if (contentDiv) {
+                            contentDiv.scrollTop = contentDiv.scrollHeight;
+                        }
                     }, 100);
                 },
                 minDimensions: [9, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
