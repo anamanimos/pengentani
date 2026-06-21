@@ -145,9 +145,10 @@
                     if(!isNaN(qty) && !isNaN(price)) {
                         let rowTotal = qty * price;
                         // update row total cell if empty or different
-                        let currentTotal = parseFloat(data[i][9]);
+                        let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
+                        let currentTotal = parseFloat(currentTotalStr);
                         if(currentTotal !== rowTotal) {
-                            spreadsheet.setValueFromCoords(9, i, rowTotal, false);
+                            spreadsheet.setValueFromCoords(9, i, rowTotal, true);
                         }
                         total += rowTotal;
                     }
