@@ -138,8 +138,8 @@
                 let data = spreadsheet.getData();
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/\./g, '').replace(',', '.') : '0';
-                    let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/\./g, '').replace(',', '.') : '0';
+                    let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                    let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
                     let qty = parseFloat(qtyStr);
                     let price = parseFloat(priceStr);
                     if(!isNaN(qty) && !isNaN(price)) {
@@ -169,9 +169,9 @@
                     { type: 'text', title: 'No Nota', width: 120 }, // 4
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true, options: { newOptions: true } }, // 5
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 6
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#.##0,00', decimal: ',' }, // 7
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#.##0,00', decimal: ',' }, // 8
-                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#.##0,00', decimal: ',', readOnly: true } // 9
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true } // 9
                 ],
                 onload: function() {
                     setTimeout(function() {

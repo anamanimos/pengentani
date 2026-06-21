@@ -168,8 +168,8 @@
                 let data = spreadsheet.getData();
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let rawVal = data[i][7] ? data[i][7].toString().replace(/\D/g, '') : '0';
-                    let val = parseInt(rawVal, 10);
+                    let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                    let val = parseInt(wageStr, 10);
                     if(!isNaN(val)) total += val;
                 }
                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
@@ -189,7 +189,7 @@
                     { type: 'dropdown', title: 'Kategori Pekerjaan', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
-                    { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#.##0,00', decimal: ',' },
+                    { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses }
                 ],
                 onload: function() {

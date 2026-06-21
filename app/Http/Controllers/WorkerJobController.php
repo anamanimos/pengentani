@@ -174,7 +174,8 @@ class WorkerJobController extends Controller
             $sheet->setCellValue('E' . $rowNum, $job->category->name ?? '-');
             $sheet->setCellValue('F' . $rowNum, $job->start_time);
             $sheet->setCellValue('G' . $rowNum, $job->end_time);
-            $sheet->setCellValue('H' . $rowNum, $job->wage);
+            $wageStr = str_replace(',', '', $job->wage);
+            $sheet->setCellValue('H' . $rowNum, (float) $wageStr);
             $sheet->setCellValue('I' . $rowNum, ucfirst($job->status));
             $rowNum++;
         }
