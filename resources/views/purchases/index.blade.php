@@ -273,7 +273,7 @@
 
             // Intercept keyboard delete / backspace to prevent browser's native confirm
             document.addEventListener('keydown', function(e) {
-                if ((e.which === 46 || e.which === 8) && spreadsheet && spreadsheet.selectedRow) {
+                if ((e.which === 46 || e.which === 8) && spreadsheet && spreadsheet.selectedRow !== null && spreadsheet.selectedRow !== undefined && spreadsheet.selectedRow !== false) {
                     e.preventDefault();
                     e.stopPropagation();
                     var selectedRows = spreadsheet.getSelectedRows();
