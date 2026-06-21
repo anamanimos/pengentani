@@ -18,7 +18,7 @@ class IncomeController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        $incomes = $query->latest('date')->take(500)->get();
+        $incomes = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = \App\Models\Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $tengkulaks = \App\Models\Tengkulak::orderBy('name')->get();
 

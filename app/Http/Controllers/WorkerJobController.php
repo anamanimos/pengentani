@@ -22,7 +22,7 @@ class WorkerJobController extends Controller
         }
 
         // Limit to 500 rows to prevent browser crash if data grows
-        $jobs = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->take(500)->get();
+        $jobs = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $workers = User::where('role', 'pekerja')->orderBy('name')->get();
         $categories = JobCategory::orderBy('name')->get();
@@ -149,7 +149,7 @@ class WorkerJobController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        $jobs = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->get();
+        $jobs = $query->orderBy('id', 'asc')->get();
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
