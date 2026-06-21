@@ -102,6 +102,7 @@ class PurchaseController extends Controller
             if (!empty($row['id'])) {
                 $item = PurchaseItem::find($row['id']);
                 if ($item && $item->purchase->pertanian->user_id === Auth::id()) {
+                    $oldPurchaseId = $item->purchase_id;
                     $item->update([
                         'purchase_id' => $purchase->id,
                         'purchase_category_id' => $catId,
@@ -111,6 +112,12 @@ class PurchaseController extends Controller
                         'unit_price' => $unitPrice,
                         'total_price' => $totalPrice,
                     ]);
+                    if ($oldPurchaseId != $purchase->id) {
+                        $oldPurchase = \App\Models\Purchase::find($oldPurchaseId);
+                        if ($oldPurchase) {
+                            $validPurchaseIds[$oldPurchase->id] = $oldPurchase;
+                        }
+                    }
                     $savedData[] = ['index' => $index, 'id' => $item->id];
                 }
             } else {
@@ -126,9 +133,13 @@ class PurchaseController extends Controller
             }
         }
 
-        // Update total_amount for affected purchases
+        // Update total_amount for affected purchases or delete if empty
         foreach ($validPurchaseIds as $p) {
-            $p->update(['total_amount' => $p->items()->sum('total_price')]);
+            if ($p->items()->count() === 0) {
+                $p->delete();
+            } else {
+                $p->update(['total_amount' => $p->items()->sum('total_price')]);
+            }
         }
 
         return response()->json(['message' => 'Tersimpan otomatis', 'savedData' => $savedData]);
