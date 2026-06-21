@@ -169,7 +169,7 @@
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
                     { type: 'text', title: 'Deskripsi', width: 300 },
-                    { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #.##0' }
+                    { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' }
                 ],
                 minDimensions: [7, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
@@ -246,15 +246,17 @@
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
-                        if (row[1] || row[2] || row[3] || row[4] || row[5] || row[6]) { // Save if any field is filled
+                        if (row[1] || row[2] || row[3] || row[4] || row[5] || row[6]) {
+                            let cleanAmount = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
                             validData.push({
+                                index: i,
                                 id: row[0] || null,
                                 date: row[1] || null,
                                 pertanian_id: row[2] || null,
                                 tengkulak_id: row[3] || null,
                                 type: row[4] || null,
                                 description: row[5] || null,
-                                amount: row[6] !== "" && row[6] !== null ? row[6] : null
+                                amount: cleanAmount
                             });
                             rowMapping.push(i);
                         }
