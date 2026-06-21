@@ -260,9 +260,12 @@
         .jdropdown-container,
         .jdropdown-picker,
         .jdropdown-picker .jdropdown-container,
-        .jdropdown-searchbar,
-        .jdropdown-searchbar.jdropdown-focus {
+        .jdropdown-searchbar {
             background-color: #ffffff !important;
+            color: #181C32 !important;
+        }
+        .jdropdown-searchbar.jdropdown-focus {
+            background-color: transparent !important;
             color: #181C32 !important;
         }
 
@@ -335,11 +338,15 @@
         [data-bs-theme="dark"] .jdropdown-container,
         [data-bs-theme="dark"] .jdropdown-picker,
         [data-bs-theme="dark"] .jdropdown-picker .jdropdown-container,
-        [data-bs-theme="dark"] .jdropdown-searchbar,
-        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus {
+        [data-bs-theme="dark"] .jdropdown-searchbar {
             background-color: #1e1e2d !important;
             color: #dbdbf4 !important;
             border: 1px solid #2b2b40 !important;
+        }
+        [data-bs-theme="dark"] .jdropdown-searchbar.jdropdown-focus {
+            background-color: transparent !important;
+            color: #dbdbf4 !important;
+            border: none !important;
         }
 
         [data-bs-theme="dark"] .jdropdown-header,
