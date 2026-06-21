@@ -456,10 +456,14 @@
                  $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
              }
 
-            var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
-                data: initialData,
-                tableOverflow: true,
-                tableHeight: '70vh',
+             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
+                 data: initialData,
+                 tableOverflow: true,
+                 onselection: function(instance, x1, y1, x2, y2, origin) {
+                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                     handleSelection(sheetInstance, x1, y1, x2, y2);
+                 },
+                 tableHeight: '70vh',
                 tableWidth: '100%',
                 search: false,
                 columns: [
@@ -516,9 +520,10 @@
                     }
 
                     // Auto insert row if last row is filled
-                    var totalRows = instance.rows.length;
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    var totalRows = sheetInstance.options.data.length;
                     if (parseInt(y) === totalRows - 1) {
-                        var rowData = instance.getRowData(y);
+                        var rowData = sheetInstance.getRowData(y);
                         var hasData = false;
                         for (var i = 1; i < rowData.length; i++) {
                             if (rowData[i] !== null && rowData[i] !== '') {
@@ -527,7 +532,7 @@
                             }
                         }
                         if (hasData) {
-                            instance.insertRow();
+                            sheetInstance.insertRow();
                         }
                     }
                 },
@@ -866,8 +871,155 @@
                         }
                     }
                 }
-                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
+                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
+             }
+
+            // Selection summary helper
+            function handleSelection(instance, x1, y1, x2, y2) {
+                let startX = Math.min(x1, x2);
+                let endX = Math.max(x1, x2);
+                let startY = Math.min(y1, y2);
+                let endY = Math.max(y1, y2);
+
+                let sum = 0;
+                let count = 0;
+                let numericCount = 0;
+                let hasCurrency = false;
+
+                // Check if any of the selected columns has currency title/formatting
+                for (let col = startX; col <= endX; col++) {
+                    let colHeader = instance.options.columns[col];
+                    if (colHeader && colHeader.title) {
+                        let title = colHeader.title.toLowerCase();
+                        if (title.includes('rp') || title.includes('harga') || title.includes('nominal') || title.includes('upah')) {
+                            hasCurrency = true;
+                        }
+                    }
+                }
+
+                let rows = $('#spreadsheet > div > table > tbody > tr');
+                for (let row = startY; row <= endY; row++) {
+                    // Check if row is visible (skip filtered out rows)
+                    let rowEl = rows.eq(row);
+                    if (rowEl.length > 0 && !rowEl.is(':visible')) {
+                        continue;
+                    }
+
+                    for (let col = startX; col <= endX; col++) {
+                        let valStr = instance.getValueFromCoords(col, row);
+                        if (valStr !== null && valStr !== undefined && valStr !== '') {
+                            // Strip currency signs, spaces, and commas
+                            let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                            if (cleanValStr.trim() === '') continue;
+                            let val = parseFloat(cleanValStr);
+                            if (!isNaN(val)) {
+                                sum += val;
+                                numericCount++;
+                            }
+                            count++;
+                        }
+                    }
+                }
+
+                // Show only if selection is more than a single cell and we found numbers
+                if (numericCount > 0 && (endX - startX > 0 || endY - startY > 0)) {
+                    let avg = sum / numericCount;
+                    
+                    // Format output
+                    let sumText, avgText;
+                    if (hasCurrency) {
+                        sumText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum));
+                        avgText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(avg));
+                    } else {
+                        sumText = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(sum);
+                        avgText = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(avg);
+                    }
+
+                    showFloatingSummary(avgText, numericCount, sumText);
+                } else {
+                    hideFloatingSummary();
+                }
             }
-        });
+
+            function showFloatingSummary(avg, count, sum) {
+                let summaryDiv = $('#spreadsheet-selection-summary');
+                if (summaryDiv.length === 0) {
+                    summaryDiv = $(`
+                        <div id="spreadsheet-selection-summary" class="position-fixed bottom-0 start-50 translate-middle-x mb-10 shadow-lg d-flex align-items-center gap-4 px-6 py-3 rounded-pill" style="transition: all 0.25s ease-in-out; z-index: 1050; opacity: 0; transform: translate(-50%, 20px) scale(0.95); pointer-events: none;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Rata-rata:</span>
+                                <span class="fw-bold fs-7 sum-val-avg"></span>
+                            </div>
+                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah Sel:</span>
+                                <span class="fw-bold fs-7 sum-val-count"></span>
+                            </div>
+                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah:</span>
+                                <span class="fw-bold fs-6 sum-val-sum"></span>
+                            </div>
+                        </div>
+                    `);
+                    $('body').append(summaryDiv);
+                }
+
+                // Check Dark Mode
+                const isDark = $('html').attr('data-bs-theme') === 'dark' || $('body').attr('data-bs-theme') === 'dark';
+                if (isDark) {
+                    summaryDiv.css({
+                        'background-color': 'rgba(30, 30, 45, 0.95)',
+                        'border': '1px solid rgba(255, 255, 255, 0.1)',
+                        'color': '#ffffff'
+                    });
+                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#ffffff');
+                    summaryDiv.find('.sum-val-sum').css('color', '#50cd89'); // green
+                    summaryDiv.find('.vr').css('background-color', 'rgba(255, 255, 255, 0.15)');
+                } else {
+                    summaryDiv.css({
+                        'background-color': 'rgba(255, 255, 255, 0.95)',
+                        'border': '1px solid rgba(0, 0, 0, 0.1)',
+                        'color': '#181C32'
+                    });
+                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#181C32');
+                    summaryDiv.find('.sum-val-sum').css('color', '#009EF7'); // primary blue
+                    summaryDiv.find('.vr').css('background-color', 'rgba(0, 0, 0, 0.1)');
+                }
+
+                summaryDiv.find('.sum-val-avg').text(avg);
+                summaryDiv.find('.sum-val-count').text(count);
+                summaryDiv.find('.sum-val-sum').text(sum);
+
+                summaryDiv.show();
+                // Trigger reflow
+                summaryDiv[0].offsetHeight;
+                summaryDiv.css({
+                    'opacity': '1',
+                    'transform': 'translate(-50%, 0) scale(1)'
+                });
+            }
+
+            function hideFloatingSummary() {
+                let summaryDiv = $('#spreadsheet-selection-summary');
+                if (summaryDiv.length > 0 && summaryDiv.css('opacity') !== '0') {
+                    summaryDiv.css({
+                        'opacity': '0',
+                        'transform': 'translate(-50%, 20px) scale(0.95)'
+                    });
+                    setTimeout(function() {
+                        if (summaryDiv.css('opacity') === '0') {
+                            summaryDiv.hide();
+                        }
+                    }, 250);
+                }
+            }
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#spreadsheet').length) {
+                    hideFloatingSummary();
+                }
+            });
+         });
     </script>
 @endpush
