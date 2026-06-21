@@ -153,23 +153,99 @@
             color: #ffffff !important;
         }
 
-        /* jSuites Dropdown responsive & theme overrides */
-        .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header,
-        .jdropdown-picker.jdropdown-focus .jdropdown-container-header {
-            height: auto !important;
-            padding: 10px !important;
+        /* Mobile Bottom Sheet Layout for jSuites Dropdown Searchbar */
+        .jdropdown-searchbar.jdropdown-focus {
+            position: fixed !important;
+            top: 0px !important;
+            left: 0px !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: transparent !important; /* Transparent wrapper to allow full-screen backdrop click */
+            z-index: 9001 !important;
+            overflow: hidden !important;
         }
-        .jdropdown-searchbar.jdropdown-focus .jdropdown-header,
-        .jdropdown-picker.jdropdown-focus .jdropdown-header {
+
+        /* Show full screen backdrop */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-backdrop {
+            display: block !important;
+            background-color: rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Make container act as the bottom-sheet itself */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-container {
+            position: absolute !important;
+            bottom: 0px !important;
+            top: auto !important;
+            left: 0px !important;
+            width: 100% !important;
+            height: 50vh !important; /* Setengah layar */
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            box-shadow: 0px -5px 15px rgba(0, 0, 0, 0.15) !important;
+            overflow: hidden !important;
+            display: block !important;
+            margin-top: 0px !important;
+        }
+
+        /* Position the search header at the top of the bottom sheet */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header {
+            position: absolute !important;
+            top: 0px !important;
+            left: 0px !important;
+            width: 100% !important;
+            height: 56px !important;
+            z-index: 9002 !important;
+            padding: 10px !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,.05) !important;
+        }
+
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-header {
             height: 36px !important;
             line-height: 36px !important;
             padding-left: 30px !important;
             padding-right: 60px !important;
+            margin: 0px !important;
+            width: calc(100% - 70px) !important; /* Make space for Done button */
+            display: inline-block !important;
         }
-        .jdropdown-searchbar.jdropdown-focus .jdropdown-close,
-        .jdropdown-picker.jdropdown-focus .jdropdown-close {
-            line-height: 56px !important;
+
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-close {
+            position: absolute !important;
+            top: 0px !important;
+            right: 0px !important;
             height: 56px !important;
+            line-height: 56px !important;
+            padding: 0 15px !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+        }
+
+        /* Make the content list scrollable inside the bottom sheet */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-content {
+            position: absolute !important;
+            top: 56px !important;
+            bottom: 0px !important;
+            left: 0px !important;
+            width: 100% !important;
+            height: calc(100% - 56px) !important;
+            overflow-y: auto !important;
+            max-height: none !important;
+            margin-top: 0px !important;
+            padding-bottom: 20px !important;
+        }
+
+        /* Mobile Bottom Sheet Layout for JSuites standard picker */
+        .jdropdown-picker.jdropdown-focus .jdropdown-container {
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            box-shadow: 0px -5px 15px rgba(0, 0, 0, 0.15) !important;
+            height: 40vh !important;
+            overflow: hidden !important;
+        }
+        .jdropdown-picker.jdropdown-focus .jdropdown-content {
+            height: 100% !important;
+            max-height: none !important;
+            overflow-y: auto !important;
         }
 
         .jdropdown-container,
