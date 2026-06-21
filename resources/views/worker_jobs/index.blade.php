@@ -164,6 +164,24 @@
         }
 
         /* jSuites Dropdown responsive & theme overrides */
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-container-header,
+        .jdropdown-picker.jdropdown-focus .jdropdown-container-header {
+            height: auto !important;
+            padding: 10px !important;
+        }
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-header,
+        .jdropdown-picker.jdropdown-focus .jdropdown-header {
+            height: 36px !important;
+            line-height: 36px !important;
+            padding-left: 30px !important;
+            padding-right: 60px !important;
+        }
+        .jdropdown-searchbar.jdropdown-focus .jdropdown-close,
+        .jdropdown-picker.jdropdown-focus .jdropdown-close {
+            line-height: 56px !important;
+            height: 56px !important;
+        }
+
         .jdropdown-container,
         .jdropdown-picker,
         .jdropdown-picker .jdropdown-container,
