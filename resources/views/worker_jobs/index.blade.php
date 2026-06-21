@@ -301,6 +301,21 @@
             // Store the handler reference for re-assignment after programmatic deletes
             var workerJobBeforeDeleteRow = spreadsheet.options.onbeforedeleterow;
 
+            // Intercept keyboard delete / backspace to prevent browser's native confirm
+            document.addEventListener('keydown', function(e) {
+                if ((e.which === 46 || e.which === 8) && spreadsheet && spreadsheet.selectedRow) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var selectedRows = spreadsheet.getSelectedRows();
+                    if (selectedRows && selectedRows.length > 0) {
+                        var rowsToDelete = [...selectedRows].sort(function(a, b) { return b - a; });
+                        rowsToDelete.forEach(function(rowNum) {
+                            spreadsheet.deleteRow(parseInt(rowNum));
+                        });
+                    }
+                }
+            }, true);
+
             // Initial total calculation
             updateTotal();
 
