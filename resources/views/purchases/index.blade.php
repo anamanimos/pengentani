@@ -687,10 +687,23 @@
                     var data = spreadsheet.getData();
                     var validData = [];
                     var rowMapping = [];
+                    var hasIncompleteRow = false;
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
+                        
+                        var hasAnyData = false;
+                        for(var j=1; j<row.length; j++) {
+                            if (row[j] !== null && row[j] !== '') {
+                                hasAnyData = true;
+                                break;
+                            }
+                        }
+
                         if (row[0] || (row[1] && row[2])) {
+                            if (!row[1] || !row[2]) {
+                                hasIncompleteRow = true;
+                            }
                             validData.push({
                                 index: i, // We use this in backend
                                 id: row[0] || null,
@@ -705,12 +718,21 @@
                                 total_price: row[9] || null
                             });
                             rowMapping.push(i);
+                        } else if (hasAnyData) {
+                            hasIncompleteRow = true;
                         }
                     }
 
-                    if (validData.length === 0) return;
+                    if (validData.length === 0) {
+                        if (hasIncompleteRow) {
+                            $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                            $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                        }
+                        return;
+                    }
 
                     $('#auto-save-status').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
+                    $('#auto-save-status-fs').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
 
                     $.ajax({
                         url: '{{ route("purchases.store") }}',
@@ -720,6 +742,14 @@
                             data: validData
                         },
                         success: function(response) {
+                            if (hasIncompleteRow) {
+                                $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                                $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                            } else {
+                                $('#auto-save-status').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
+                                $('#auto-save-status-fs').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
+                            }
+
                             if (response.savedData) {
                                 for(var j=0; j<response.savedData.length; j++) {
                                     var gridRowIndex = response.savedData[j].index; // Use the index passed back directly
@@ -730,15 +760,16 @@
                                     }
                                 }
                             }
-                            $('#auto-save-status').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan otomatis</span>').removeClass('badge-light-warning').addClass('badge-light-success');
                             setTimeout(() => {
-                                if($('#auto-save-status .status-text').text() === 'Tersimpan otomatis') {
+                                if (!hasIncompleteRow) {
                                     $('#auto-save-status').addClass('d-none');
+                                    $('#auto-save-status-fs').addClass('d-none');
                                 }
                             }, 3000);
                         },
                         error: function(xhr) {
-                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning').addClass('badge-light-danger');
+                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
+                            $('#auto-save-status-fs').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
                         }
                     });
                 }, 1500);

@@ -717,10 +717,25 @@
                     if (!spreadsheet) return;
                     var data = spreadsheet.getData();
                     var validData = [];
+                    var hasIncompleteRow = false;
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
+                        
+                        var hasAnyData = false;
+                        for(var j=1; j<row.length; j++) {
+                            if (row[j] !== null && row[j] !== '') {
+                                hasAnyData = true;
+                                break;
+                            }
+                        }
+
                         if (row[0] || (row[1] && row[2] && row[3] && row[4])) { // Save if has ID or all required fields are filled
+                            // If it has ID but missing required fields, backend will skip it, but we let it pass here or consider incomplete?
+                            // Wait, if it has ID but missing required fields, it's incomplete!
+                            if (!row[1] || !row[2] || !row[3] || !row[4]) {
+                                hasIncompleteRow = true;
+                            }
                             var cleanWage = row[7] ? row[7].toString().replace(/\D/g, '') : null;
                             validData.push({
                                 index: i,
@@ -734,12 +749,21 @@
                                 wage: cleanWage,
                                 status: row[8] || null
                             });
+                        } else if (hasAnyData) {
+                            hasIncompleteRow = true;
                         }
                     }
 
-                    if (validData.length === 0) return;
+                    if (validData.length === 0) {
+                        if (hasIncompleteRow) {
+                            $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                            $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                        }
+                        return;
+                    }
 
                     $('#auto-save-status').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
+                    $('#auto-save-status-fs').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
 
                     $.ajax({
                         url: '{{ route("worker-jobs.store") }}',
@@ -748,26 +772,30 @@
                             _token: '{{ csrf_token() }}',
                             data: validData
                         },
-                        success: function(response) {
-                            if (response.savedData) {
-                                for(var j=0; j<response.savedData.length; j++) {
-                                    var gridRowIndex = response.savedData[j].index;
-                                    var newId = response.savedData[j].id;
-                                    var currentId = spreadsheet.getValueFromCoords(0, gridRowIndex);
-                                    if (!currentId) {
-                                        spreadsheet.setValueFromCoords(0, gridRowIndex, newId, true);
-                                    }
-                                }
+                        success: function(res) {
+                            if (hasIncompleteRow) {
+                                $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                                $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
+                            } else {
+                                $('#auto-save-status').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
+                                $('#auto-save-status-fs').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
                             }
-                            $('#auto-save-status').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan otomatis</span>').removeClass('badge-light-warning').addClass('badge-light-success');
-                            setTimeout(() => {
-                                if($('#auto-save-status .status-text').text() === 'Tersimpan otomatis') {
+                            
+                            if (res.savedData) {
+                                res.savedData.forEach(function(item) {
+                                    spreadsheet.setValueFromCoords(0, item.index, item.id, true);
+                                });
+                            }
+                            setTimeout(function() {
+                                if (!hasIncompleteRow) {
                                     $('#auto-save-status').addClass('d-none');
+                                    $('#auto-save-status-fs').addClass('d-none');
                                 }
                             }, 3000);
                         },
                         error: function(xhr) {
-                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning').addClass('badge-light-danger');
+                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
+                            $('#auto-save-status-fs').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
                         }
                     });
                 }, 1500);
