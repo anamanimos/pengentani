@@ -531,8 +531,8 @@
                 tableWidth: '100%',
                 columns: [
                     { type: 'hidden', title: 'ID' },
-                    { type: 'calendar', title: 'Tanggal', width: 120, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Pertanian', width: 250, source: pertanians },
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 250, source: pertanians },
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
                     { type: 'text', title: 'Deskripsi', width: 300 },
@@ -674,6 +674,7 @@
                     var validData = [];
                     var rowMapping = []; // Tracks which spreadsheet row corresponds to which validData item
                     var hasIncompleteRow = false;
+                    var styles = {};
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
@@ -686,9 +687,19 @@
                             }
                         }
 
+                        var requiredCols = [1, 2];
+
                         if (row[0] || (row[1] && row[2])) { // Save if has ID or required fields are filled
                             if (!row[1] || !row[2]) {
                                 hasIncompleteRow = true;
+                                requiredCols.forEach(function(colIdx) {
+                                    if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
+                            } else {
+                                requiredCols.forEach(function(colIdx) {
+                                    styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
                             }
                             let cleanAmount = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
                             validData.push({
@@ -704,8 +715,18 @@
                             rowMapping.push(i);
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
+                            requiredCols.forEach(function(colIdx) {
+                                if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
+                        } else {
+                            requiredCols.forEach(function(colIdx) {
+                                styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
                         }
                     }
+
+                    spreadsheet.setStyle(styles);
 
                     if (validData.length === 0) {
                         if (hasIncompleteRow) {

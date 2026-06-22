@@ -530,8 +530,8 @@
                 search: false,
                 columns: [
                     { type: 'hidden', title: 'ID' }, // 0
-                    { type: 'calendar', title: 'Tanggal', width: 120, options: { format: 'YYYY-MM-DD' } }, // 1
-                    { type: 'dropdown', title: 'Pertanian', width: 220, source: pertanians }, // 2
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } }, // 1
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians }, // 2
                     { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true, options: { newOptions: true } }, // 3
                     { type: 'text', title: 'No Nota', width: 120 }, // 4
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true, options: { newOptions: true } }, // 5
@@ -688,6 +688,7 @@
                     var validData = [];
                     var rowMapping = [];
                     var hasIncompleteRow = false;
+                    var styles = {};
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
@@ -700,9 +701,19 @@
                             }
                         }
 
+                        var requiredCols = [1, 2];
+
                         if (row[0] || (row[1] && row[2])) {
                             if (!row[1] || !row[2]) {
                                 hasIncompleteRow = true;
+                                requiredCols.forEach(function(colIdx) {
+                                    if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
+                            } else {
+                                requiredCols.forEach(function(colIdx) {
+                                    styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
                             }
                             validData.push({
                                 index: i, // We use this in backend
@@ -720,8 +731,18 @@
                             rowMapping.push(i);
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
+                            requiredCols.forEach(function(colIdx) {
+                                if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
+                        } else {
+                            requiredCols.forEach(function(colIdx) {
+                                styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
                         }
                     }
+
+                    spreadsheet.setStyle(styles);
 
                     if (validData.length === 0) {
                         if (hasIncompleteRow) {

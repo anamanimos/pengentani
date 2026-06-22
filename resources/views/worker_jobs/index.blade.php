@@ -549,10 +549,10 @@
                 search: false,
                 columns: [
                     { type: 'hidden', title: 'ID' },
-                    { type: 'calendar', title: 'Tanggal', width: 140, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Pertanian', width: 200, source: pertanians },
-                    { type: 'dropdown', title: 'Pekerja', width: 200, source: workers, autocomplete: true, options: { newOptions: true } },
-                    { type: 'dropdown', title: 'Kategori Pekerjaan', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 140, options: { format: 'YYYY-MM-DD' } },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians },
+                    { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true, options: { newOptions: true } },
+                    { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
@@ -718,6 +718,7 @@
                     var data = spreadsheet.getData();
                     var validData = [];
                     var hasIncompleteRow = false;
+                    var styles = {};
                     
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
@@ -730,11 +731,21 @@
                             }
                         }
 
+                        var requiredCols = [1, 2, 3, 4];
+
                         if (row[0] || (row[1] && row[2] && row[3] && row[4])) { // Save if has ID or all required fields are filled
                             // If it has ID but missing required fields, backend will skip it, but we let it pass here or consider incomplete?
                             // Wait, if it has ID but missing required fields, it's incomplete!
                             if (!row[1] || !row[2] || !row[3] || !row[4]) {
                                 hasIncompleteRow = true;
+                                requiredCols.forEach(function(colIdx) {
+                                    if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
+                            } else {
+                                requiredCols.forEach(function(colIdx) {
+                                    styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                });
                             }
                             var cleanWage = row[7] ? row[7].toString().replace(/\D/g, '') : null;
                             validData.push({
@@ -751,8 +762,18 @@
                             });
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
+                            requiredCols.forEach(function(colIdx) {
+                                if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
+                        } else {
+                            requiredCols.forEach(function(colIdx) {
+                                styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                            });
                         }
                     }
+
+                    spreadsheet.setStyle(styles);
 
                     if (validData.length === 0) {
                         if (hasIncompleteRow) {
