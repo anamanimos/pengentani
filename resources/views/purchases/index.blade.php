@@ -565,14 +565,27 @@
                                 // Strip Rp, IDR, spaces
                                 val = val.replace(/Rp|IDR/gi, '').trim();
                                 
-                                // Format Indonesia: 150.000,00 atau 150.000 atau 150,00
-                                if (val.includes(',') && val.includes('.')) {
-                                    val = val.replace(/\./g, ''); // hapus pemisah ribuan (titik)
+                                // Determine decimal separator
+                                var cleanVal = val;
+                                if (val.includes('.') && val.includes(',')) {
+                                    var lastDot = val.lastIndexOf('.');
+                                    var lastComma = val.lastIndexOf(',');
+                                    if (lastComma > lastDot) {
+                                        cleanVal = val.replace(/\./g, '').replace(',', '.');
+                                    } else {
+                                        cleanVal = val.replace(/,/g, '');
+                                    }
                                 } else if (val.includes(',')) {
-                                    // Hanya koma (misal 150,00), biarkan karena decimal kita adalah koma
+                                    if (val.match(/,\d{1,2}$/)) cleanVal = val.replace(',', '.');
+                                    else cleanVal = val.replace(/,/g, '');
                                 } else if (val.includes('.')) {
-                                    // Hanya titik (misal 150.000), ini berarti pemisah ribuan
-                                    val = val.replace(/\./g, '');
+                                    if (val.match(/\.\d{1,2}$/)) cleanVal = val;
+                                    else cleanVal = val.replace(/\./g, '');
+                                }
+
+                                var num = parseFloat(cleanVal);
+                                if (!isNaN(num)) {
+                                    val = Math.round(num).toString();
                                 }
                             }
                             processedCols.push(val);
