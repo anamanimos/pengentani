@@ -31,13 +31,11 @@ class IncomeController extends Controller
         $request->validate([
             'data' => 'required|array',
             'data.*.id' => 'nullable|exists:incomes,id',
-            'data.*.pertanian_id' => 'nullable|exists:pertanians,id',
             'data.*.date' => 'nullable|date',
             'data.*.type' => 'nullable|in:Panen,Lain-lain',
             'data.*.description' => 'nullable|string|max:255',
             'data.*.qty' => 'nullable',
             'data.*.unit_price' => 'nullable',
-            'data.*.tengkulak_id' => 'nullable|exists:tengkulaks,id',
             'data.*.transaction_proof_id' => 'nullable|exists:transaction_proofs,id',
         ]);
 
@@ -56,32 +54,58 @@ class IncomeController extends Controller
                 $unitPrice = (float) $unitPriceStr;
                 $amount = $qty * $unitPrice;
 
+                $pertanianId = $row['pertanian_id'];
+                if (!is_numeric($pertanianId)) {
+                    $searchName = trim($pertanianId);
+                    if (preg_match('/\]\s*-\s*(.*)/', $searchName, $matches)) {
+                        $searchName = trim($matches[1]);
+                    }
+                    $pertanian = \App\Models\Pertanian::where('user_id', \Illuminate\Support\Facades\Auth::id())
+                        ->where('name', 'like', '%' . $searchName . '%')
+                        ->first();
+                    if (!$pertanian) {
+                        \Illuminate\Support\Facades\DB::rollBack();
+                        return response()->json(['message' => 'Pertanian tidak ditemukan: ' . htmlspecialchars(substr($row['pertanian_id'], 0, 50))], 422);
+                    }
+                    $pertanianId = $pertanian->id;
+                }
+
+                $tengkulakId = $row['tengkulak_id'] ?? null;
+                if (!empty($tengkulakId) && !is_numeric($tengkulakId)) {
+                    $newTengkulak = \App\Models\Tengkulak::firstOrCreate([
+                        'name' => trim($tengkulakId)
+                    ]);
+                    $tengkulakId = $newTengkulak->id;
+                }
+
+                $type = $row['type'] ?? null;
+
                 if (!empty($row['id'])) {
                     $income = \App\Models\Income::find($row['id']);
                     if ($income) {
                         $income->update([
-                            'pertanian_id' => $row['pertanian_id'],
+                            'pertanian_id' => $pertanianId,
                             'date' => $row['date'],
-                            'type' => $row['type'],
+                            'type' => $type,
                             'description' => $row['description'] ?? null,
                             'qty' => $qty,
                             'unit_price' => $unitPrice,
                             'amount' => $amount,
-                            'tengkulak_id' => $row['tengkulak_id'] ?? null,
+                            'tengkulak_id' => $tengkulakId,
                             'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
                         $savedData[] = ['index' => $row['index'], 'id' => $income->id];
                     }
                 } else {
                     $income = \App\Models\Income::create([
-                        'pertanian_id' => $row['pertanian_id'],
+                        'pertanian_id' => $pertanianId,
                         'date' => $row['date'],
-                        'type' => $row['type'],
+                        'type' => $type,
                         'description' => $row['description'] ?? null,
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'amount' => $amount,
-                        'tengkulak_id' => $row['tengkulak_id'] ?? null,
+                        'tengkulak_id' => $tengkulakId,
                         'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
                     $savedData[] = ['index' => $row['index'], 'id' => $income->id];

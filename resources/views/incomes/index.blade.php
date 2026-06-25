@@ -547,6 +547,7 @@
                         var processedCols = [];
                         for (var col = 0; col < cols.length; col++) {
                             var targetCol = parseInt(x) + col;
+                            var targetCol = parseInt(x) + col;
                             var colOptions = sheetInstance.options.columns[targetCol];
                             var val = String(cols[col]);
 
@@ -554,16 +555,27 @@
                                 // Strip Rp, IDR, spaces
                                 val = val.replace(/Rp|IDR/gi, '').trim();
                                 
-                                // Format Indonesia: 150.000,00 atau 150.000 atau 150,00
-                                if (val.includes(',') && val.includes('.')) {
-                                    val = val.replace(/\./g, ''); // hapus pemisah ribuan (titik)
-                                    val = val.replace(/,/g, '.'); // jadikan koma sebagai desimal
+                                // Determine decimal separator
+                                var cleanVal = val;
+                                if (val.includes('.') && val.includes(',')) {
+                                    var lastDot = val.lastIndexOf('.');
+                                    var lastComma = val.lastIndexOf(',');
+                                    if (lastComma > lastDot) {
+                                        cleanVal = val.replace(/\./g, '').replace(',', '.');
+                                    } else {
+                                        cleanVal = val.replace(/,/g, '');
+                                    }
                                 } else if (val.includes(',')) {
-                                    // Hanya koma (misal 150,00)
-                                    val = val.replace(/,/g, '.');
+                                    if (val.match(/,\d{1,2}$/)) cleanVal = val.replace(',', '.');
+                                    else cleanVal = val.replace(/,/g, '');
                                 } else if (val.includes('.')) {
-                                    // Hanya titik (misal 150.000)
-                                    val = val.replace(/\./g, '');
+                                    if (val.match(/\.\d{1,2}$/)) cleanVal = val;
+                                    else cleanVal = val.replace(/\./g, '');
+                                }
+
+                                var num = parseFloat(cleanVal);
+                                if (!isNaN(num)) {
+                                    val = Math.round(num).toString();
                                 }
                             }
                             processedCols.push(val);
@@ -613,7 +625,7 @@
                         var pClean = String(price).replace(/[^0-9.-]/g, '');
                         var qVal = parseFloat(qClean) || 0;
                         var pVal = parseFloat(pClean) || 0;
-                        sheetInstance.setValueFromCoords(8, y, qVal * pVal, false);
+                        sheetInstance.setValueFromCoords(8, y, qVal * pVal, true);
                     }
                     updateTotal();
                     autoSave();
@@ -747,8 +759,29 @@
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
                         
+                        var pertanianVal = row[2];
+                        if (!pertanianVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                        }
+
+                        var tengkulakVal = row[3];
+                        if (!tengkulakVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') tengkulakVal = cellEl.innerText.trim();
+                        }
+
+                        var typeVal = row[4];
+                        if (!typeVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') typeVal = cellEl.innerText.trim();
+                        }
+
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
+                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
+                            if (j === 3 && tengkulakVal) { hasAnyData = true; break; }
+                            if (j === 4 && typeVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
@@ -757,11 +790,12 @@
 
                         var requiredCols = [1, 2];
 
-                        if (row[0] || (row[1] && row[2])) { // Save if has ID or required fields are filled
-                            if (!row[1] || !row[2]) {
+                        if (row[0] || (row[1] && pertanianVal)) {
+                            if (!row[1] || !pertanianVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    var val = colIdx === 2 ? pertanianVal : row[colIdx];
+                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
@@ -769,16 +803,18 @@
                                     styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             }
-                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
-                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^\d.-]/g, '') : null;
-                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^\d.-]/g, '') : null;
+
+                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                            
                             validData.push({
                                 index: i,
                                 id: row[0] || null,
                                 date: row[1] || null,
-                                pertanian_id: row[2] || null,
-                                tengkulak_id: row[3] || null,
-                                type: row[4] || null,
+                                pertanian_id: pertanianVal || null,
+                                tengkulak_id: tengkulakVal || null,
+                                type: typeVal || null,
                                 description: row[5] || null,
                                 qty: cleanQty,
                                 unit_price: cleanUnitPrice,
@@ -815,10 +851,11 @@
                     $.ajax({
                         url: '{{ route("incomes.store") }}',
                         type: 'POST',
-                        data: {
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             _token: '{{ csrf_token() }}',
                             data: validData
-                        },
+                        }),
                         success: function(response) {
                             if (hasIncompleteRow) {
                                 $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
