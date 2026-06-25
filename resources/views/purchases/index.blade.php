@@ -1058,12 +1058,20 @@
                 let filteredTotal = 0;
                 for(let i = 0; i < data.length; i++) {
                     if(rows.eq(i).is(':visible')) {
-                        let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                        let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
-                        let qty = parseFloat(qtyStr);
-                        let price = parseFloat(priceStr);
-                        if(!isNaN(qty) && !isNaN(price)) {
-                            filteredTotal += qty * price;
+                        // Cek soft delete untuk konsistensi
+                        let isSoftDeleted = false;
+                        if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7]) {
+                            isSoftDeleted = true;
+                        }
+
+                        if (!isSoftDeleted) {
+                            let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
+                            let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                            let qty = parseFloat(qtyStr);
+                            let price = parseFloat(priceStr);
+                            if(!isNaN(qty) && !isNaN(price)) {
+                                filteredTotal += qty * price;
+                            }
                         }
                     }
                 }
