@@ -623,10 +623,35 @@
                     </div>
                 </div>
 
-                {{-- Pencarian --}}
-                <div class="d-flex align-items-center position-relative my-1 mb-5">
-                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4"><span class="path1"></span><span class="path2"></span></i>
-                    <input type="text" id="withdrawal_search" class="form-control form-control-solid w-250px ps-12" placeholder="Cari penarikan..." />
+                {{-- Filter & Pencarian --}}
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-5">
+                    <div class="position-relative my-1">
+                        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y"><span class="path1"></span><span class="path2"></span></i>
+                        <input type="text" id="withdrawal_search" class="form-control form-control-solid w-200px ps-12" placeholder="Cari penarikan..." />
+                    </div>
+                    <div class="my-1">
+                        <input type="text" id="withdrawal_daterange" class="form-control form-control-solid w-200px" placeholder="Filter Tanggal" />
+                    </div>
+                    <div class="my-1">
+                        <select id="withdrawal_role_filter" class="form-select form-select-solid w-150px" data-control="select2" data-hide-search="true" data-placeholder="Filter Peran">
+                            <option value=""></option>
+                            <option value="all">Semua Peran</option>
+                            <option value="admin">Admin</option>
+                            <option value="pengelola">Pengelola</option>
+                            <option value="investor">Investor</option>
+                        </select>
+                    </div>
+                    <div class="my-1">
+                        <select id="withdrawal_user_filter" class="form-select form-select-solid w-200px" data-control="select2" data-placeholder="Filter Penerima">
+                            <option value=""></option>
+                            <option value="all">Semua Penerima</option>
+                            @foreach($withdrawals->unique('user_id') as $wd)
+                                @if($wd->user)
+                                    <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Tabel Penarikan --}}
@@ -644,7 +669,7 @@
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
                             @forelse($withdrawals as $withdrawal)
-                            <tr>
+                            <tr data-date="{{ $withdrawal->date }}">
                                 <td>{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
                                 <td>{{ $withdrawal->user->name ?? '-' }}</td>
                                 <td>
@@ -917,10 +942,75 @@
                 ]
             });
 
-            // Search filter
+            // Filter logic
+            $("#withdrawal_daterange").flatpickr({
+                mode: "range",
+                dateFormat: "Y-m-d",
+                onChange: function() {
+                    withdrawalTable.draw();
+                }
+            });
+
+            $('#withdrawal_role_filter, #withdrawal_user_filter').on('change', function() {
+                withdrawalTable.draw();
+            });
+
             $('#withdrawal_search').on('keyup', function () {
                 withdrawalTable.search(this.value).draw();
             });
+
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'kt_table_withdrawals') {
+                        return true;
+                    }
+
+                    var searchDate = $('#withdrawal_daterange').val();
+                    var searchRole = $('#withdrawal_role_filter').val();
+                    var searchUser = $('#withdrawal_user_filter').val();
+
+                    var rawDate = $(settings.aoData[dataIndex].nTr).data('date');
+                    var rowUser = data[1];
+                    var rowRole = data[2].toLowerCase();
+
+                    // Role filter
+                    if (searchRole && searchRole !== 'all') {
+                        if (!rowRole.includes(searchRole.toLowerCase())) {
+                            return false;
+                        }
+                    }
+
+                    // User filter
+                    if (searchUser && searchUser !== 'all') {
+                        if (rowUser !== searchUser) {
+                            return false;
+                        }
+                    }
+
+                    // Date range filter
+                    if (searchDate && rawDate) {
+                        var rowD = new Date(rawDate);
+                        rowD.setHours(0,0,0,0);
+
+                        if (searchDate.includes(' to ')) {
+                            var dates = searchDate.split(' to ');
+                            var minDate = new Date(dates[0]); minDate.setHours(0,0,0,0);
+                            var maxDate = new Date(dates[1]); maxDate.setHours(0,0,0,0);
+                            
+                            if (rowD < minDate || rowD > maxDate) {
+                                return false;
+                            }
+                        } else {
+                            var filterDate = new Date(searchDate); filterDate.setHours(0,0,0,0);
+                            if (filterDate.getTime() !== rowD.getTime()) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            );
 
             // Handle Add Withdrawal
             $('#form_add_withdrawal').on('submit', function(e) {
