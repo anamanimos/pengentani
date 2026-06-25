@@ -1125,6 +1125,7 @@
                     if(match) rows.eq(i).show();
                     else rows.eq(i).hide();
                 }
+            }
             // Selection summary helper removed because there are no numeric fields anymore.
 
             // Fullscreen toggle
