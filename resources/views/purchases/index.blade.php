@@ -543,6 +543,28 @@
              var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                  data: initialData,
                  tableOverflow: true,
+                 onbeforepaste: function(instance, data, x, y) {
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    if (!data) return data;
+                    for (var row = 0; row < data.length; row++) {
+                        for (var col = 0; col < data[row].length; col++) {
+                            var targetCol = parseInt(x) + col;
+                            var colOptions = sheetInstance.options.columns[targetCol];
+                            if (colOptions && colOptions.type === 'numeric') {
+                                var val = String(data[row][col]);
+                                // Strip Rp, IDR, spaces
+                                val = val.replace(/Rp|IDR/gi, '').replace(/\s/g, '');
+                                // If it has comma (like 15.000,00)
+                                if (val.includes(',')) {
+                                    val = val.replace(/\./g, ''); // remove dots
+                                    val = val.replace(/,/g, '.'); // comma to dot
+                                }
+                                data[row][col] = val;
+                            }
+                        }
+                    }
+                    return data;
+                },
                  onselection: function(instance, x1, y1, x2, y2, origin) {
                      var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                      handleSelection(sheetInstance, x1, y1, x2, y2);
