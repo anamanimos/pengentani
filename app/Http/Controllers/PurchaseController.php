@@ -37,13 +37,12 @@ class PurchaseController extends Controller
                     $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : null,                   // 1: Tanggal
                     $p->pertanian_id,           // 2: Pertanian
                     $p->store_id,               // 3: Toko / Vendor
-                    $p->invoice_number,         // 4: No Nota
-                    $item->purchase_category_id,// 5: Kategori Barang
-                    $item->description,         // 6: Deskripsi
-                    (float) $item->qty,                 // 7: Qty
-                    (float) $item->unit_price,          // 8: Harga Satuan
-                    (float) $item->total_price,         // 9: Total (Read-only view)
-                    $item->transaction_proof_id         // 10: Bukti Transaksi
+                    $item->purchase_category_id,// 4: Kategori Barang
+                    $item->description,         // 5: Deskripsi
+                    (float) $item->qty,                 // 6: Qty
+                    (float) $item->unit_price,          // 7: Harga Satuan
+                    (float) $item->total_price,         // 8: Total (Read-only view)
+                    $item->transaction_proof_id         // 9: Bukti Transaksi
                 ];
                 $totalPengeluaran += $item->total_price;
             }

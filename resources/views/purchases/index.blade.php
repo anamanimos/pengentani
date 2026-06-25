@@ -508,19 +508,19 @@
                 let data = spreadsheet.getData();
                  let rows = $('#spreadsheet > div > table > tbody > tr');
                  let total = 0;
-                 for(let i=0; i<data.length; i++) {
-                     let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                     let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
-                     let qty = parseFloat(qtyStr);
-                     let price = parseFloat(priceStr);
-                     if(!isNaN(qty) && !isNaN(price)) {
-                         let rowTotal = qty * price;
-                         // update row total cell if empty or different
-                         let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
-                         let currentTotal = parseFloat(currentTotalStr);
-                         if(currentTotal !== rowTotal) {
-                             spreadsheet.setValueFromCoords(9, i, rowTotal, true);
-                         }
+                for(let i=0; i<data.length; i++) {
+                    let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
+                    let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                    let qty = parseFloat(qtyStr);
+                    let price = parseFloat(priceStr);
+                    if(!isNaN(qty) && !isNaN(price)) {
+                        let rowTotal = qty * price;
+                        // update row total cell if empty or different
+                        let currentTotalStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
+                        let currentTotal = parseFloat(currentTotalStr);
+                        if(currentTotal !== rowTotal) {
+                            spreadsheet.setValueFromCoords(8, i, rowTotal, true);
+                        }
                          if (rows.length === 0 || rows.eq(i).is(':visible')) {
                              total += rowTotal;
                          }
@@ -544,16 +544,15 @@
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } }, // 1
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians }, // 2
                     { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true }, // 3
-                    { type: 'text', title: 'No Nota', width: 120 }, // 4
-                    { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 5
-                    { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 6
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
-                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs } // 10
+                    { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 4
+                    { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 5
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 6
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 7
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 8
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs } // 9
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 10 && val && proofUrls[val]) {
+                    if (col == 9 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
                     }
                 },
@@ -579,7 +578,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [11, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
+                minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -606,7 +605,7 @@
                                 });
                             }
                         });
-                    } else if (x == 5 && value === 'NEW_CATEGORY') {
+                    } else if (x == 4 && value === 'NEW_CATEGORY') {
                         // Revert cell value temporarily while waiting for prompt
                         spreadsheet.setValueFromCoords(x, y, '', true);
                         Swal.fire({
@@ -620,7 +619,7 @@
                             if (result.isConfirmed && result.value) {
                                 $.post('{{ route("purchases.ajax-category") }}', { name: result.value, _token: '{{ csrf_token() }}' }, function(res) {
                                     categories.push({ id: res.id, name: res.name });
-                                    spreadsheet.options.columns[5].source = categories;
+                                    spreadsheet.options.columns[4].source = categories;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
                                     updateTotalAndRow();
                                     autoSave();
@@ -761,7 +760,7 @@
                                 });
                             }
                             
-                            let cleanTotal = row[9];
+                            let cleanTotal = row[8];
                             if(typeof cleanTotal === 'string') cleanTotal = cleanTotal.replace(/,/g, '');
 
                             validData.push({
@@ -770,13 +769,12 @@
                                 date: row[1] || null,
                                 pertanian_id: row[2] || null,
                                 store_id: row[3] || null,
-                                invoice_number: row[4] || null,
-                                category_id: row[5] || null,
-                                description: row[6] || null,
-                                qty: row[7] !== "" && row[7] !== null ? row[7] : null,
-                                unit_price: row[8] !== "" && row[8] !== null ? row[8] : null,
+                                category_id: row[4] || null,
+                                description: row[5] || null,
+                                qty: row[6] !== "" && row[6] !== null ? row[6] : null,
+                                unit_price: row[7] !== "" && row[7] !== null ? row[7] : null,
                                 total_price: cleanTotal,
-                                transaction_proof_id: row[10] || null
+                                transaction_proof_id: row[9] || null
                             });
                             rowMapping.push(i);
                         } else if (hasAnyData) {
@@ -872,7 +870,7 @@
                         categories = res.categories;
                         categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
                         spreadsheet.options.columns[3].source = stores;
-                        spreadsheet.options.columns[5].source = categories;
+                        spreadsheet.options.columns[4].source = categories;
                     }
                 });
             }, 5000);
