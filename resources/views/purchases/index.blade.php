@@ -568,12 +568,10 @@
                                 // Format Indonesia: 150.000,00 atau 150.000 atau 150,00
                                 if (val.includes(',') && val.includes('.')) {
                                     val = val.replace(/\./g, ''); // hapus pemisah ribuan (titik)
-                                    val = val.replace(/,/g, '.'); // jadikan koma sebagai desimal
                                 } else if (val.includes(',')) {
-                                    // Hanya koma (misal 150,00)
-                                    val = val.replace(/,/g, '.');
+                                    // Hanya koma (misal 150,00), biarkan karena decimal kita adalah koma
                                 } else if (val.includes('.')) {
-                                    // Hanya titik (misal 150.000)
+                                    // Hanya titik (misal 150.000), ini berarti pemisah ribuan
                                     val = val.replace(/\./g, '');
                                 }
                             }
