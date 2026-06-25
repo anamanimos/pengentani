@@ -481,8 +481,8 @@
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
             @endphp
             
-            const categories = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray());
-            const stores = @json($stores->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray());
+            let categories = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray());
+            let stores = @json($stores->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray());
             const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
             
             const proofs = proofsData;
