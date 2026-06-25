@@ -28,6 +28,7 @@ Route::get('/login/whatsapp/{user}', [\App\Http\Controllers\WhatsappLoginControl
 Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
     Route::get('/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
+    Route::post('/whatsapp/settings', [\App\Http\Controllers\WhatsappSettingController::class, 'saveSettings'])->name('whatsapp.settings.save');
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
