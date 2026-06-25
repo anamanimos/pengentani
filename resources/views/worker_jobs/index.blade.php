@@ -509,8 +509,12 @@
             @endphp
 
             let pertanians = @json($pertanianData);
+            
             let workers = @json($workerData);
+            workers.unshift({ id: 'NEW_WORKER', name: '+ Tambah Pekerja Baru...' });
+            
             let categories = @json($categoryData);
+            categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
 
             const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
             const proofs = proofsData;
@@ -570,16 +574,27 @@
                                 // Strip Rp, IDR, spaces
                                 val = val.replace(/Rp|IDR/gi, '').trim();
                                 
-                                // Format Indonesia: 150.000,00 atau 150.000 atau 150,00
-                                if (val.includes(',') && val.includes('.')) {
-                                    val = val.replace(/\./g, ''); // hapus pemisah ribuan (titik)
-                                    val = val.replace(/,/g, '.'); // jadikan koma sebagai desimal
+                                // Determine decimal separator
+                                var cleanVal = val;
+                                if (val.includes('.') && val.includes(',')) {
+                                    var lastDot = val.lastIndexOf('.');
+                                    var lastComma = val.lastIndexOf(',');
+                                    if (lastComma > lastDot) {
+                                        cleanVal = val.replace(/\./g, '').replace(',', '.');
+                                    } else {
+                                        cleanVal = val.replace(/,/g, '');
+                                    }
                                 } else if (val.includes(',')) {
-                                    // Hanya koma (misal 150,00)
-                                    val = val.replace(/,/g, '.');
+                                    if (val.match(/,\d{1,2}$/)) cleanVal = val.replace(',', '.');
+                                    else cleanVal = val.replace(/,/g, '');
                                 } else if (val.includes('.')) {
-                                    // Hanya titik (misal 150.000)
-                                    val = val.replace(/\./g, '');
+                                    if (val.match(/\.\d{1,2}$/)) cleanVal = val;
+                                    else cleanVal = val.replace(/\./g, '');
+                                }
+
+                                var num = parseFloat(cleanVal);
+                                if (!isNaN(num)) {
+                                    val = Math.round(num).toString();
                                 }
                             }
                             processedCols.push(val);
@@ -644,8 +659,48 @@
                 allowManualInsertRow: true,
                 allowInsertColumn: false,
                 onchange: function(instance, cell, x, y, value) {
-                    if (x == 3 && value && isNaN(value)) {
-                        // New worker
+                    if (x == 3 && value === 'NEW_WORKER') {
+                        spreadsheet.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Tambah Pekerja Baru',
+                            input: 'text',
+                            inputPlaceholder: 'Masukkan nama pekerja baru...',
+                            showCancelButton: true,
+                            confirmButtonText: 'Simpan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                                $.post('{{ route("worker-jobs.ajax-worker") }}', { name: result.value, _token: '{{ csrf_token() }}' }, function(res) {
+                                    workers.push({ id: res.id, name: res.name });
+                                    spreadsheet.options.columns[3].source = workers;
+                                    spreadsheet.setValueFromCoords(x, y, res.id, true);
+                                    updateTotal();
+                                    autoSave();
+                                });
+                            }
+                        });
+                    } else if (x == 4 && value === 'NEW_CATEGORY') {
+                        spreadsheet.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Tambah Kategori Baru',
+                            input: 'text',
+                            inputPlaceholder: 'Masukkan nama kategori baru...',
+                            showCancelButton: true,
+                            confirmButtonText: 'Simpan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                                $.post('{{ route("worker-jobs.ajax-category") }}', { name: result.value, _token: '{{ csrf_token() }}' }, function(res) {
+                                    categories.push({ id: res.id, name: res.name });
+                                    spreadsheet.options.columns[4].source = categories;
+                                    spreadsheet.setValueFromCoords(x, y, res.id, true);
+                                    updateTotal();
+                                    autoSave();
+                                });
+                            }
+                        });
+                    } else if (x == 3 && value && isNaN(value)) {
+                        // New worker fallback (typed directly)
                         $.post('{{ route("worker-jobs.ajax-worker") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             workers.push({ id: res.id, name: res.name });
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
@@ -653,7 +708,7 @@
                             autoSave();
                         });
                     } else if (x == 4 && value && isNaN(value)) {
-                        // New category
+                        // New category fallback (typed directly)
                         $.post('{{ route("worker-jobs.ajax-category") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             categories.push({ id: res.id, name: res.name });
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
@@ -774,27 +829,50 @@
                     var validData = [];
                     var hasIncompleteRow = false;
                     var styles = {};
-                    
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
+
+                        var pertanianVal = row[2];
+                        if (!pertanianVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                        }
+
+                        var workerVal = row[3];
+                        if (!workerVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') workerVal = cellEl.innerText.trim();
+                        }
+
+                        var categoryVal = row[4];
+                        if (!categoryVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') categoryVal = cellEl.innerText.trim();
+                        }
                         
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
+                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
+                            if (j === 3 && workerVal) { hasAnyData = true; break; }
+                            if (j === 4 && categoryVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
                             }
                         }
 
-                        var requiredCols = [1, 2, 3, 4];
+                        var requiredCols = [1, 2, 3, 4]; // Date, Pertanian, Worker, Category
 
-                        if (row[0] || (row[1] && row[2] && row[3] && row[4])) { // Save if has ID or all required fields are filled
-                            // If it has ID but missing required fields, backend will skip it, but we let it pass here or consider incomplete?
-                            // Wait, if it has ID but missing required fields, it's incomplete!
-                            if (!row[1] || !row[2] || !row[3] || !row[4]) {
+                        if (row[0] || (row[1] && pertanianVal && workerVal && categoryVal)) {
+                            if (!row[1] || !pertanianVal || !workerVal || !categoryVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    var val = row[colIdx];
+                                    if (colIdx === 2) val = pertanianVal;
+                                    if (colIdx === 3) val = workerVal;
+                                    if (colIdx === 4) val = categoryVal;
+
+                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
@@ -802,18 +880,20 @@
                                     styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             }
-                            var cleanWage = row[7] ? row[7].toString().replace(/\D/g, '') : null;
+
+                            let cleanWage = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
+                            
                             validData.push({
                                 index: i,
                                 id: row[0] || null,
                                 date: row[1] || null,
-                                pertanian_id: row[2] || null,
-                                worker_id: row[3] || null,
-                                job_category_id: row[4] || null,
+                                pertanian_id: pertanianVal || null,
+                                worker_id: workerVal || null,
+                                job_category_id: categoryVal || null,
                                 start_time: row[5] || null,
                                 end_time: row[6] || null,
                                 wage: cleanWage,
-                                status: row[8] || null,
+                                status: row[8] || 'unpaid',
                                 transaction_proof_id: row[9] || null
                             });
                         } else if (hasAnyData) {
@@ -845,10 +925,11 @@
                     $.ajax({
                         url: '{{ route("worker-jobs.store") }}',
                         type: 'POST',
-                        data: {
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             _token: '{{ csrf_token() }}',
                             data: validData
-                        },
+                        }),
                         success: function(res) {
                             if (hasIncompleteRow) {
                                 $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
