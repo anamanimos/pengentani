@@ -56,17 +56,27 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         $data = $request->input('data');
+        \Illuminate\Support\Facades\Log::info('Purchase store received data: ', ['data' => $data]);
         if (!$data || !is_array($data)) return response()->json(['message' => 'No data'], 400);
 
         $savedData = [];
         $validPurchaseIds = [];
 
         foreach ($data as $index => $row) {
+            \Illuminate\Support\Facades\Log::info("Processing row $index", ['row' => $row]);
             // Skip invalid data
             if (empty($row['pertanian_id']) || empty($row['date'])) continue;
 
-            $pertanian = Pertanian::find($row['pertanian_id']);
-            if (!$pertanian || $pertanian->user_id !== Auth::id()) continue;
+            $pertanianId = $row['pertanian_id'];
+            if (!is_numeric($pertanianId)) {
+                $pertanian = Pertanian::where('user_id', Auth::id())
+                    ->where('name', 'like', '%' . trim($pertanianId) . '%')
+                    ->first();
+                if (!$pertanian) continue;
+            } else {
+                $pertanian = Pertanian::find($pertanianId);
+                if (!$pertanian || $pertanian->user_id !== Auth::id()) continue;
+            }
 
             $date = $row['date'];
             $invoiceNumber = $row['invoice_number'] ?? '-';
@@ -135,7 +145,7 @@ class PurchaseController extends Controller
                             $validPurchaseIds[$oldPurchase->id] = $oldPurchase;
                         }
                     }
-                    $savedData[] = ['index' => $index, 'id' => $item->id];
+                    $savedData[] = ['index' => $row['index'], 'id' => $item->id];
                 }
             } else {
                 $item = $purchase->items()->create([
@@ -147,7 +157,7 @@ class PurchaseController extends Controller
                     'total_price' => $totalPrice,
                     'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                 ]);
-                $savedData[] = ['index' => $index, 'id' => $item->id];
+                $savedData[] = ['index' => $row['index'], 'id' => $item->id];
             }
         }
 

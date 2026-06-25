@@ -45,9 +45,9 @@ class WorkerJobController extends Controller
         $request->validate([
             'data' => 'required|array',
             'data.*.id' => 'nullable|exists:worker_jobs,id',
-            'data.*.pertanian_id' => 'nullable|exists:pertanians,id',
-            'data.*.worker_id' => 'nullable|exists:users,id',
-            'data.*.job_category_id' => 'nullable|exists:job_categories,id',
+            'data.*.pertanian_id' => 'nullable',
+            'data.*.worker_id' => 'nullable',
+            'data.*.job_category_id' => 'nullable',
             'data.*.date' => 'nullable|date',
             'data.*.start_time' => 'nullable',
             'data.*.end_time' => 'nullable',
@@ -62,6 +62,33 @@ class WorkerJobController extends Controller
                 // Skip incomplete rows
                 if (empty($row['pertanian_id']) || empty($row['worker_id']) || empty($row['job_category_id']) || empty($row['date'])) {
                     continue;
+                }
+                
+                $pertanianId = $row['pertanian_id'];
+                if (!is_numeric($pertanianId)) {
+                    $pertanian = \App\Models\Pertanian::where('user_id', Auth::id())
+                        ->where('name', 'like', '%' . trim($pertanianId) . '%')->first();
+                    if (!$pertanian) continue;
+                    $row['pertanian_id'] = $pertanian->id;
+                }
+
+                $workerId = $row['worker_id'];
+                if (!is_numeric($workerId)) {
+                    $worker = \App\Models\User::firstOrCreate(
+                        ['email' => strtolower(str_replace(' ', '', trim($workerId))) . '@worker.local'],
+                        [
+                            'name' => trim($workerId),
+                            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                            'role' => 'worker'
+                        ]
+                    );
+                    $row['worker_id'] = $worker->id;
+                }
+
+                $catId = $row['job_category_id'];
+                if (!is_numeric($catId)) {
+                    $cat = \App\Models\JobCategory::firstOrCreate(['name' => trim($catId)]);
+                    $row['job_category_id'] = $cat->id;
                 }
 
                 if (!empty($row['id'])) {

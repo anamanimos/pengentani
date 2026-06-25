@@ -70,7 +70,7 @@ class IncomeController extends Controller
                             'tengkulak_id' => $row['tengkulak_id'] ?? null,
                             'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
-                        $savedData[] = ['index' => $index, 'id' => $income->id];
+                        $savedData[] = ['index' => $row['index'], 'id' => $income->id];
                     }
                 } else {
                     $income = \App\Models\Income::create([
@@ -84,7 +84,7 @@ class IncomeController extends Controller
                         'tengkulak_id' => $row['tengkulak_id'] ?? null,
                         'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
-                    $savedData[] = ['index' => $index, 'id' => $income->id];
+                    $savedData[] = ['index' => $row['index'], 'id' => $income->id];
                 }
             }
             \Illuminate\Support\Facades\DB::commit();
