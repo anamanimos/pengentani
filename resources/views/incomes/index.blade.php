@@ -470,7 +470,6 @@
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
-    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -490,8 +489,7 @@
                         $income->type,
                         $income->description,
                         $income->amount,
-                        $income->transaction_proof_id,
-                        $income->transactionProof ? '<div class="text-center"><a href="'.Storage::url($income->transactionProof->file_path).'" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>' : '' // For Preview column
+                        $income->transaction_proof_id
                     ];
                 })->toArray();
             @endphp
@@ -511,7 +509,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', 'Panen', '', '', '', '']);
+                initialData.push(['', '', '', '', 'Panen', '', '', '']);
             }
 
             function updateTotal() {
@@ -546,9 +544,13 @@
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
                     { type: 'text', title: 'Deskripsi', width: 300 },
                     { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
-                    { type: 'html', title: 'Lihat', width: 60, readOnly: true }
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
+                updateTable: function(instance, cell, col, row, val, label, cellName) {
+                    if (col == 7 && val && proofUrls[val]) {
+                        cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
+                    }
+                },
                 minDimensions: [9, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
@@ -558,20 +560,6 @@
                 allowDeleteColumn: false,
                 wordWrap: false,
                 onchange: function(instance, cell, x, y, value) {
-                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                    
-                    // If Transaction Proof ID column (index 7) changed
-                    if (parseInt(x) === 7) {
-                        let btnHtml = '';
-                        if (value && proofUrls[value]) {
-                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
-                        }
-                        sheetInstance.setValueFromCoords(8, y, btnHtml, false); // Update column 8 (Preview)
-                        if (typeof refreshFsLightbox === 'function') {
-                            refreshFsLightbox();
-                        }
-                    }
-
                     updateTotal();
                     autoSave();
 

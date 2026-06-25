@@ -482,7 +482,6 @@
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
-    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -504,8 +503,7 @@
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
                         $job->wage ? (float) $job->wage : null,
                         $job->status,
-                        $job->transaction_proof_id,
-                        $job->transactionProof ? '<div class="text-center"><a href="'.Storage::url($job->transactionProof->file_path).'" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>' : ''
+                        $job->transaction_proof_id
                     ];
                 })->toArray();
             @endphp
@@ -529,7 +527,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', '', '', '', '', 'unpaid', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', 'unpaid', '']);
             }
 
             function updateTotal() {
@@ -567,9 +565,13 @@
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
-                    { type: 'html', title: 'Lihat', width: 60, readOnly: true }
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
+                updateTable: function(instance, cell, col, row, val, label, cellName) {
+                    if (col == 9 && val && proofUrls[val]) {
+                        cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
+                    }
+                },
                 onload: function() {
                     // Inject icons after a short delay to ensure Jexcel has finished rendering the headers
                     setTimeout(function() {
@@ -617,19 +619,6 @@
                             updateTotal();
                             autoSave();
                         });
-                    } else if (x == 9) {
-                        var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                        let btnHtml = '';
-                        if (value && proofUrls[value]) {
-                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
-                        }
-                        sheetInstance.setValueFromCoords(10, y, btnHtml, false);
-                        if (typeof refreshFsLightbox === 'function') {
-                            refreshFsLightbox();
-                        }
-                        
-                        updateTotal();
-                        autoSave();
                     } else {
                         updateTotal();
                         autoSave();

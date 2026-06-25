@@ -43,8 +43,7 @@ class PurchaseController extends Controller
                     (float) $item->qty,                 // 7: Qty
                     (float) $item->unit_price,          // 8: Harga Satuan
                     (float) $item->total_price,         // 9: Total (Read-only view)
-                    $item->transaction_proof_id,        // 10: Bukti Transaksi
-                    $item->transactionProof ? '<div class="text-center"><a href="'.\Illuminate\Support\Facades\Storage::url($item->transactionProof->file_path).'" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>' : '' // 11: Preview
+                    $item->transaction_proof_id         // 10: Bukti Transaksi
                 ];
                 $totalPengeluaran += $item->total_price;
             }

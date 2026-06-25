@@ -111,6 +111,18 @@
             }
         });
     </script>
+    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
+    <script>
+        function openLightbox(e, url) {
+            if (e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            var lightbox = new FsLightbox();
+            lightbox.props.sources = [url];
+            lightbox.open();
+        }
+    </script>
     @stack('scripts')
     <!--end::Javascript-->
 </body>

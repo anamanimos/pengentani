@@ -472,7 +472,6 @@
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
-    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -497,7 +496,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '']);
             }
 
             function updateTotalAndRow() {
@@ -547,9 +546,13 @@
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs }, // 10
-                    { type: 'html', title: 'Lihat', width: 60, readOnly: true } // 11
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs } // 10
                 ],
+                updateTable: function(instance, cell, col, row, val, label, cellName) {
+                    if (col == 10 && val && proofUrls[val]) {
+                        cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
+                    }
+                },
                 onload: function() {
                     setTimeout(function() {
                         var headers = $('#spreadsheet .jexcel > thead > tr:first-child > td:not(.jexcel_selectall)');
@@ -592,19 +595,6 @@
                             updateTotalAndRow();
                             autoSave();
                         });
-                    } else if (x == 10) {
-                        var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                        let btnHtml = '';
-                        if (value && proofUrls[value]) {
-                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
-                        }
-                        sheetInstance.setValueFromCoords(11, y, btnHtml, false);
-                        if (typeof refreshFsLightbox === 'function') {
-                            refreshFsLightbox();
-                        }
-                        
-                        updateTotalAndRow();
-                        autoSave();
                     } else {
                         updateTotalAndRow();
                         autoSave();
