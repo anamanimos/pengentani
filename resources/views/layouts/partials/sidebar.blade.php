@@ -163,7 +163,7 @@
                     <!--end:Menu item-->
 
                     <!--begin:Menu item (Master Dropdown)-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*']) ? 'here' : '' }}">
+                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*', 'job-categories.*', 'purchase-categories.*', 'stores.*']) ? 'here' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-abstract-26 fs-2">
@@ -214,6 +214,39 @@
                                         <span class="bullet bullet-dot"></span>
                                     </span>
                                     <span class="menu-title">Tengkulak</span>
+                                </a>
+                            </div>
+                            <!--end:Menu item-->
+
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('job-categories.*') ? 'active' : '' }}" href="{{ route('job-categories.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Kategori Pekerjaan</span>
+                                </a>
+                            </div>
+                            <!--end:Menu item-->
+
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('stores.*') ? 'active' : '' }}" href="{{ route('stores.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Toko / Vendor</span>
+                                </a>
+                            </div>
+                            <!--end:Menu item-->
+
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('purchase-categories.*') ? 'active' : '' }}" href="{{ route('purchase-categories.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Kategori Pembelian</span>
                                 </a>
                             </div>
                             <!--end:Menu item-->
