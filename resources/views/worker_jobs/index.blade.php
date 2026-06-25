@@ -49,11 +49,10 @@
     <!-- Fullscreen Header (hidden by default, shown only in fullscreen) -->
     <div class="spreadsheet-fs-header d-none">
         <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pekerjaan & Upah</h5>
+            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pekerjaan</h5>
             <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <h6 class="m-0 text-gray-700">Total Upah: <span class="total-amount-fs text-success fw-bolder">Rp 0</span></h6>
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
             </button>
@@ -68,9 +67,6 @@
         </button>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
-    <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
-        <h4 class="m-0 text-gray-800">Total Upah: <span id="total-amount" class="text-success fw-bolder ms-2">Rp 0</span></h4>
-    </div>
 </div>
 
 <!-- Modal Universal Filter -->
@@ -155,9 +151,6 @@
         #spreadsheet-wrapper.fullscreen-mode #spreadsheet {
             flex: 1;
             overflow: auto;
-        }
-        #spreadsheet-wrapper.fullscreen-mode #spreadsheet-footer {
-            flex-shrink: 0;
         }
         #spreadsheet-wrapper.fullscreen-mode #btn-toggle-fullscreen {
             display: none !important;
@@ -499,9 +492,9 @@
                         $job->pertanian_id,
                         $job->worker_id,
                         $job->job_category_id,
+                        $job->description,
                         $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format("H:i") : null,
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
-                        $job->wage ? (float) $job->wage : null,
                         $job->status,
                         $job->transaction_proof_id
                     ];
@@ -524,29 +517,14 @@
             });
 
             const statuses = [
-                { id: 'unpaid', name: 'Belum Dibayar' },
-                { id: 'paid', name: 'Dibayar' }
+                { id: 'unpaid', name: 'Belum Terbayar' },
+                { id: 'paid', name: 'Terbayar' }
             ];
 
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
                 initialData.push(['', '', '', '', '', '', '', '', 'unpaid', '']);
-            }
-
-            function updateTotal() {
-                if (!spreadsheet) return;
-                let data = spreadsheet.getData();
-                let rows = $('#spreadsheet > div > table > tbody > tr');
-                let total = 0;
-                for(let i=0; i<data.length; i++) {
-                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                        let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                        let val = parseInt(wageStr, 10);
-                        if(!isNaN(val)) total += val;
-                    }
-                }
-                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
@@ -604,10 +582,6 @@
                     
                     return isString ? processedData.join('\n') : processedData;
                 },
-                onselection: function(instance, x1, y1, x2, y2, origin) {
-                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                    handleSelection(sheetInstance, x1, y1, x2, y2);
-                },
                 tableHeight: '70vh',
                 tableWidth: '100%',
                 search: false,
@@ -620,12 +594,11 @@
                     { type: 'text', title: 'Deskripsi', width: 250 },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
-                    { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 10 && val && proofUrls[val]) {
+                    if (col == 9 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
                     }
                 },
@@ -654,7 +627,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [11, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [10, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -675,7 +648,6 @@
                                     workers.push({ id: res.id, name: res.name });
                                     spreadsheet.options.columns[3].source = workers;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
-                                    updateTotal();
                                     autoSave();
                                 });
                             }
@@ -695,7 +667,6 @@
                                     categories.push({ id: res.id, name: res.name });
                                     spreadsheet.options.columns[4].source = categories;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
-                                    updateTotal();
                                     autoSave();
                                 });
                             }
@@ -705,7 +676,6 @@
                         $.post('{{ route("worker-jobs.ajax-worker") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             workers.push({ id: res.id, name: res.name });
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            updateTotal();
                             autoSave();
                         });
                     } else if (x == 4 && value && isNaN(value)) {
@@ -713,11 +683,9 @@
                         $.post('{{ route("worker-jobs.ajax-category") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             categories.push({ id: res.id, name: res.name });
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            updateTotal();
                             autoSave();
                         });
                     } else {
-                        updateTotal();
                         autoSave();
                     }
 
@@ -739,7 +707,6 @@
                     }
                 },
                 oninsertrow: function() {
-                    updateTotal();
                     autoSave();
                 },
                 onbeforedeleterow: function(instance, rowNumber) {
@@ -774,7 +741,6 @@
                                         spreadsheet.options.onbeforedeleterow = null;
                                         spreadsheet.deleteRow(rowNumber);
                                         spreadsheet.options.onbeforedeleterow = workerJobBeforeDeleteRow;
-                                        updateTotal();
                                         toastr.success('Data pekerjaan berhasil dihapus.');
                                     },
                                     error: function() {
@@ -789,13 +755,9 @@
                             spreadsheet.options.onbeforedeleterow = null;
                             spreadsheet.deleteRow(rowNumber);
                             spreadsheet.options.onbeforedeleterow = workerJobBeforeDeleteRow;
-                            updateTotal();
                         }, 0);
                     }
                     return false; // Always block the native delete
-                },
-                ondeleterow: function(instance, rowNumber, numOfRows, rowDOMElement, rowData) {
-                    updateTotal();
                 }
             });
 
@@ -816,9 +778,6 @@
                     }
                 }
             }, true);
-
-            // Initial total calculation
-            updateTotal();
 
             let debounceTimer;
 
@@ -882,8 +841,6 @@
                                 });
                             }
 
-                            let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
-                            
                             validData.push({
                                 index: i,
                                 id: row[0] || null,
@@ -894,9 +851,8 @@
                                 description: row[5] || null,
                                 start_time: row[6] || null,
                                 end_time: row[7] || null,
-                                wage: cleanWage,
-                                status: row[9] || 'unpaid',
-                                transaction_proof_id: row[10] || null
+                                status: row[8] || 'unpaid',
+                                transaction_proof_id: row[9] || null
                             });
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
@@ -1169,165 +1125,7 @@
                     if(match) rows.eq(i).show();
                     else rows.eq(i).hide();
                 }
-
-                // Recalculate total based on visible rows only
-                let filteredTotal = 0;
-                for(let i = 0; i < data.length; i++) {
-                    if(rows.eq(i).is(':visible')) {
-                        let wageStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                        let val = parseInt(wageStr, 10);
-                        if(!isNaN(val)) filteredTotal += val;
-                    }
-                }
-                $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
-            }
-
-            // Selection summary helper
-            function handleSelection(instance, x1, y1, x2, y2) {
-                let startX = Math.min(x1, x2);
-                let endX = Math.max(x1, x2);
-                let startY = Math.min(y1, y2);
-                let endY = Math.max(y1, y2);
-
-                let sum = 0;
-                let count = 0;
-                let numericCount = 0;
-                let hasCurrency = false;
-
-                // Check if any of the selected columns has currency title/formatting
-                for (let col = startX; col <= endX; col++) {
-                    let colHeader = instance.options.columns[col];
-                    if (colHeader && colHeader.title) {
-                        let title = colHeader.title.toLowerCase();
-                        if (title.includes('rp') || title.includes('harga') || title.includes('nominal') || title.includes('upah')) {
-                            hasCurrency = true;
-                        }
-                    }
-                }
-
-                let rows = $('#spreadsheet > div > table > tbody > tr');
-                for (let row = startY; row <= endY; row++) {
-                    // Check if row is visible (skip filtered out rows)
-                    let rowEl = rows.eq(row);
-                    if (rowEl.length > 0 && !rowEl.is(':visible')) {
-                        continue;
-                    }
-
-                    for (let col = startX; col <= endX; col++) {
-                        let valStr = instance.getValueFromCoords(col, row);
-                        if (valStr !== null && valStr !== undefined && valStr !== '') {
-                            // Strip currency signs, spaces, and commas
-                            let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
-                            if (cleanValStr.trim() === '') continue;
-                            let val = parseFloat(cleanValStr);
-                            if (!isNaN(val)) {
-                                sum += val;
-                                numericCount++;
-                            }
-                            count++;
-                        }
-                    }
-                }
-
-                // Show only if selection is more than a single cell and we found numbers
-                if (numericCount > 0 && (endX - startX > 0 || endY - startY > 0)) {
-                    let avg = sum / numericCount;
-                    
-                    // Format output
-                    let sumText, avgText;
-                    if (hasCurrency) {
-                        sumText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum));
-                        avgText = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(avg));
-                    } else {
-                        sumText = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(sum);
-                        avgText = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(avg);
-                    }
-
-                    showFloatingSummary(avgText, numericCount, sumText);
-                } else {
-                    hideFloatingSummary();
-                }
-            }
-
-            function showFloatingSummary(avg, count, sum) {
-                let summaryDiv = $('#spreadsheet-selection-summary');
-                if (summaryDiv.length === 0) {
-                    summaryDiv = $(`
-                        <div id="spreadsheet-selection-summary" class="position-fixed bottom-0 start-50 translate-middle-x mb-10 shadow-lg d-flex align-items-center gap-4 px-6 py-3 rounded-pill" style="transition: all 0.25s ease-in-out; z-index: 1050; opacity: 0; transform: translate(-50%, 20px) scale(0.95); pointer-events: none;">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted fw-semibold fs-8 text-uppercase">Rata-rata:</span>
-                                <span class="fw-bold fs-7 sum-val-avg"></span>
-                            </div>
-                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah Sel:</span>
-                                <span class="fw-bold fs-7 sum-val-count"></span>
-                            </div>
-                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah:</span>
-                                <span class="fw-bold fs-6 sum-val-sum"></span>
-                            </div>
-                        </div>
-                    `);
-                    $('body').append(summaryDiv);
-                }
-
-                // Check Dark Mode
-                const isDark = $('html').attr('data-bs-theme') === 'dark' || $('body').attr('data-bs-theme') === 'dark';
-                if (isDark) {
-                    summaryDiv.css({
-                        'background-color': 'rgba(30, 30, 45, 0.95)',
-                        'border': '1px solid rgba(255, 255, 255, 0.1)',
-                        'color': '#ffffff'
-                    });
-                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#ffffff');
-                    summaryDiv.find('.sum-val-sum').css('color', '#50cd89'); // green
-                    summaryDiv.find('.vr').css('background-color', 'rgba(255, 255, 255, 0.15)');
-                } else {
-                    summaryDiv.css({
-                        'background-color': 'rgba(255, 255, 255, 0.95)',
-                        'border': '1px solid rgba(0, 0, 0, 0.1)',
-                        'color': '#181C32'
-                    });
-                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#181C32');
-                    summaryDiv.find('.sum-val-sum').css('color', '#009EF7'); // primary blue
-                    summaryDiv.find('.vr').css('background-color', 'rgba(0, 0, 0, 0.1)');
-                }
-
-                summaryDiv.find('.sum-val-avg').text(avg);
-                summaryDiv.find('.sum-val-count').text(count);
-                summaryDiv.find('.sum-val-sum').text(sum);
-
-                summaryDiv.show();
-                // Trigger reflow
-                summaryDiv[0].offsetHeight;
-                summaryDiv.css({
-                    'opacity': '1',
-                    'transform': 'translate(-50%, 0) scale(1)'
-                });
-            }
-
-            function hideFloatingSummary() {
-                let summaryDiv = $('#spreadsheet-selection-summary');
-                if (summaryDiv.length > 0 && summaryDiv.css('opacity') !== '0') {
-                    summaryDiv.css({
-                        'opacity': '0',
-                        'transform': 'translate(-50%, 20px) scale(0.95)'
-                    });
-                    setTimeout(function() {
-                        if (summaryDiv.css('opacity') === '0') {
-                            summaryDiv.hide();
-                        }
-                    }, 250);
-                }
-            }
-
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('#spreadsheet').length) {
-                    hideFloatingSummary();
-                }
-            });
+            // Selection summary helper removed because there are no numeric fields anymore.
 
             // Fullscreen toggle
             var savedTableHeight = null;
@@ -1342,7 +1140,7 @@
                 }
                 resizeSpreadsheetForFullscreen();
                 // Sync total to fullscreen header
-                $('.total-amount-fs').text($('#total-amount').text());
+                // Sync total removed
                 $('body').css('overflow', 'hidden');
             }
 
