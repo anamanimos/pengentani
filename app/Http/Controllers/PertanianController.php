@@ -19,7 +19,7 @@ class PertanianController extends Controller
             ->get();
 
         foreach ($pertanians as $pertanian) {
-            $totalIncome = $pertanian->incomes->sum('nominal');
+            $totalIncome = $pertanian->incomes->sum('amount');
             
             $totalPurchase = $pertanian->purchases->sum(function($purchase) {
                 return $purchase->items->sum('total_price');
