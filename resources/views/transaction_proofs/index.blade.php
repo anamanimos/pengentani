@@ -89,6 +89,8 @@
                             @forelse($proofs as $proof)
                             <div class="col-md-3 col-sm-6">
                                 <div class="card shadow-sm border-0 position-relative overflow-hidden" style="border-radius: 0.475rem;">
+                                    <a href="{{ Storage::url($proof->file_path) }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
+                                    
                                     <div class="h-150px d-flex justify-content-center align-items-center bg-light">
                                         @if(in_array(pathinfo($proof->file_path, PATHINFO_EXTENSION), ['pdf']))
                                             <i class="fas fa-file-pdf fs-3x text-danger"></i>
@@ -96,12 +98,13 @@
                                             <div class="w-100 h-100" style="background-image:url('{{ Storage::url($proof->file_path) }}'); background-size: cover; background-position: center;"></div>
                                         @endif
                                     </div>
+                                    
                                     <!-- Overlay -->
-                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-between p-3" 
-                                         style="background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%); opacity: 0; transition: opacity 0.3s ease; cursor: pointer;"
-                                         onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
+                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-between p-3 pe-none" 
+                                         style="background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);">
+                                        
                                         <!-- Top Action (Delete) -->
-                                        <div class="text-end">
+                                        <div class="text-end pe-auto" style="z-index: 2; position: relative;">
                                             <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus bukti ini?');">
                                                 @csrf
                                                 @method('DELETE')
@@ -109,13 +112,12 @@
                                             </form>
                                         </div>
                                         
-                                        <!-- Bottom Info & View -->
+                                        <!-- Bottom Info -->
                                         <div class="d-flex justify-content-between align-items-end">
-                                            <div class="text-white text-truncate pe-2">
+                                            <div class="text-white text-truncate pe-2 w-100">
                                                 <span class="fw-bold d-block text-truncate" title="{{ $proof->name }}">{{ $proof->name }}</span>
                                                 <span class="fs-8 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
                                             </div>
-                                            <a href="{{ Storage::url($proof->file_path) }}" target="_blank" class="btn btn-icon btn-sm btn-light-primary shadow-sm flex-shrink-0"><i class="ki-duotone ki-eye fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></a>
                                         </div>
                                     </div>
                                 </div>
