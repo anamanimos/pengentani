@@ -150,6 +150,9 @@ class PurchaseController extends Controller
                         }
                     }
                     $savedData[] = ['index' => $row['index'], 'id' => $item->id];
+                    \Illuminate\Support\Facades\Log::info("Updated item: ", ['id' => $item->id, 'qty' => $qty, 'price' => $unitPrice]);
+                } else {
+                    \Illuminate\Support\Facades\Log::warning("Item not found or unauthorized", ['id' => $row['id']]);
                 }
             } else {
                 $item = $purchase->items()->create([
@@ -162,15 +165,22 @@ class PurchaseController extends Controller
                     'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                 ]);
                 $savedData[] = ['index' => $row['index'], 'id' => $item->id];
+                \Illuminate\Support\Facades\Log::info("Created new item: ", ['id' => $item->id, 'purchase_id' => $purchase->id, 'qty' => $qty, 'price' => $unitPrice]);
             }
         }
 
-        // Update total_amount for affected purchases or delete if empty
+        \Illuminate\Support\Facades\Log::info("Finished processing rows. Valid purchases count: " . count($validPurchaseIds));
+
         foreach ($validPurchaseIds as $p) {
-            if ($p->items()->count() === 0) {
+            $itemCount = $p->items()->count();
+            \Illuminate\Support\Facades\Log::info("Checking purchase ID " . $p->id . " - Item count: " . $itemCount);
+            if ($itemCount === 0) {
+                \Illuminate\Support\Facades\Log::info("Deleting purchase ID " . $p->id . " because it has 0 items.");
                 $p->delete();
             } else {
-                $p->update(['total_amount' => $p->items()->sum('total_price')]);
+                $sum = $p->items()->sum('total_price');
+                \Illuminate\Support\Facades\Log::info("Updating purchase ID " . $p->id . " total_amount to " . $sum);
+                $p->update(['total_amount' => $sum]);
             }
         }
 
