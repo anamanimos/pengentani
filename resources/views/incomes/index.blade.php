@@ -870,7 +870,7 @@
                                 date: row[1] || null,
                                 pertanian_id: pertanianVal || null,
                                 tengkulak_id: tengkulakVal || null,
-                                type: typeVal || null,
+                                income_category_id: typeVal || null,
                                 description: row[5] || null,
                                 qty: cleanQty,
                                 unit_price: cleanUnitPrice,
