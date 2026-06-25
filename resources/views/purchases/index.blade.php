@@ -509,20 +509,31 @@
                  let rows = $('#spreadsheet > div > table > tbody > tr');
                  let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
-                    let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                    let qty = parseFloat(qtyStr);
-                    let price = parseFloat(priceStr);
-                    if(!isNaN(qty) && !isNaN(price)) {
-                        let rowTotal = qty * price;
-                        // update row total cell if empty or different
-                        let currentTotalStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
-                        let currentTotal = parseFloat(currentTotalStr);
-                        if(currentTotal !== rowTotal) {
-                            spreadsheet.setValueFromCoords(8, i, rowTotal, true);
-                        }
-                         if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                             total += rowTotal;
+                     // Cek jika baris kosong / soft delete
+                     let isSoftDeleted = false;
+                     // Baris dianggap valid jika ada qty/price DAN tanggal/pertanian (jika diperlukan)
+                     if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7]) {
+                         isSoftDeleted = true;
+                     }
+
+                     let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
+                     let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                     let qty = parseFloat(qtyStr);
+                     let price = parseFloat(priceStr);
+                     
+                     if(!isNaN(qty) && !isNaN(price)) {
+                         let rowTotal = qty * price;
+                         // update row total cell if empty or different
+                         let currentTotalStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
+                         let currentTotal = parseFloat(currentTotalStr);
+                         if(currentTotal !== rowTotal) {
+                             spreadsheet.setValueFromCoords(8, i, rowTotal, true);
+                         }
+                         
+                         if (!isSoftDeleted) {
+                             if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                                 total += rowTotal;
+                             }
                          }
                      }
                  }
@@ -903,7 +914,7 @@
                 e.stopPropagation();
                 $('#current-filter-col').val(colIndex);
                 var column = spreadsheet.options.columns[colIndex];
-                $('#filter-modal-title').text('Filter ' + column.title);
+                $('#filter-modal-title').html('Filter ' + column.title);
                 $('.filter-container').addClass('d-none');
                 let currentVal = activeFilters[colIndex] || null;
 
