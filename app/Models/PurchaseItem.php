@@ -17,6 +17,7 @@ class PurchaseItem extends Model
         'qty',
         'unit_price',
         'total_price',
+        'transaction_proof_id',
     ];
 
     public function purchase()

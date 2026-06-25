@@ -8,7 +8,7 @@ class WorkerJob extends Model
 {
     protected $fillable = [
         'pertanian_id', 'worker_id', 'job_category_id', 
-        'date', 'start_time', 'end_time', 'wage', 'status'
+        'date', 'start_time', 'end_time', 'wage', 'status', 'transaction_proof_id'
     ];
 
     public function pertanian()

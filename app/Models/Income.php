@@ -16,6 +16,7 @@ class Income extends Model
         'description',
         'amount',
         'tengkulak_id',
+        'transaction_proof_id',
     ];
 
     protected $casts = [
