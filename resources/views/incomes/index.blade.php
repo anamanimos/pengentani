@@ -930,7 +930,8 @@
                 e.stopPropagation();
                 $('#current-filter-col').val(colIndex);
                 var column = spreadsheet.options.columns[colIndex];
-                $('#filter-modal-title').text('Filter ' + column.title);
+                var cleanTitle = column.title.replace(/<[^>]*>?/gm, '').trim();
+                $('#filter-modal-title').html('Filter ' + cleanTitle);
                 $('.filter-container').addClass('d-none');
                 let currentVal = activeFilters[colIndex] || null;
 
