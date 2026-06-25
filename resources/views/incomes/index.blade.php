@@ -478,7 +478,7 @@
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
                 $tengkulakData = $tengkulaks->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->toArray();
-                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->toArray() : [];
+                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : [];
                 
                 $initialData = $incomes->map(function($income) {
                     return [
@@ -490,7 +490,7 @@
                         $income->description,
                         $income->amount,
                         $income->transaction_proof_id,
-                        '' // For Preview column
+                        $income->transactionProof ? '<a href="'.Storage::url($income->transactionProof->file_path).'" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>' : '' // For Preview column
                     ];
                 })->toArray();
             @endphp
@@ -502,6 +502,10 @@
                 { id: 'Lain-lain', name: 'Lain-lain' }
             ];
             const proofs = @json($proofsData);
+            const proofUrls = {};
+            proofs.forEach(function(p) {
+                proofUrls[p.id] = p.url;
+            });
 
             const initialData = @json($initialData);
 
@@ -553,6 +557,17 @@
                 allowDeleteColumn: false,
                 wordWrap: false,
                 onchange: function(instance, cell, x, y, value) {
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    
+                    // If Transaction Proof ID column (index 7) changed
+                    if (parseInt(x) === 7) {
+                        let btnHtml = '';
+                        if (value && proofUrls[value]) {
+                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                        }
+                        sheetInstance.setValueFromCoords(8, y, btnHtml, false); // Update column 8 (Preview)
+                    }
+
                     updateTotal();
                     autoSave();
 

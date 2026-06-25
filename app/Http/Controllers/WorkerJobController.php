@@ -26,8 +26,9 @@ class WorkerJobController extends Controller
         $pertanians = Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $workers = User::where('role', 'pekerja')->orderBy('name')->get();
         $categories = JobCategory::orderBy('name')->get();
+        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
 
-        return view('worker_jobs.index', compact('jobs', 'pertanians', 'workers', 'categories'));
+        return view('worker_jobs.index', compact('jobs', 'pertanians', 'workers', 'categories', 'proofs'));
     }
 
     public function create()

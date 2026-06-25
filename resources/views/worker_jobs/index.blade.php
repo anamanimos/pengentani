@@ -502,7 +502,9 @@
                         $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format("H:i") : null,
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
                         $job->wage ? (float) $job->wage : null,
-                        $job->status
+                        $job->status,
+                        $job->transaction_proof_id,
+                        $job->transactionProof ? '<a href="'.Storage::url($job->transactionProof->file_path).'" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>' : ''
                     ];
                 })->toArray();
             @endphp
@@ -510,6 +512,13 @@
             let pertanians = @json($pertanianData);
             let workers = @json($workerData);
             let categories = @json($categoryData);
+
+            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
+            const proofs = proofsData;
+            const proofUrls = {};
+            proofs.forEach(function(p) {
+                proofUrls[p.id] = p.url;
+            });
 
             const statuses = [
                 { id: 'unpaid', name: 'Belum Dibayar' },
@@ -519,7 +528,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', '', '', '', '', 'unpaid']);
+                initialData.push(['', '', '', '', '', '', '', '', 'unpaid', '', '']);
             }
 
             function updateTotal() {
@@ -556,7 +565,9 @@
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
-                    { type: 'dropdown', title: 'Status', width: 120, source: statuses }
+                    { type: 'dropdown', title: 'Status', width: 120, source: statuses },
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
+                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true }
                 ],
                 onload: function() {
                     // Inject icons after a short delay to ensure Jexcel has finished rendering the headers
@@ -583,7 +594,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [9, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [11, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -605,6 +616,16 @@
                             updateTotal();
                             autoSave();
                         });
+                    } else if (x == 9) {
+                        var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                        let btnHtml = '';
+                        if (value && proofUrls[value]) {
+                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                        }
+                        sheetInstance.setValueFromCoords(10, y, btnHtml, false);
+                        
+                        updateTotal();
+                        autoSave();
                     } else {
                         updateTotal();
                         autoSave();
@@ -758,7 +779,8 @@
                                 start_time: row[5] || null,
                                 end_time: row[6] || null,
                                 wage: cleanWage,
-                                status: row[8] || null
+                                status: row[8] || null,
+                                transaction_proof_id: row[9] || null
                             });
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;

@@ -478,18 +478,24 @@
 
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
-                $storeData = $stores->map(fn($w) => ['id' => $w->id, 'name' => $w->name])->toArray();
-                $categoryData = $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray();
             @endphp
+            
+            const categories = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray());
+            const stores = @json($stores->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray());
+            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
+            
+            const proofs = proofsData;
+            const proofUrls = {};
+            proofs.forEach(function(p) {
+                proofUrls[p.id] = p.url;
+            });
 
             let pertanians = @json($pertanianData);
-            let stores = @json($storeData);
-            let categories = @json($categoryData);
 
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
             }
 
             function updateTotalAndRow() {
@@ -538,7 +544,9 @@
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 6
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
-                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true } // 9
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs }, // 10
+                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true } // 11
                 ],
                 onload: function() {
                     setTimeout(function() {
@@ -562,7 +570,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
+                minDimensions: [12, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -582,6 +590,16 @@
                             updateTotalAndRow();
                             autoSave();
                         });
+                    } else if (x == 10) {
+                        var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                        let btnHtml = '';
+                        if (value && proofUrls[value]) {
+                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                        }
+                        sheetInstance.setValueFromCoords(11, y, btnHtml, false);
+                        
+                        updateTotalAndRow();
+                        autoSave();
                     } else {
                         updateTotalAndRow();
                         autoSave();
@@ -715,6 +733,10 @@
                                     styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
                                 });
                             }
+                            
+                            let cleanTotal = row[9];
+                            if(typeof cleanTotal === 'string') cleanTotal = cleanTotal.replace(/,/g, '');
+
                             validData.push({
                                 index: i, // We use this in backend
                                 id: row[0] || null,
@@ -726,7 +748,8 @@
                                 description: row[6] || null,
                                 qty: row[7] !== "" && row[7] !== null ? row[7] : null,
                                 unit_price: row[8] !== "" && row[8] !== null ? row[8] : null,
-                                total_price: row[9] || null
+                                total_price: cleanTotal,
+                                transaction_proof_id: row[10] || null
                             });
                             rowMapping.push(i);
                         } else if (hasAnyData) {
