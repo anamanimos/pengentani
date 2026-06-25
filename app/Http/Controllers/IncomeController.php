@@ -22,6 +22,7 @@ class IncomeController extends Controller
         $pertanians = \App\Models\Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $tengkulaks = \App\Models\Tengkulak::orderBy('name')->get();
         $categories = \App\Models\IncomeCategory::orderBy('name')->get();
+        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
 
         return view('incomes.index', compact('incomes', 'pertanians', 'tengkulaks', 'proofs', 'categories'));
     }
