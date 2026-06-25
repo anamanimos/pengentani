@@ -21,8 +21,9 @@ class IncomeController extends Controller
         $incomes = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = \App\Models\Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $tengkulaks = \App\Models\Tengkulak::orderBy('name')->get();
+        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
 
-        return view('incomes.index', compact('incomes', 'pertanians', 'tengkulaks'));
+        return view('incomes.index', compact('incomes', 'pertanians', 'tengkulaks', 'proofs'));
     }
 
     public function store(Request $request)
@@ -36,6 +37,7 @@ class IncomeController extends Controller
             'data.*.description' => 'nullable|string|max:255',
             'data.*.amount' => 'nullable|numeric',
             'data.*.tengkulak_id' => 'nullable|exists:tengkulaks,id',
+            'data.*.transaction_proof_id' => 'nullable|exists:transaction_proofs,id',
         ]);
 
         \Illuminate\Support\Facades\DB::beginTransaction();
@@ -57,6 +59,7 @@ class IncomeController extends Controller
                             'description' => $row['description'] ?? null,
                             'amount' => $row['amount'],
                             'tengkulak_id' => $row['tengkulak_id'] ?? null,
+                            'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
                         $savedData[] = ['index' => $index, 'id' => $income->id];
                     }
@@ -66,8 +69,9 @@ class IncomeController extends Controller
                         'date' => $row['date'],
                         'type' => $row['type'],
                         'description' => $row['description'] ?? null,
-                        'amount' => $row['amount'],
+                        'amount' => $row['amount'] ?? 0,
                         'tengkulak_id' => $row['tengkulak_id'] ?? null,
+                        'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
                     $savedData[] = ['index' => $index, 'id' => $income->id];
                 }

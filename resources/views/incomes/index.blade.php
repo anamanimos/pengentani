@@ -478,6 +478,7 @@
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
                 $tengkulakData = $tengkulaks->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->toArray();
+                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name])->toArray() : [];
                 
                 $initialData = $incomes->map(function($income) {
                     return [
@@ -487,7 +488,9 @@
                         $income->tengkulak_id,
                         $income->type,
                         $income->description,
-                        $income->amount
+                        $income->amount,
+                        $income->transaction_proof_id,
+                        '' // For Preview column
                     ];
                 })->toArray();
             @endphp
@@ -498,11 +501,12 @@
                 { id: 'Panen', name: 'Panen' },
                 { id: 'Lain-lain', name: 'Lain-lain' }
             ];
+            const proofs = @json($proofsData);
 
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', 'Panen', '', '']);
+                initialData.push(['', '', '', '', 'Panen', '', '', '', '']);
             }
 
             function updateTotal() {
@@ -536,9 +540,11 @@
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
                     { type: 'text', title: 'Deskripsi', width: 300 },
-                    { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' }
+                    { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
+                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true }
                 ],
-                minDimensions: [7, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
+                minDimensions: [9, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -710,7 +716,8 @@
                                 tengkulak_id: row[3] || null,
                                 type: row[4] || null,
                                 description: row[5] || null,
-                                amount: cleanAmount
+                                amount: cleanAmount,
+                                transaction_proof_id: row[7] || null
                             });
                             rowMapping.push(i);
                         } else if (hasAnyData) {

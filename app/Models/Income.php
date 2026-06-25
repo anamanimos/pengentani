@@ -31,4 +31,9 @@ class Income extends Model
     {
         return $this->belongsTo(Tengkulak::class);
     }
+
+    public function transactionProof()
+    {
+        return $this->belongsTo(TransactionProof::class);
+    }
 }

@@ -120,6 +120,21 @@
                     <!--begin:Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
+                        <a class="menu-link {{ request()->routeIs('transaction-proofs.*') ? 'active' : '' }}" href="{{ route('transaction-proofs.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-picture fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Kelola Bukti Transaksi</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
+
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
                         <a class="menu-link {{ request()->routeIs('whatsapp.*') ? 'active' : '' }}" href="{{ route('whatsapp.index') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-whatsapp fs-2">

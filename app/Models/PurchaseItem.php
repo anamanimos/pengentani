@@ -28,4 +28,9 @@ class PurchaseItem extends Model
     {
         return $this->belongsTo(PurchaseCategory::class, 'purchase_category_id');
     }
+
+    public function transactionProof()
+    {
+        return $this->belongsTo(TransactionProof::class);
+    }
 }

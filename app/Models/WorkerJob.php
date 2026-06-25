@@ -25,4 +25,14 @@ class WorkerJob extends Model
     {
         return $this->belongsTo(JobCategory::class, 'job_category_id');
     }
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class, 'job_category_id');
+    }
+
+    public function transactionProof()
+    {
+        return $this->belongsTo(TransactionProof::class);
+    }
 }

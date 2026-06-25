@@ -48,7 +48,9 @@ class PurchaseController extends Controller
             }
         }
 
-        return view('purchases.index', compact('initialData', 'pertanians', 'categories', 'stores', 'totalPengeluaran'));
+        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
+
+        return view('purchases.index', compact('initialData', 'pertanians', 'categories', 'stores', 'totalPengeluaran', 'proofs'));
     }
 
     public function store(Request $request)
@@ -111,6 +113,7 @@ class PurchaseController extends Controller
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'total_price' => $totalPrice,
+                        'transaction_proof_id' => current(array_filter([$row['transaction_proof_id'] ?? null, $item->transaction_proof_id])) ?: null,
                     ]);
                     if ($oldPurchaseId != $purchase->id) {
                         $oldPurchase = \App\Models\Purchase::find($oldPurchaseId);
@@ -128,6 +131,7 @@ class PurchaseController extends Controller
                     'qty' => $qty,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
+                    'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                 ]);
                 $savedData[] = ['index' => $index, 'id' => $item->id];
             }

@@ -95,6 +95,9 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('updates/create', [\App\Http\Controllers\PertanianUpdateController::class, 'globalCreate'])->name('updates.global_create');
     Route::post('updates', [\App\Http\Controllers\PertanianUpdateController::class, 'globalStore'])->name('updates.global_store');
     Route::resource('pertanians.updates', \App\Http\Controllers\PertanianUpdateController::class)->except(['show']);
+
+    // Bukti Transaksi
+    Route::resource('transaction-proofs', \App\Http\Controllers\TransactionProofController::class)->only(['index', 'store', 'destroy']);
 });
 
 require __DIR__.'/auth.php';
