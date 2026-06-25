@@ -34,7 +34,7 @@ class WhatsappLoginController extends Controller
         }
 
         $payload = $request->input('payload');
-        if (!$payload || !isset($payload['body']) || !isset($payload['from'])) {
+        if (!$payload || !isset($payload['from'])) {
             return response()->json(['status' => 'ignored_invalid_payload']);
         }
 
@@ -43,7 +43,7 @@ class WhatsappLoginController extends Controller
             return response()->json(['status' => 'ignored_from_me']);
         }
 
-        $body = trim($payload['body']);
+        $body = trim($payload['body'] ?? '');
         $fromLid = $payload['from']; // e.g. "628123456789@s.whatsapp.net"
         
         // Extract number from JID for login logic
