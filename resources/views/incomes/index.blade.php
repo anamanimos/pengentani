@@ -491,9 +491,9 @@
                         $income->tengkulak_id,
                         $income->income_category_id,
                         $income->description,
-                        $income->qty,
-                        $income->unit_price,
-                        $income->amount,
+                        (float) $income->qty,
+                        (float) $income->unit_price,
+                        (float) $income->amount,
                         $income->transaction_proof_id
                     ];
                 })->toArray();
@@ -599,7 +599,7 @@
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
                     { type: 'text', title: 'Deskripsi', width: 250 },
-                    { type: 'numeric', title: 'Qty', width: 100 },
+                    { type: 'numeric', title: 'Qty', width: 100, mask: '#,##0.##' },
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
