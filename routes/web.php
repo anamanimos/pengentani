@@ -81,6 +81,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::resource('worker-jobs', \App\Http\Controllers\WorkerJobController::class)->except(['create', 'show', 'edit', 'update']);
 
     // Pencatatan Pendapatan (Incomes)
+    Route::post('incomes/ajax-category', [\App\Http\Controllers\IncomeController::class, 'storeCategoryAjax'])->name('incomes.ajax-category');
+    Route::resource('incomes/categories', \App\Http\Controllers\IncomeCategoryController::class)->names('income-categories');
     Route::resource('incomes', \App\Http\Controllers\IncomeController::class)->except(['create', 'show', 'edit', 'update']);
 
     // Pertanian Investors

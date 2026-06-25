@@ -12,7 +12,7 @@ class Income extends Model
     protected $fillable = [
         'pertanian_id',
         'date',
-        'type',
+        'income_category_id',
         'description',
         'qty',
         'unit_price',
@@ -28,6 +28,11 @@ class Income extends Model
     public function pertanian()
     {
         return $this->belongsTo(Pertanian::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(IncomeCategory::class, 'income_category_id');
     }
 
     public function tengkulak()

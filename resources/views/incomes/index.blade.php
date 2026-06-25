@@ -486,7 +486,7 @@
                         $income->date,
                         $income->pertanian_id,
                         $income->tengkulak_id,
-                        $income->type,
+                        $income->income_category_id,
                         $income->description,
                         $income->qty,
                         $income->unit_price,
@@ -498,10 +498,8 @@
 
             const pertanians = @json($pertanianData);
             const tengkulaks = @json($tengkulakData);
-            const types = [
-                { id: 'Panen', name: 'Panen' },
-                { id: 'Lain-lain', name: 'Lain-lain' }
-            ];
+            const types = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray());
+            types.push({id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...'});
             const proofs = @json($proofsData);
             const proofUrls = {};
             proofs.forEach(function(p) {
@@ -511,7 +509,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', 'Panen', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '']);
             }
 
             function updateTotal() {
@@ -618,6 +616,60 @@
                 wordWrap: false,
                 onchange: function(instance, cell, x, y, value) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+
+                    if (x == 4 && value === 'NEW_CATEGORY') {
+                        sheetInstance.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Tambah Kategori Baru',
+                            input: 'text',
+                            inputAttributes: {
+                                autocapitalize: 'off',
+                                placeholder: 'Nama Kategori'
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Simpan',
+                            cancelButtonText: 'Batal',
+                            showLoaderOnConfirm: true,
+                            preConfirm: (name) => {
+                                if (!name) {
+                                    Swal.showValidationMessage('Nama Kategori tidak boleh kosong');
+                                    return false;
+                                }
+                                return $.ajax({
+                                    url: '{{ route("incomes.ajax-category") }}',
+                                    type: 'POST',
+                                    data: {
+                                        _token: '{{ csrf_token() }}',
+                                        name: name
+                                    }
+                                }).catch(error => {
+                                    Swal.showValidationMessage(`Request failed: ${error.responseJSON?.message || error.statusText}`);
+                                });
+                            },
+                            allowOutsideClick: () => !Swal.isLoading()
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                var newCategory = result.value;
+                                
+                                // Update types array and dropdown configuration for column 4
+                                types.splice(types.length - 1, 0, newCategory); // Insert before "Tambah Kategori Baru"
+                                spreadsheet.options.columns[4].source = types;
+                                
+                                // Set the new value in the cell
+                                sheetInstance.setValueFromCoords(x, y, newCategory.id, true);
+                                
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: 'Kategori baru ditambahkan.',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            }
+                        });
+                        return;
+                    }
+
                     if (x == 6 || x == 7) {
                         var qty = sheetInstance.getValueFromCoords(6, y) || 0;
                         var price = sheetInstance.getValueFromCoords(7, y) || 0;

@@ -21,9 +21,9 @@ class IncomeController extends Controller
         $incomes = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = \App\Models\Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
         $tengkulaks = \App\Models\Tengkulak::orderBy('name')->get();
-        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
+        $categories = \App\Models\IncomeCategory::orderBy('name')->get();
 
-        return view('incomes.index', compact('incomes', 'pertanians', 'tengkulaks', 'proofs'));
+        return view('incomes.index', compact('incomes', 'pertanians', 'tengkulaks', 'proofs', 'categories'));
     }
 
     public function store(Request $request)
@@ -32,7 +32,7 @@ class IncomeController extends Controller
             'data' => 'required|array',
             'data.*.id' => 'nullable|exists:incomes,id',
             'data.*.date' => 'nullable|date',
-            'data.*.type' => 'nullable|in:Panen,Lain-lain',
+            'data.*.income_category_id' => 'nullable|exists:income_categories,id',
             'data.*.description' => 'nullable|string|max:255',
             'data.*.qty' => 'nullable',
             'data.*.unit_price' => 'nullable',
@@ -86,7 +86,7 @@ class IncomeController extends Controller
                         $income->update([
                             'pertanian_id' => $pertanianId,
                             'date' => $row['date'],
-                            'type' => $type,
+                            'income_category_id' => $row['income_category_id'] ?? null,
                             'description' => $row['description'] ?? null,
                             'qty' => $qty,
                             'unit_price' => $unitPrice,
@@ -100,7 +100,7 @@ class IncomeController extends Controller
                     $income = \App\Models\Income::create([
                         'pertanian_id' => $pertanianId,
                         'date' => $row['date'],
-                        'type' => $type,
+                        'income_category_id' => $row['income_category_id'] ?? null,
                         'description' => $row['description'] ?? null,
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
@@ -133,5 +133,14 @@ class IncomeController extends Controller
         }
         
         return redirect()->route('incomes.index')->with('success', 'Data pendapatan berhasil dihapus.');
+    }
+
+    public function storeCategoryAjax(Request $request)
+    {
+        $request->validate(['name' => 'required|string|max:255']);
+        $category = \App\Models\IncomeCategory::create([
+            'name' => $request->name
+        ]);
+        return response()->json(['id' => $category->id, 'name' => $category->name]);
     }
 }

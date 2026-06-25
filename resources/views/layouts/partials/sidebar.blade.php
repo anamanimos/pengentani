@@ -163,7 +163,7 @@
                     <!--end:Menu item-->
 
                     <!--begin:Menu item (Master Dropdown)-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*', 'job-categories.*', 'purchase-categories.*', 'stores.*']) ? 'here' : '' }}">
+                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'kebuns.*', 'tanamans.*', 'tengkulaks.*', 'job-categories.*', 'purchase-categories.*', 'stores.*', 'income-categories.*']) ? 'here' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-abstract-26 fs-2">
@@ -247,6 +247,17 @@
                                         <span class="bullet bullet-dot"></span>
                                     </span>
                                     <span class="menu-title">Kategori Pembelian</span>
+                                </a>
+                            </div>
+                            <!--end:Menu item-->
+
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('income-categories.*') ? 'active' : '' }}" href="{{ route('income-categories.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Kategori Pemasukan</span>
                                 </a>
                             </div>
                             <!--end:Menu item-->
