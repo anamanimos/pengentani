@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+use App\Models\Setting;
 
 class WhatsappSettingController extends Controller
 {
@@ -62,6 +64,30 @@ class WhatsappSettingController extends Controller
             $status = 'error';
         }
 
-        return view('whatsapp.index', compact('status', 'qrData', 'jid'));
+        $wa_proof_group_id = Setting::get('wa_proof_group_id');
+        
+        $webhookLogs = [];
+        $logPath = storage_path('logs/wa.txt');
+        if (File::exists($logPath)) {
+            // Get last 20 lines using a simple approach
+            $lines = file($logPath);
+            $webhookLogs = array_reverse(array_slice($lines, -20));
+        }
+
+        return view('whatsapp.index', compact('status', 'qrData', 'jid', 'wa_proof_group_id', 'webhookLogs'));
+    }
+
+    /**
+     * Save WhatsApp settings
+     */
+    public function saveSettings(Request $request)
+    {
+        $request->validate([
+            'wa_proof_group_id' => 'nullable|string'
+        ]);
+
+        Setting::set('wa_proof_group_id', $request->wa_proof_group_id);
+
+        return redirect()->back()->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

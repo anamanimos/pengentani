@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Setting;
+use App\Models\TransactionProof;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class WhatsappLoginController extends Controller
 {
@@ -42,8 +46,58 @@ class WhatsappLoginController extends Controller
         $body = trim($payload['body']);
         $fromLid = $payload['from']; // e.g. "628123456789@s.whatsapp.net"
         
-        // Extract number from JID
+        // Extract number from JID for login logic
         $phoneNumber = explode('@', $fromLid)[0];
+
+        // Check if this message is from the Transaction Proof Group
+        $waProofGroupId = Setting::get('wa_proof_group_id');
+        $chatId = $payload['chat_id'] ?? '';
+        
+        if ($waProofGroupId && ($fromLid === $waProofGroupId || $chatId === $waProofGroupId)) {
+            // Check if it's an image upload
+            if (isset($payload['image']) && isset($payload['image']['path'])) {
+                $imagePathUrl = $payload['image']['path'];
+                $caption = $payload['image']['caption'] ?? '';
+                
+                // Determine file name from caption or timestamp
+                $proofName = !empty($caption) ? trim($caption) : now()->format('Y-m-d H:i:s');
+                
+                // Download image
+                $imageUrl = "https://wag.anam.ch/" . ltrim($imagePathUrl, '/');
+                try {
+                    $imageContent = file_get_contents($imageUrl);
+                    if ($imageContent) {
+                        $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+                        if (!$extension) $extension = 'jpg';
+                        
+                        $filename = 'transaction_proofs/' . Str::uuid() . '.' . $extension;
+                        Storage::disk('public')->put($filename, $imageContent);
+                        
+                        // Find user or default to first admin user
+                        $user = User::where('whatsapp', $phoneNumber)
+                            ->orWhere('whatsapp', '0' . substr($phoneNumber, 2))
+                            ->orWhere('whatsapp', '+' . $phoneNumber)
+                            ->first();
+                            
+                        $userId = $user ? $user->id : User::first()->id;
+                        
+                        TransactionProof::create([
+                            'user_id' => $userId,
+                            'name' => $proofName,
+                            'file_path' => $filename,
+                        ]);
+                        
+                        \App\Services\WaGatewayService::sendMessage($chatId ?: $fromLid, "Bukti Transaksi '$proofName' berhasil disimpan.");
+                        return response()->json(['status' => 'proof_saved']);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Failed to download WA image: " . $e->getMessage());
+                }
+            }
+            
+            // If it's from the group but not an image, we just ignore it
+            return response()->json(['status' => 'ignored_not_image']);
+        }
 
         // Check if message is exactly "login" (case-insensitive)
         if (strtolower($body) !== 'login') {

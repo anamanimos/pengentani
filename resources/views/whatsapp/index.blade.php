@@ -103,6 +103,54 @@
     </div>
 </div>
 
+<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+    <!-- Form Pengaturan Bukti Transaksi -->
+    <div class="col-xl-6">
+        <div class="card card-flush h-xl-100">
+            <div class="card-header pt-7">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Pengaturan Bukti Transaksi</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">Hubungkan Grup WA untuk otomatisasi bukti</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('whatsapp.settings.save') }}" method="POST">
+                    @csrf
+                    <div class="mb-5">
+                        <label class="form-label fw-bold">ID Grup WhatsApp</label>
+                        <input type="text" name="wa_proof_group_id" class="form-control" value="{{ $wa_proof_group_id }}" placeholder="Contoh: 120363041234567890@g.us" />
+                        <div class="form-text">
+                            Masukkan ID Grup yang akan digunakan sebagai tempat mengunggah bukti transaksi. Anda dapat mengirimkan pesan sembarang ke grup dan melihat ID-nya pada Log Webhook di samping.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Webhook Viewer -->
+    <div class="col-xl-6">
+        <div class="card card-flush h-xl-100">
+            <div class="card-header pt-7">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-800">Log Webhook</span>
+                    <span class="text-gray-500 mt-1 fw-semibold fs-6">20 Log Terakhir</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="bg-dark text-light p-4 rounded" style="max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+@forelse($webhookLogs as $log)
+{{ $log }}
+@empty
+Tidak ada log webhook.
+@endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     @if($status === 'disconnected' && $qrData)
