@@ -11,6 +11,9 @@
 @endsection
 
 @section('page_actions')
+    <a href="{{ route('income-categories.index') }}" class="btn btn-light-info btn-sm me-3 fw-bold">
+        <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Kelola Kategori
+    </a>
     <a href="{{ route('tengkulaks.index') }}" class="btn btn-light-success btn-sm me-3 fw-bold">
         <i class="ki-duotone ki-address-book fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kelola Tengkulak
     </a>
