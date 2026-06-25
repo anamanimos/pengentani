@@ -871,6 +871,13 @@
                         categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
                         spreadsheet.options.columns[3].source = stores;
                         spreadsheet.options.columns[4].source = categories;
+
+                        if (res.proofs) {
+                            spreadsheet.options.columns[9].source = res.proofs;
+                            res.proofs.forEach(function(p) {
+                                proofUrls[p.id] = p.url;
+                            });
+                        }
                     }
                 });
             }, 5000);

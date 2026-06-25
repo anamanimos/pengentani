@@ -185,9 +185,22 @@ class PurchaseController extends Controller
     {
         $stores = \App\Models\Store::orderBy('name')->get(['id', 'name']);
         $categories = \App\Models\PurchaseCategory::orderBy('name')->get(['id', 'name']);
+        
+        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->orderBy('name')
+            ->get()
+            ->map(function($p) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'url' => \Illuminate\Support\Facades\Storage::url($p->file_path)
+                ];
+            });
+
         return response()->json([
             'stores' => $stores,
-            'categories' => $categories
+            'categories' => $categories,
+            'proofs' => $proofs
         ]);
     }
 
