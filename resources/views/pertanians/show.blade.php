@@ -655,7 +655,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus data penarikan ini?')">
+                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
@@ -679,7 +679,7 @@
 <div class="modal fade" tabindex="-1" id="kt_modal_add_withdrawal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('withdrawals.store', $pertanian) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('withdrawals.store', $pertanian) }}" method="POST" enctype="multipart/form-data" id="form_add_withdrawal">
                 @csrf
                 <div class="modal-header">
                     <h3 class="modal-title">Catat Penarikan Dana</h3>
@@ -718,7 +718,7 @@
                     </div>
                     <div class="mb-5">
                         <label class="required form-label">Tanggal Penarikan</label>
-                        <input type="date" class="form-control form-control-solid" name="date" required value="{{ date('Y-m-d') }}" />
+                        <input type="text" class="form-control form-control-solid" id="withdrawal_date" name="date" required value="{{ date('Y-m-d') }}" />
                     </div>
                     <div class="mb-5">
                         <label class="form-label">Bukti Transfer (Opsional)</label>
@@ -887,6 +887,94 @@
                     }
                 });
             }
+            // Withdrawal Flatpickr
+            $("#withdrawal_date").flatpickr({
+                dateFormat: "Y-m-d"
+            });
+
+            // Activate Tab from Hash
+            if (window.location.hash) {
+                var tabEl = document.querySelector('a[href="' + window.location.hash + '"]');
+                if (tabEl) {
+                    var tab = new bootstrap.Tab(tabEl);
+                    tab.show();
+                }
+            }
+
+            // Handle Add Withdrawal
+            $('#form_add_withdrawal').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var submitBtn = form.find('button[type="submit"]');
+                var originalText = submitBtn.html();
+                
+                submitBtn.html('<span class="spinner-border spinner-border-sm align-middle ms-2"></span> Menyimpan...').prop('disabled', true);
+                
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: new FormData(this),
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#kt_modal_add_withdrawal').modal('hide');
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: response.message || 'Penarikan berhasil dicatat',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.hash = '#kt_tab_pane_withdrawals';
+                            window.location.reload();
+                        });
+                    },
+                    error: function(xhr) {
+                        submitBtn.html(originalText).prop('disabled', false);
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan, silakan coba lagi', 'error');
+                    }
+                });
+            });
+
+            // Handle Delete Withdrawal
+            $('.form-delete-withdrawal').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data penarikan ini akan dihapus secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-light'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: form.attr('action'),
+                            type: 'POST',
+                            data: form.serialize(),
+                            success: function(response) {
+                                Swal.fire({
+                                    title: 'Terhapus!',
+                                    text: response.message || 'Data berhasil dihapus',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    window.location.hash = '#kt_tab_pane_withdrawals';
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error', xhr.responseJSON?.message || 'Gagal menghapus data', 'error');
+                            }
+                        });
+                    }
+                });
+            });
         });
     </script>
 @endpush

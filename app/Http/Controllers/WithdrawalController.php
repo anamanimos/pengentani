@@ -39,6 +39,10 @@ class WithdrawalController extends Controller
             'notes' => $request->notes
         ]);
 
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Penarikan dana berhasil dicatat.']);
+        }
+
         return back()->with('success', 'Penarikan dana berhasil dicatat.');
     }
 
@@ -53,6 +57,10 @@ class WithdrawalController extends Controller
         }
 
         $withdrawal->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['message' => 'Data penarikan berhasil dihapus.']);
+        }
 
         return back()->with('success', 'Data penarikan berhasil dihapus.');
     }
