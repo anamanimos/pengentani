@@ -551,12 +551,22 @@
                 onbeforepaste: function(instance, data, x, y) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                     if (!data) return data;
-                    for (var row = 0; row < data.length; row++) {
-                        for (var col = 0; col < data[row].length; col++) {
+                    
+                    var isString = typeof data === 'string';
+                    var rows = isString ? data.split(/\r?\n/) : data;
+                    var processedData = [];
+
+                    for (var row = 0; row < rows.length; row++) {
+                        var cols = isString ? rows[row].split('\t') : rows[row];
+                        if (isString && cols.length === 1 && cols[0] === '') continue; // skip empty trailing row
+
+                        var processedCols = [];
+                        for (var col = 0; col < cols.length; col++) {
                             var targetCol = parseInt(x) + col;
                             var colOptions = sheetInstance.options.columns[targetCol];
+                            var val = String(cols[col]);
+
                             if (colOptions && colOptions.type === 'numeric') {
-                                var val = String(data[row][col]);
                                 // Strip Rp, IDR, spaces
                                 val = val.replace(/Rp|IDR/gi, '').trim();
                                 
@@ -571,11 +581,13 @@
                                     // Hanya titik (misal 150.000)
                                     val = val.replace(/\./g, '');
                                 }
-                                data[row][col] = val;
                             }
+                            processedCols.push(val);
                         }
+                        processedData.push(isString ? processedCols.join('\t') : processedCols);
                     }
-                    return data;
+                    
+                    return isString ? processedData.join('\n') : processedData;
                 },
                 onselection: function(instance, x1, y1, x2, y2, origin) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
