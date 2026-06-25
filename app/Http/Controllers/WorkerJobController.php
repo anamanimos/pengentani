@@ -100,10 +100,10 @@ class WorkerJobController extends Controller
                             'job_category_id' => $row['job_category_id'],
                             'description' => $row['description'] ?? null,
                             'date' => $row['date'],
-                            'start_time' => $row['start_time'],
-                            'end_time' => $row['end_time'],
-                            'wage' => $row['wage'],
-                            'status' => $row['status'],
+                            'start_time' => $row['start_time'] ?? null,
+                            'end_time' => $row['end_time'] ?? null,
+                            'wage' => $row['wage'] ?? 0,
+                            'status' => $row['status'] ?? 'unpaid',
                             'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
                         $savedData[] = ['index' => $row['index'], 'id' => $job->id];
@@ -115,10 +115,10 @@ class WorkerJobController extends Controller
                         'job_category_id' => $row['job_category_id'],
                         'description' => $row['description'] ?? null,
                         'date' => $row['date'],
-                        'start_time' => $row['start_time'],
-                        'end_time' => $row['end_time'],
-                        'wage' => $row['wage'],
-                        'status' => $row['status'],
+                        'start_time' => $row['start_time'] ?? null,
+                        'end_time' => $row['end_time'] ?? null,
+                        'wage' => $row['wage'] ?? 0,
+                        'status' => $row['status'] ?? 'unpaid',
                         'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
                     $savedData[] = ['index' => $row['index'], 'id' => $job->id];
