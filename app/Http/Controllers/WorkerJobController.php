@@ -98,11 +98,13 @@ class WorkerJobController extends Controller
                             'pertanian_id' => $row['pertanian_id'],
                             'worker_id' => $row['worker_id'],
                             'job_category_id' => $row['job_category_id'],
+                            'description' => $row['description'] ?? null,
                             'date' => $row['date'],
                             'start_time' => $row['start_time'],
                             'end_time' => $row['end_time'],
                             'wage' => $row['wage'],
                             'status' => $row['status'],
+                            'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
                         $savedData[] = ['index' => $row['index'], 'id' => $job->id];
                     }
@@ -111,11 +113,13 @@ class WorkerJobController extends Controller
                         'pertanian_id' => $row['pertanian_id'],
                         'worker_id' => $row['worker_id'],
                         'job_category_id' => $row['job_category_id'],
+                        'description' => $row['description'] ?? null,
                         'date' => $row['date'],
                         'start_time' => $row['start_time'],
                         'end_time' => $row['end_time'],
                         'wage' => $row['wage'],
                         'status' => $row['status'],
+                        'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
                     $savedData[] = ['index' => $row['index'], 'id' => $job->id];
                 }

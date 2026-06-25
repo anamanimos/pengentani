@@ -617,6 +617,7 @@
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians },
                     { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true, options: { newOptions: true } },
                     { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
+                    { type: 'text', title: 'Deskripsi', width: 250 },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
@@ -624,7 +625,7 @@
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 9 && val && proofUrls[val]) {
+                    if (col == 10 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
                     }
                 },
@@ -653,7 +654,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [10, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [11, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -881,7 +882,7 @@
                                 });
                             }
 
-                            let cleanWage = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
                             
                             validData.push({
                                 index: i,
@@ -890,11 +891,12 @@
                                 pertanian_id: pertanianVal || null,
                                 worker_id: workerVal || null,
                                 job_category_id: categoryVal || null,
-                                start_time: row[5] || null,
-                                end_time: row[6] || null,
+                                description: row[5] || null,
+                                start_time: row[6] || null,
+                                end_time: row[7] || null,
                                 wage: cleanWage,
-                                status: row[8] || 'unpaid',
-                                transaction_proof_id: row[9] || null
+                                status: row[9] || 'unpaid',
+                                transaction_proof_id: row[10] || null
                             });
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
