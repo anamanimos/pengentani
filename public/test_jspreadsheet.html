@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
+    <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jexcel.css" type="text/css" />
+    <link rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
+</head>
+<body>
+<div id="spreadsheet"></div>
+<script>
+    jspreadsheet(document.getElementById('spreadsheet'), {
+        data: [['Rp 150.000,00']],
+        minDimensions: [5,5],
+        onbeforepaste: function(instance, data, x, y) {
+            console.log("typeof data:", typeof data);
+            console.log("isArray:", Array.isArray(data));
+            console.log("data:", JSON.stringify(data));
+            return data;
+        }
+    });
+</script>
+</body>
+</html>

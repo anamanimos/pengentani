@@ -72,10 +72,14 @@ class PurchaseController extends Controller
                 $pertanian = Pertanian::where('user_id', Auth::id())
                     ->where('name', 'like', '%' . trim($pertanianId) . '%')
                     ->first();
-                if (!$pertanian) continue;
+                if (!$pertanian) {
+                    return response()->json(['message' => 'Pertanian "' . $pertanianId . '" tidak ditemukan. Pastikan namanya sama dengan yang ada di sistem.'], 422);
+                }
             } else {
                 $pertanian = Pertanian::find($pertanianId);
-                if (!$pertanian || $pertanian->user_id !== Auth::id()) continue;
+                if (!$pertanian || $pertanian->user_id !== Auth::id()) {
+                    return response()->json(['message' => 'Pertanian tidak valid.'], 422);
+                }
             }
 
             $date = $row['date'];

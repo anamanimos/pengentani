@@ -871,8 +871,9 @@
                             }, 3000);
                         },
                         error: function(xhr) {
-                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
-                            $('#auto-save-status-fs').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">Gagal menyimpan</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
+                            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan';
+                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">' + msg + '</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
+                            $('#auto-save-status-fs').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">' + msg + '</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
                         }
                     });
                 }, 1500);
