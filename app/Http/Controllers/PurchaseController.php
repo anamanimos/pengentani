@@ -70,14 +70,19 @@ class PurchaseController extends Controller
             if (!$pertanian || $pertanian->user_id !== Auth::id()) continue;
 
             $date = $row['date'];
-            $storeId = $row['store_id'];
-            $invoiceNumber = $row['invoice_number'];
+            $invoiceNumber = $row['invoice_number'] ?? '-';
+            $storeId = $row['store_id'] ?? null;
             
-            // Create or update store if needed
-            // If storeId is a string and not empty, but not numeric, it might be a new store name
-            // but Jspreadsheet passes ID if source is defined
-            // If not found in DB, maybe they typed a new store? We handle that in AJAX dropdown now.
-            // Let's assume storeId is valid or null
+            // Create new store if user typed a string instead of selecting an existing ID
+            if (!empty($storeId) && !is_numeric($storeId)) {
+                $newStore = \App\Models\Store::firstOrCreate([
+                    'name' => trim($storeId),
+                    'user_id' => Auth::id()
+                ]);
+                $storeId = $newStore->id;
+            } else {
+                $storeId = $storeId ?: null;
+            }
             
             // Find or create Purchase (Nota)
             $purchase = Purchase::firstOrCreate(
@@ -98,9 +103,20 @@ class PurchaseController extends Controller
             $unitPrice = (float) $unitPriceStr;
             $totalPrice = $qty * $unitPrice;
 
-            $catId = $row['category_id'];
-            $category = \App\Models\PurchaseCategory::find($catId);
-            $categoryName = $category ? $category->name : 'Lain-lain';
+            $catId = $row['category_id'] ?? null;
+            
+            if (!empty($catId) && !is_numeric($catId)) {
+                $newCat = \App\Models\PurchaseCategory::firstOrCreate([
+                    'name' => trim($catId),
+                    'user_id' => Auth::id()
+                ]);
+                $catId = $newCat->id;
+                $categoryName = $newCat->name;
+            } else {
+                $category = \App\Models\PurchaseCategory::find($catId);
+                $categoryName = $category ? $category->name : 'Lain-lain';
+                $catId = $catId ?: null;
+            }
 
             if (!empty($row['id'])) {
                 $item = PurchaseItem::find($row['id']);
