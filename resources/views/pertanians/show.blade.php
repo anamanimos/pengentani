@@ -105,99 +105,93 @@
     {{-- Tab 1: Ringkasan & Bagi Hasil --}}
     <div class="tab-pane fade show active" id="kt_tab_pane_financial" role="tabpanel">
         {{-- Kartu Ringkasan Finansial --}}
+        {{-- Kartu Finansial (Estimasi vs Realisasi) --}}
         <div class="row g-5 g-xl-8 mb-5">
+            {{-- Biaya Operasional --}}
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-light-danger mb-5 mb-xl-10 h-100">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-finance-calculator fs-3x text-danger me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-danger fw-bold fs-7">Total Biaya Operasional</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</span>
+                    <div class="card-body py-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="ki-duotone ki-finance-calculator fs-1 text-danger me-3">
+                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span>
+                            </i>
+                            <h4 class="text-danger fw-bold m-0">Biaya Operasional</h4>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
+                            <span class="text-gray-900 fw-bold">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
+                            <span class="text-danger fw-bold">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-primary mb-5 mb-xl-10 h-100">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-wallet fs-3x text-primary me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-primary fw-bold fs-7">Total Investasi Terkumpul</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($totalInvestasi, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+            {{-- Pendapatan --}}
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-light-info mb-5 mb-xl-10 h-100">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-graph-up fs-3x text-info me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-info fw-bold fs-7">Estimasi Pendapatan</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</span>
+                    <div class="card-body py-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="ki-duotone ki-graph-up fs-1 text-info me-3">
+                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span>
+                            </i>
+                            <h4 class="text-info fw-bold m-0">Pendapatan</h4>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
+                            <span class="text-gray-900 fw-bold">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
+                            <span class="text-info fw-bold">Rp {{ number_format($totalRealisasiPendapatan, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Laba Bersih --}}
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-light-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} mb-5 mb-xl-10 h-100">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-badge fs-3x text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} fw-bold fs-7">Estimasi Laba Bersih</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
-                            @if($estimasiLaba > 0)
-                                <div class="mt-2 text-muted fs-8">
-                                    <div class="d-flex justify-content-between gap-3">
-                                        <span>Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
-                                        <span class="fw-semibold text-danger">-Rp {{ number_format($zakat, 0, ',', '.') }}</span>
-                                    </div>
-                                    <div class="separator separator-dashed my-1"></div>
-                                    <div class="d-flex justify-content-between gap-3 text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} fw-bold">
-                                        <span>Sisa Laba:</span>
-                                        <span>Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
-                                    </div>
-                                </div>
-                            @endif
+                    <div class="card-body py-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="ki-duotone ki-badge fs-1 text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} me-3">
+                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+                            </i>
+                            <h4 class="text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} fw-bold m-0">Laba Bersih</h4>
                         </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
+                            <span class="text-gray-900 fw-bold">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
+                            <span class="text-{{ $realisasiLabaBersih >= 0 ? 'success' : 'danger' }} fw-bold">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
+                        </div>
+                        @if($estimasiLaba > 0)
+                            <div class="separator separator-dashed my-2"></div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-gray-600 fs-8">Est. Sisa Laba (Stlh Zkt):</span>
+                                <span class="text-success fw-bold fs-8">Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Kartu Realisasi Finansial --}}
-        <div class="row g-5 g-xl-8 mb-5">
-            <div class="col-xl-6 col-md-6">
-                <div class="card bg-light-success mb-5 mb-xl-10 h-100 border border-success border-dashed">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-dollar fs-3x text-success me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-success fw-bold fs-7">Total Realisasi Pendapatan</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($totalRealisasiPendapatan, 0, ',', '.') }}</span>
+            {{-- Investasi Terkumpul --}}
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-light-primary mb-5 mb-xl-10 h-100">
+                    <div class="card-body py-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <i class="ki-duotone ki-wallet fs-1 text-primary me-3">
+                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
+                            </i>
+                            <h4 class="text-primary fw-bold m-0">Investasi Terkumpul</h4>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-6 col-md-6">
-                <div class="card bg-light-{{ $realisasiLabaBersih >= 0 ? 'primary' : 'danger' }} mb-5 mb-xl-10 h-100 border border-{{ $realisasiLabaBersih >= 0 ? 'primary' : 'danger' }} border-dashed">
-                    <div class="card-body d-flex align-items-center py-5">
-                        <i class="ki-duotone ki-wallet fs-3x text-{{ $realisasiLabaBersih >= 0 ? 'primary' : 'danger' }} me-5">
-                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
-                        </i>
-                        <div class="d-flex flex-column">
-                            <span class="text-{{ $realisasiLabaBersih >= 0 ? 'primary' : 'danger' }} fw-bold fs-7">Realisasi Laba Bersih</span>
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
-                            <div class="text-muted fs-8 mt-1">Total Realisasi Pendapatan - Total Seluruh Realisasi Biaya (Rp {{ number_format($totalRealisasi, 0, ',', '.') }})</div>
+                        <div class="d-flex flex-column justify-content-center align-items-center mt-6">
+                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($totalInvestasi, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
