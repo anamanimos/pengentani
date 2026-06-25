@@ -76,8 +76,7 @@ class PurchaseController extends Controller
             // Create new store if user typed a string instead of selecting an existing ID
             if (!empty($storeId) && !is_numeric($storeId)) {
                 $newStore = \App\Models\Store::firstOrCreate([
-                    'name' => trim($storeId),
-                    'user_id' => Auth::id()
+                    'name' => trim($storeId)
                 ]);
                 $storeId = $newStore->id;
             } else {
@@ -107,8 +106,7 @@ class PurchaseController extends Controller
             
             if (!empty($catId) && !is_numeric($catId)) {
                 $newCat = \App\Models\PurchaseCategory::firstOrCreate([
-                    'name' => trim($catId),
-                    'user_id' => Auth::id()
+                    'name' => trim($catId)
                 ]);
                 $catId = $newCat->id;
                 $categoryName = $newCat->name;
@@ -197,14 +195,14 @@ class PurchaseController extends Controller
     public function storeStoreAjax(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255']);
-        $store = \App\Models\Store::create(['name' => $request->name]);
+        $store = \App\Models\Store::firstOrCreate(['name' => trim($request->name)]);
         return response()->json(['id' => $store->id, 'name' => $store->name]);
     }
 
     public function storeCategoryAjax(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255']);
-        $cat = \App\Models\PurchaseCategory::create(['name' => $request->name]);
+        $cat = \App\Models\PurchaseCategory::firstOrCreate(['name' => trim($request->name)]);
         return response()->json(['id' => $cat->id, 'name' => $cat->name]);
     }
 }

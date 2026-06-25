@@ -584,6 +584,7 @@
                     if (x == 3 && value && isNaN(value)) {
                         $.post('{{ route("purchases.ajax-store") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             stores.push({ id: res.id, name: res.name });
+                            spreadsheet.options.columns[3].source = stores;
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
                             updateTotalAndRow();
                             autoSave();
@@ -591,6 +592,7 @@
                     } else if (x == 5 && value && isNaN(value)) {
                         $.post('{{ route("purchases.ajax-category") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
                             categories.push({ id: res.id, name: res.name });
+                            spreadsheet.options.columns[5].source = categories;
                             spreadsheet.setValueFromCoords(x, y, res.id, true);
                             updateTotalAndRow();
                             autoSave();
