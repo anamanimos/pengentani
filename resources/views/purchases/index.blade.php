@@ -789,19 +789,19 @@
                         
                         var pertanianVal = row[2];
                         if (!pertanianVal) {
-                            var cellEl = spreadsheet.getCell(2, i);
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
                             if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
                         }
 
                         var storeVal = row[3];
                         if (!storeVal) {
-                            var cellEl = spreadsheet.getCell(3, i);
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
                             if (cellEl && cellEl.innerText.trim() !== '') storeVal = cellEl.innerText.trim();
                         }
 
                         var categoryVal = row[4];
                         if (!categoryVal) {
-                            var cellEl = spreadsheet.getCell(4, i);
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
                             if (cellEl && cellEl.innerText.trim() !== '') categoryVal = cellEl.innerText.trim();
                         }
 
