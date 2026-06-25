@@ -542,11 +542,18 @@
                             if (colOptions && colOptions.type === 'numeric') {
                                 var val = String(data[row][col]);
                                 // Strip Rp, IDR, spaces
-                                val = val.replace(/Rp|IDR/gi, '').replace(/\s/g, '');
-                                // If it has comma (like 15.000,00)
-                                if (val.includes(',')) {
-                                    val = val.replace(/\./g, ''); // remove dots
-                                    val = val.replace(/,/g, '.'); // comma to dot
+                                val = val.replace(/Rp|IDR/gi, '').trim();
+                                
+                                // Format Indonesia: 150.000,00 atau 150.000 atau 150,00
+                                if (val.includes(',') && val.includes('.')) {
+                                    val = val.replace(/\./g, ''); // hapus pemisah ribuan (titik)
+                                    val = val.replace(/,/g, '.'); // jadikan koma sebagai desimal
+                                } else if (val.includes(',')) {
+                                    // Hanya koma (misal 150,00)
+                                    val = val.replace(/,/g, '.');
+                                } else if (val.includes('.')) {
+                                    // Hanya titik (misal 150.000)
+                                    val = val.replace(/\./g, '');
                                 }
                                 data[row][col] = val;
                             }
