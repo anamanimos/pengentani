@@ -168,6 +168,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 <script>
     // Initialize Dropzone
     var myDropzone = new Dropzone("#kt_dropzone_proof", {
