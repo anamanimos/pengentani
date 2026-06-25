@@ -102,3 +102,10 @@ Route::prefix('console')->middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+Route::get('/logs', function() {
+    $path = storage_path('logs/laravel.log');
+    if (!\Illuminate\Support\Facades\File::exists($path)) return 'No logs';
+    
+    $lines = file($path);
+    return response(implode("", array_slice($lines, -500)))->header('Content-Type', 'text/plain');
+});
