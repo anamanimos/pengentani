@@ -1,4 +1,4 @@
-@extends('layouts.console')
+@extends('layouts.metronic')
 
 @section('title', 'Kelola Bukti Transaksi')
 
