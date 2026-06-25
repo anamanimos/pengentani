@@ -660,6 +660,7 @@
                                 
                                 // Set the new value in the cell
                                 sheetInstance.setValueFromCoords(x, y, newCategory.id, true);
+                                autoSave();
                                 
                                 Swal.fire({
                                     title: 'Berhasil!',
