@@ -787,8 +787,29 @@
                     for(var i = 0; i < data.length; i++) {
                         var row = data[i];
                         
+                        var pertanianVal = row[2];
+                        if (!pertanianVal) {
+                            var cellEl = spreadsheet.getCell(2, i);
+                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                        }
+
+                        var storeVal = row[3];
+                        if (!storeVal) {
+                            var cellEl = spreadsheet.getCell(3, i);
+                            if (cellEl && cellEl.innerText.trim() !== '') storeVal = cellEl.innerText.trim();
+                        }
+
+                        var categoryVal = row[4];
+                        if (!categoryVal) {
+                            var cellEl = spreadsheet.getCell(4, i);
+                            if (cellEl && cellEl.innerText.trim() !== '') categoryVal = cellEl.innerText.trim();
+                        }
+
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
+                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
+                            if (j === 3 && storeVal) { hasAnyData = true; break; }
+                            if (j === 4 && categoryVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
@@ -797,11 +818,12 @@
 
                         var requiredCols = [1, 2];
 
-                        if (row[0] || (row[1] && row[2])) {
-                            if (!row[1] || !row[2]) {
+                        if (row[0] || (row[1] && pertanianVal)) {
+                            if (!row[1] || !pertanianVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    var val = colIdx === 2 ? pertanianVal : row[colIdx];
+                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
@@ -817,9 +839,9 @@
                                 index: i, // We use this in backend
                                 id: row[0] || null,
                                 date: row[1] || null,
-                                pertanian_id: row[2] || null,
-                                store_id: row[3] || null,
-                                category_id: row[4] || null,
+                                pertanian_id: pertanianVal || null,
+                                store_id: storeVal || null,
+                                category_id: categoryVal || null,
                                 description: row[5] || null,
                                 qty: row[6] !== "" && row[6] !== null ? row[6] : null,
                                 unit_price: row[7] !== "" && row[7] !== null ? row[7] : null,
@@ -830,7 +852,8 @@
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                var val = colIdx === 2 ? pertanianVal : row[colIdx];
+                                if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
                                 else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         } else {

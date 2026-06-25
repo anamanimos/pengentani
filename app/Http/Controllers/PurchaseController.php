@@ -69,17 +69,23 @@ class PurchaseController extends Controller
 
             $pertanianId = $row['pertanian_id'];
             if (!is_numeric($pertanianId)) {
+                $searchName = trim($pertanianId);
+                if (preg_match('/\]\s*-\s*(.*)/', $searchName, $matches)) {
+                    $searchName = trim($matches[1]);
+                }
                 $pertanian = Pertanian::where('user_id', Auth::id())
-                    ->where('name', 'like', '%' . trim($pertanianId) . '%')
+                    ->where('name', 'like', '%' . $searchName . '%')
                     ->first();
                 if (!$pertanian) {
-                    return response()->json(['message' => 'Pertanian "' . $pertanianId . '" tidak ditemukan. Pastikan namanya sama dengan yang ada di sistem.'], 422);
+                    return response()->json(['error' => 'Pertanian tidak ditemukan: ' . htmlspecialchars(substr($row['pertanian_id'], 0, 50))], 422);
                 }
+                $pertanianId = $pertanian->id;
             } else {
                 $pertanian = Pertanian::find($pertanianId);
                 if (!$pertanian || $pertanian->user_id !== Auth::id()) {
                     return response()->json(['message' => 'Pertanian tidak valid.'], 422);
                 }
+                $pertanianId = $pertanian->id;
             }
 
             $date = $row['date'];
