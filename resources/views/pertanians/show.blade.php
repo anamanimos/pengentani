@@ -623,9 +623,15 @@
                     </div>
                 </div>
 
+                {{-- Pencarian --}}
+                <div class="d-flex align-items-center position-relative my-1 mb-5">
+                    <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4"><span class="path1"></span><span class="path2"></span></i>
+                    <input type="text" id="withdrawal_search" class="form-control form-control-solid w-250px ps-12" placeholder="Cari penarikan..." />
+                </div>
+
                 {{-- Tabel Penarikan --}}
                 <div class="table-responsive">
-                    <table class="table align-middle table-row-dashed fs-6 gy-5">
+                    <table id="kt_table_withdrawals" class="table align-middle table-row-dashed fs-6 gy-5">
                         <thead>
                             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                                 <th>Tanggal</th>
@@ -900,6 +906,21 @@
                     tab.show();
                 }
             }
+
+            // Init DataTable for Withdrawals
+            var withdrawalTable = $('#kt_table_withdrawals').DataTable({
+                "info": false,
+                "order": [],
+                "pageLength": 10,
+                "columnDefs": [
+                    { orderable: false, targets: [4, 5] } // Disable sorting on Bukti and Aksi columns
+                ]
+            });
+
+            // Search filter
+            $('#withdrawal_search').on('keyup', function () {
+                withdrawalTable.search(this.value).draw();
+            });
 
             // Handle Add Withdrawal
             $('#form_add_withdrawal').on('submit', function(e) {
