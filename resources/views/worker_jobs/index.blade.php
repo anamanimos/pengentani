@@ -589,8 +589,8 @@
                     { type: 'hidden', title: 'ID' },
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 140, options: { format: 'YYYY-MM-DD' } },
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians },
-                    { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true, options: { newOptions: true } },
-                    { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true, options: { newOptions: true } },
+                    { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true },
+                    { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true },
                     { type: 'text', title: 'Deskripsi', width: 250 },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
@@ -670,20 +670,6 @@
                                     autoSave();
                                 });
                             }
-                        });
-                    } else if (x == 3 && value && isNaN(value)) {
-                        // New worker fallback (typed directly)
-                        $.post('{{ route("worker-jobs.ajax-worker") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
-                            workers.push({ id: res.id, name: res.name });
-                            spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            autoSave();
-                        });
-                    } else if (x == 4 && value && isNaN(value)) {
-                        // New category fallback (typed directly)
-                        $.post('{{ route("worker-jobs.ajax-category") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
-                            categories.push({ id: res.id, name: res.name });
-                            spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            autoSave();
                         });
                     } else {
                         autoSave();
