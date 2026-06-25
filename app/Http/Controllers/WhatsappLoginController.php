@@ -74,34 +74,39 @@ class WhatsappLoginController extends Controller
                     // Download image
                     $imageUrl = "https://wag.anam.ch/" . ltrim($imagePathUrl, '/');
                     try {
-                    $imageContent = file_get_contents($imageUrl);
-                    if ($imageContent) {
-                        $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
-                        if (!$extension) $extension = 'jpg';
+                        $response = Http::timeout(30)->get($imageUrl);
                         
-                        $filename = 'transaction_proofs/' . Str::uuid() . '.' . $extension;
-                        Storage::disk('public')->put($filename, $imageContent);
-                        
-                        // Find user or default to first admin user
-                        $user = User::where('whatsapp', $phoneNumber)
-                            ->orWhere('whatsapp', '0' . substr($phoneNumber, 2))
-                            ->orWhere('whatsapp', '+' . $phoneNumber)
-                            ->first();
+                        if ($response->successful()) {
+                            $imageContent = $response->body();
+                            $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+                            if (!$extension) $extension = 'jpg';
                             
-                        $userId = $user ? $user->id : User::first()->id;
-                        
-                        TransactionProof::create([
-                            'user_id' => $userId,
-                            'name' => $proofName,
-                            'file_path' => $filename,
-                        ]);
-                        
-                        \App\Services\WaGatewayService::sendMessage($chatId ?: $fromLid, "Bukti Transaksi '$proofName' berhasil disimpan.");
-                        return response()->json(['status' => 'proof_saved']);
+                            $filename = 'transaction_proofs/' . Str::uuid() . '.' . $extension;
+                            Storage::disk('public')->put($filename, $imageContent);
+                            
+                            // Find user or default to first admin user
+                            $user = User::where('whatsapp', $phoneNumber)
+                                ->orWhere('whatsapp', '0' . substr($phoneNumber, 2))
+                                ->orWhere('whatsapp', '+' . $phoneNumber)
+                                ->first();
+                                
+                            $userId = $user ? $user->id : (User::first()->id ?? 1);
+                            
+                            TransactionProof::create([
+                                'user_id' => $userId,
+                                'name' => $proofName,
+                                'file_path' => $filename,
+                            ]);
+                            
+                            \App\Services\WaGatewayService::sendMessage($chatId ?: $fromLid, "Bukti Transaksi '$proofName' berhasil disimpan.");
+                            return response()->json(['status' => 'proof_saved']);
+                        } else {
+                            Log::error("Failed to download WA image. HTTP Status: " . $response->status());
+                            return response()->json(['status' => 'failed_download']);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Exception downloading WA image: " . $e->getMessage());
                     }
-                } catch (\Exception $e) {
-                    Log::error("Failed to download WA image: " . $e->getMessage());
-                }
                 }
             }
             
