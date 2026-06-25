@@ -35,7 +35,8 @@ class IncomeController extends Controller
             'data.*.date' => 'nullable|date',
             'data.*.type' => 'nullable|in:Panen,Lain-lain',
             'data.*.description' => 'nullable|string|max:255',
-            'data.*.amount' => 'nullable|numeric',
+            'data.*.qty' => 'nullable',
+            'data.*.unit_price' => 'nullable',
             'data.*.tengkulak_id' => 'nullable|exists:tengkulaks,id',
             'data.*.transaction_proof_id' => 'nullable|exists:transaction_proofs,id',
         ]);
@@ -49,6 +50,12 @@ class IncomeController extends Controller
                     continue;
                 }
 
+                $qtyStr = str_replace(',', '', $row['qty'] ?? '0');
+                $qty = (float) $qtyStr;
+                $unitPriceStr = str_replace(',', '', $row['unit_price'] ?? '0');
+                $unitPrice = (float) $unitPriceStr;
+                $amount = $qty * $unitPrice;
+
                 if (!empty($row['id'])) {
                     $income = \App\Models\Income::find($row['id']);
                     if ($income) {
@@ -57,7 +64,9 @@ class IncomeController extends Controller
                             'date' => $row['date'],
                             'type' => $row['type'],
                             'description' => $row['description'] ?? null,
-                            'amount' => $row['amount'],
+                            'qty' => $qty,
+                            'unit_price' => $unitPrice,
+                            'amount' => $amount,
                             'tengkulak_id' => $row['tengkulak_id'] ?? null,
                             'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
@@ -69,7 +78,9 @@ class IncomeController extends Controller
                         'date' => $row['date'],
                         'type' => $row['type'],
                         'description' => $row['description'] ?? null,
-                        'amount' => $row['amount'] ?? 0,
+                        'qty' => $qty,
+                        'unit_price' => $unitPrice,
+                        'amount' => $amount,
                         'tengkulak_id' => $row['tengkulak_id'] ?? null,
                         'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);

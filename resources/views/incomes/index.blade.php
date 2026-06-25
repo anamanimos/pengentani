@@ -488,6 +488,8 @@
                         $income->tengkulak_id,
                         $income->type,
                         $income->description,
+                        $income->qty,
+                        $income->unit_price,
                         $income->amount,
                         $income->transaction_proof_id
                     ];
@@ -509,7 +511,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', 'Panen', '', '', '']);
+                initialData.push(['', '', '', '', 'Panen', '', '', '', '', '']);
             }
 
             function updateTotal() {
@@ -519,7 +521,7 @@
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
                     if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                        let amountStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/[^0-9.-]/g, '') : '0';
+                        let amountStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/[^0-9.-]/g, '') : '0';
                         let val = parseFloat(amountStr);
                         if(!isNaN(val)) total += val;
                     }
@@ -542,13 +544,15 @@
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 250, source: pertanians },
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types },
-                    { type: 'text', title: 'Deskripsi', width: 300 },
-                    { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'text', title: 'Deskripsi', width: 250 },
+                    { type: 'numeric', title: 'Qty', width: 100 },
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 7 && val && proofUrls[val]) {
-                        cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
+                    if (col == 9 && val && proofUrls[val]) {
+                        cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
                 minDimensions: [8, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
@@ -560,6 +564,16 @@
                 allowDeleteColumn: false,
                 wordWrap: false,
                 onchange: function(instance, cell, x, y, value) {
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    if (x == 6 || x == 7) {
+                        var qty = sheetInstance.getValueFromCoords(6, y) || 0;
+                        var price = sheetInstance.getValueFromCoords(7, y) || 0;
+                        var qClean = String(qty).replace(/[^0-9.-]/g, '');
+                        var pClean = String(price).replace(/[^0-9.-]/g, '');
+                        var qVal = parseFloat(qClean) || 0;
+                        var pVal = parseFloat(pClean) || 0;
+                        sheetInstance.setValueFromCoords(8, y, qVal * pVal, false);
+                    }
                     updateTotal();
                     autoSave();
 
@@ -714,7 +728,9 @@
                                     styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             }
-                            let cleanAmount = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
+                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
+                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^\d.-]/g, '') : null;
+                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^\d.-]/g, '') : null;
                             validData.push({
                                 index: i,
                                 id: row[0] || null,
@@ -723,8 +739,10 @@
                                 tengkulak_id: row[3] || null,
                                 type: row[4] || null,
                                 description: row[5] || null,
+                                qty: cleanQty,
+                                unit_price: cleanUnitPrice,
                                 amount: cleanAmount,
-                                transaction_proof_id: row[7] || null
+                                transaction_proof_id: row[9] || null
                             });
                             rowMapping.push(i);
                         } else if (hasAnyData) {
@@ -927,7 +945,7 @@
                     let rowData = data[i];
                     
                     let isEmpty = true;
-                    for(let j=1; j<=6; j++) {
+                    for(let j=1; j<=8; j++) {
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {

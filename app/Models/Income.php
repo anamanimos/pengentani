@@ -14,6 +14,8 @@ class Income extends Model
         'date',
         'type',
         'description',
+        'qty',
+        'unit_price',
         'amount',
         'tengkulak_id',
         'transaction_proof_id',
