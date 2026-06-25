@@ -482,7 +482,11 @@
             @endphp
             
             let categories = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray());
+            categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
+            
             let stores = @json($stores->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray());
+            stores.unshift({ id: 'NEW_STORE', name: '+ Tambah Toko Baru...' });
+            
             const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
             
             const proofs = proofsData;
@@ -539,9 +543,9 @@
                     { type: 'hidden', title: 'ID' }, // 0
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } }, // 1
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians }, // 2
-                    { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true, options: { newOptions: true } }, // 3
+                    { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true }, // 3
                     { type: 'text', title: 'No Nota', width: 120 }, // 4
-                    { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true, options: { newOptions: true } }, // 5
+                    { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 5
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 6
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
@@ -581,21 +585,47 @@
                 allowManualInsertRow: true,
                 allowInsertColumn: false,
                 onchange: function(instance, cell, x, y, value) {
-                    if (x == 3 && value && isNaN(value)) {
-                        $.post('{{ route("purchases.ajax-store") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
-                            stores.push({ id: res.id, name: res.name });
-                            spreadsheet.options.columns[3].source = stores;
-                            spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            updateTotalAndRow();
-                            autoSave();
+                    if (x == 3 && value === 'NEW_STORE') {
+                        // Revert cell value temporarily while waiting for prompt
+                        spreadsheet.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Tambah Toko Baru',
+                            input: 'text',
+                            inputPlaceholder: 'Masukkan nama toko / vendor baru...',
+                            showCancelButton: true,
+                            confirmButtonText: 'Simpan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                                $.post('{{ route("purchases.ajax-store") }}', { name: result.value, _token: '{{ csrf_token() }}' }, function(res) {
+                                    stores.push({ id: res.id, name: res.name });
+                                    spreadsheet.options.columns[3].source = stores;
+                                    spreadsheet.setValueFromCoords(x, y, res.id, true);
+                                    updateTotalAndRow();
+                                    autoSave();
+                                });
+                            }
                         });
-                    } else if (x == 5 && value && isNaN(value)) {
-                        $.post('{{ route("purchases.ajax-category") }}', { name: value, _token: '{{ csrf_token() }}' }, function(res) {
-                            categories.push({ id: res.id, name: res.name });
-                            spreadsheet.options.columns[5].source = categories;
-                            spreadsheet.setValueFromCoords(x, y, res.id, true);
-                            updateTotalAndRow();
-                            autoSave();
+                    } else if (x == 5 && value === 'NEW_CATEGORY') {
+                        // Revert cell value temporarily while waiting for prompt
+                        spreadsheet.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Tambah Kategori Baru',
+                            input: 'text',
+                            inputPlaceholder: 'Masukkan nama kategori baru...',
+                            showCancelButton: true,
+                            confirmButtonText: 'Simpan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                                $.post('{{ route("purchases.ajax-category") }}', { name: result.value, _token: '{{ csrf_token() }}' }, function(res) {
+                                    categories.push({ id: res.id, name: res.name });
+                                    spreadsheet.options.columns[5].source = categories;
+                                    spreadsheet.setValueFromCoords(x, y, res.id, true);
+                                    updateTotalAndRow();
+                                    autoSave();
+                                });
+                            }
                         });
                     } else {
                         updateTotalAndRow();
@@ -838,7 +868,9 @@
                 $.get('{{ route("purchases.ajax-dropdowns") }}', function(res) {
                     if (spreadsheet) {
                         stores = res.stores;
+                        stores.unshift({ id: 'NEW_STORE', name: '+ Tambah Toko Baru...' });
                         categories = res.categories;
+                        categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
                         spreadsheet.options.columns[3].source = stores;
                         spreadsheet.options.columns[5].source = categories;
                     }
