@@ -182,7 +182,7 @@
 
             {{-- Investasi Terkumpul --}}
             <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-primary mb-5 mb-xl-10 h-100">
+                <div class="card bg-light-primary mb-5 mb-xl-10 h-100 position-relative">
                     <div class="card-body py-5">
                         <div class="d-flex align-items-center mb-4">
                             <i class="ki-duotone ki-wallet fs-1 text-primary me-3">
@@ -190,8 +190,21 @@
                             </i>
                             <h4 class="text-primary fw-bold m-0">Investasi Terkumpul</h4>
                         </div>
-                        <div class="d-flex flex-column justify-content-center align-items-center mt-6">
-                            <span class="text-gray-900 fw-bold fs-2 text-nowrap">Rp {{ number_format($totalInvestasi, 0, ',', '.') }}</span>
+                        
+                        <div class="position-absolute" style="top: 15px; right: 15px;">
+                            <div class="form-check form-switch form-check-custom form-check-solid form-check-sm">
+                                <input class="form-check-input" type="checkbox" id="investor-deal-toggle" />
+                                <label class="form-check-label fs-8 text-muted" for="investor-deal-toggle" title="Hanya hitung investor dengan status Deal">Deal Saja</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2 mt-4">
+                            <span class="text-gray-600 fw-semibold">Total:</span>
+                            <span class="text-gray-900 fw-bold fs-5" id="inv-total-text">Rp {{ number_format($totalInvestasiAll, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-gray-600 fw-semibold">Sisa Cash:</span>
+                            <span class="text-primary fw-bold fs-5" id="inv-cash-text">Rp {{ number_format($sisaCashAll, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -849,6 +862,31 @@
                     }, 150);
                 }
             });
+            // Investor Toggle Logic
+            const toggle = document.getElementById('investor-deal-toggle');
+            if (toggle) {
+                const totalText = document.getElementById('inv-total-text');
+                const cashText = document.getElementById('inv-cash-text');
+                
+                const dataAll = {
+                    total: 'Rp {{ number_format($totalInvestasiAll, 0, ",", ".") }}',
+                    cash: 'Rp {{ number_format($sisaCashAll, 0, ",", ".") }}'
+                };
+                const dataDeal = {
+                    total: 'Rp {{ number_format($totalInvestasiDeal, 0, ",", ".") }}',
+                    cash: 'Rp {{ number_format($sisaCashDeal, 0, ",", ".") }}'
+                };
+                
+                toggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        totalText.textContent = dataDeal.total;
+                        cashText.textContent = dataDeal.cash;
+                    } else {
+                        totalText.textContent = dataAll.total;
+                        cashText.textContent = dataAll.cash;
+                    }
+                });
+            }
         });
     </script>
 @endpush

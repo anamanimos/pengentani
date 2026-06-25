@@ -137,7 +137,11 @@ class PertanianController extends Controller
         $pertanian->load(['kebun', 'admin', 'pengelola', 'tanamans.tanaman', 'biayas', 'investors.user', 'purchases.store', 'workerJobs.worker', 'workerJobs.category', 'incomes', 'withdrawals.user']);
 
         $totalBiaya = $pertanian->biayas->sum('total');
-        $totalInvestasi = $pertanian->investors->sum('besaran_investasi');
+        
+        $totalInvestasiAll = $pertanian->investors->sum('besaran_investasi');
+        $totalInvestasiDeal = $pertanian->investors->where('status', 'Deal')->sum('besaran_investasi');
+        // Gunakan all sebagai default totalInvestasi (bisa diganti di UI nantinya)
+        $totalInvestasi = $totalInvestasiAll;
 
         $estimasiPendapatan = 0;
         foreach ($pertanian->tanamans as $pt) {
@@ -157,6 +161,9 @@ class PertanianController extends Controller
         $totalRealisasiPembelian = $pertanian->purchases->sum('total_amount');
         $totalRealisasiPekerjaan = $pertanian->workerJobs->sum('wage');
         $totalRealisasi = $totalRealisasiPembelian + $totalRealisasiPekerjaan;
+        
+        $sisaCashAll = $totalInvestasiAll - $totalRealisasi;
+        $sisaCashDeal = $totalInvestasiDeal - $totalRealisasi;
         
         $totalRealisasiPendapatan = $pertanian->incomes->sum('amount');
         $realisasiLabaBersih = $totalRealisasiPendapatan - $totalRealisasi;
@@ -223,7 +230,8 @@ class PertanianController extends Controller
             'totalRealisasi',
             'totalRealisasiPendapatan',
             'realisasiLabaBersih',
-            'realisasiList',
+            'realisasiZakat',
+            'realisasiSetelahZakat',
             'alokasiAdmin',
             'alokasiPengelola',
             'alokasiInvestorTotal',
@@ -233,6 +241,11 @@ class PertanianController extends Controller
             'sisaAdmin',
             'sisaPengelola',
             'sisaInvestorTotal',
+            'totalInvestasiAll',
+            'totalInvestasiDeal',
+            'sisaCashAll',
+            'sisaCashDeal',
+            'realisasiList',
             'withdrawals'
         ));
     }
