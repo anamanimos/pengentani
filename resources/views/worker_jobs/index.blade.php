@@ -597,7 +597,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [11, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [10, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 allowInsertRow: true,
                 allowManualInsertRow: true,
@@ -753,12 +753,12 @@
                             if (!row[1] || !row[2] || !row[3] || !row[4]) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
-                                    else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    else styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
                                 });
                             } else {
                                 requiredCols.forEach(function(colIdx) {
-                                    styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                    styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
                                 });
                             }
                             var cleanWage = row[7] ? row[7].toString().replace(/\D/g, '') : null;
@@ -778,12 +778,12 @@
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                if (!row[colIdx]) styles[jexcel.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
-                                else styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                else styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
                             });
                         } else {
                             requiredCols.forEach(function(colIdx) {
-                                styles[jexcel.getColumnNameFromId([colIdx, i])] = '';
+                                styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
                             });
                         }
                     }
