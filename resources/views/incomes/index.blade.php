@@ -470,6 +470,7 @@
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -490,7 +491,7 @@
                         $income->description,
                         $income->amount,
                         $income->transaction_proof_id,
-                        $income->transactionProof ? '<a href="'.Storage::url($income->transactionProof->file_path).'" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>' : '' // For Preview column
+                        $income->transactionProof ? '<div class="text-center"><a href="'.Storage::url($income->transactionProof->file_path).'" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>' : '' // For Preview column
                     ];
                 })->toArray();
             @endphp
@@ -546,7 +547,7 @@
                     { type: 'text', title: 'Deskripsi', width: 300 },
                     { type: 'numeric', title: 'Nominal (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
-                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true }
+                    { type: 'html', title: 'Lihat', width: 60, readOnly: true }
                 ],
                 minDimensions: [9, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
@@ -563,9 +564,12 @@
                     if (parseInt(x) === 7) {
                         let btnHtml = '';
                         if (value && proofUrls[value]) {
-                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
                         }
                         sheetInstance.setValueFromCoords(8, y, btnHtml, false); // Update column 8 (Preview)
+                        if (typeof refreshFsLightbox === 'function') {
+                            refreshFsLightbox();
+                        }
                     }
 
                     updateTotal();

@@ -482,6 +482,7 @@
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -504,7 +505,7 @@
                         $job->wage ? (float) $job->wage : null,
                         $job->status,
                         $job->transaction_proof_id,
-                        $job->transactionProof ? '<a href="'.Storage::url($job->transactionProof->file_path).'" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>' : ''
+                        $job->transactionProof ? '<div class="text-center"><a href="'.Storage::url($job->transactionProof->file_path).'" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>' : ''
                     ];
                 })->toArray();
             @endphp
@@ -567,7 +568,7 @@
                     { type: 'numeric', title: 'Upah (Rp)', width: 150, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs },
-                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true }
+                    { type: 'html', title: 'Lihat', width: 60, readOnly: true }
                 ],
                 onload: function() {
                     // Inject icons after a short delay to ensure Jexcel has finished rendering the headers
@@ -620,9 +621,12 @@
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                         let btnHtml = '';
                         if (value && proofUrls[value]) {
-                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
                         }
                         sheetInstance.setValueFromCoords(10, y, btnHtml, false);
+                        if (typeof refreshFsLightbox === 'function') {
+                            refreshFsLightbox();
+                        }
                         
                         updateTotal();
                         autoSave();

@@ -469,8 +469,10 @@
 @endpush
 
 @push('scripts')
+    <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
     <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 
     <script>
         $(document).ready(function() {
@@ -546,7 +548,7 @@
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 200, source: proofs }, // 10
-                    { type: 'html', title: 'Aksi Bukti', width: 100, readOnly: true } // 11
+                    { type: 'html', title: 'Lihat', width: 60, readOnly: true } // 11
                 ],
                 onload: function() {
                     setTimeout(function() {
@@ -594,9 +596,12 @@
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                         let btnHtml = '';
                         if (value && proofUrls[value]) {
-                            btnHtml = '<a href="' + proofUrls[value] + '" target="_blank" class="btn btn-sm btn-light-primary"><i class="fas fa-eye"></i> Lihat</a>';
+                            btnHtml = '<div class="text-center"><a href="' + proofUrls[value] + '" data-fslightbox="gallery" class="btn btn-icon btn-sm btn-light-primary"><i class="fas fa-eye fs-5"></i></a></div>';
                         }
                         sheetInstance.setValueFromCoords(11, y, btnHtml, false);
+                        if (typeof refreshFsLightbox === 'function') {
+                            refreshFsLightbox();
+                        }
                         
                         updateTotalAndRow();
                         autoSave();
