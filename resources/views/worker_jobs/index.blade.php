@@ -48,10 +48,11 @@
 <div class="position-relative" id="spreadsheet-wrapper">
     <!-- Fullscreen Header (hidden by default, shown only in fullscreen) -->
     <div class="spreadsheet-fs-header d-none">
-        <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pekerjaan</h5>
-            <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
+        <div class="d-flex align-items-center flex-grow-1">
+            <span class="fs-4 fw-bold">Pencatatan Pekerjaan</span>
+            <h4 class="m-0 text-gray-800 ms-auto me-4">Total: <span class="total-amount-fs text-success fw-bolder ms-2">Rp 0</span></h4>
         </div>
+        <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
         <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
@@ -67,6 +68,9 @@
         </button>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
+    <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
+        <h4 class="m-0 text-gray-800">Total Upah: <span id="total-amount" class="text-success fw-bolder ms-2">Rp 0</span></h4>
+    </div>
 </div>
 
 <!-- Modal Universal Filter -->
@@ -151,6 +155,9 @@
         #spreadsheet-wrapper.fullscreen-mode #spreadsheet {
             flex: 1;
             overflow: auto;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #spreadsheet-footer {
+            flex-shrink: 0;
         }
         #spreadsheet-wrapper.fullscreen-mode #btn-toggle-fullscreen {
             display: none !important;
@@ -495,6 +502,7 @@
                         $job->description,
                         $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format("H:i") : null,
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
+                        $job->wage,
                         $job->status,
                         $job->transaction_proof_id
                     ];
@@ -524,7 +532,7 @@
             const initialData = @json($initialData);
 
             if (initialData.length === 0) {
-                initialData.push(['', '', '', '', '', '', '', '', 'unpaid', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', 'unpaid', '']);
             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
@@ -594,11 +602,16 @@
                     { type: 'text', title: 'Deskripsi', width: 250 },
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
+                    { type: 'numeric', title: 'Upah (Rp)', width: 130, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
+                onselection: function(instance, x1, y1, x2, y2, origin) {
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    handleSelection(sheetInstance, x1, y1, x2, y2);
+                },
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 9 && val && proofUrls[val]) {
+                    if (col == 10 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="fas fa-eye text-primary"></i></span> ' + label;
                     }
                 },
@@ -619,6 +632,7 @@
                             }
                         });
                         applyAllFilters();
+                        updateTotal();
                         
                         // Scroll to bottom (WhatsApp style)
                         var contentDiv = document.querySelector('.jexcel_content');
@@ -667,11 +681,13 @@
                                     categories.push({ id: res.id, name: res.name });
                                     spreadsheet.options.columns[4].source = categories;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
+                                    updateTotal();
                                     autoSave();
                                 });
                             }
                         });
                     } else {
+                        updateTotal();
                         autoSave();
                     }
 
@@ -837,8 +853,9 @@
                                 description: row[5] || null,
                                 start_time: row[6] || null,
                                 end_time: row[7] || null,
-                                status: row[8] || 'unpaid',
-                                transaction_proof_id: row[9] || null
+                                wage: row[8] || 0,
+                                status: row[9] || 'unpaid',
+                                transaction_proof_id: row[10] || null
                             });
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
@@ -1112,7 +1129,133 @@
                     else rows.eq(i).hide();
                 }
             }
-            // Selection summary helper removed because there are no numeric fields anymore.
+            function updateTotal() {
+                if (!spreadsheet) return;
+                var data = spreadsheet.getData();
+                var sum = 0;
+                for(var i = 0; i < data.length; i++) {
+                    var valStr = data[i][8];
+                    if (valStr !== null && valStr !== undefined && valStr !== '') {
+                        var cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                        var val = parseFloat(cleanValStr);
+                        if (!isNaN(val)) sum += val;
+                    }
+                }
+                var formatted = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum));
+                $('#total-amount').text(formatted);
+                if ($('#spreadsheet-wrapper').hasClass('fullscreen-mode')) {
+                    $('.total-amount-fs').text(formatted);
+                }
+            }
+
+            function handleSelection(instance, x1, y1, x2, y2) {
+                let startX = Math.min(x1, x2);
+                let endX = Math.max(x1, x2);
+                let startY = Math.min(y1, y2);
+                let endY = Math.max(y1, y2);
+
+                let sum = 0;
+                let count = 0;
+                let numericCount = 0;
+                let hasCurrency = false;
+
+                for (let col = startX; col <= endX; col++) {
+                    let colHeader = instance.options.columns[col];
+                    if (colHeader && colHeader.title) {
+                        let title = colHeader.title.toLowerCase();
+                        if (title.includes('rp') || title.includes('upah')) {
+                            hasCurrency = true;
+                        }
+                    }
+                }
+
+                let rows = $('#spreadsheet > div > table > tbody > tr');
+                for (let row = startY; row <= endY; row++) {
+                    let rowEl = rows.eq(row);
+                    if (rowEl.length > 0 && !rowEl.is(':visible')) continue;
+
+                    for (let col = startX; col <= endX; col++) {
+                        let valStr = instance.getValueFromCoords(col, row);
+                        if (valStr !== null && valStr !== undefined && valStr !== '') {
+                            let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                            if (cleanValStr.trim() === '') continue;
+                            let val = parseFloat(cleanValStr);
+                            if (!isNaN(val)) {
+                                sum += val;
+                                numericCount++;
+                            }
+                            count++;
+                        }
+                    }
+                }
+
+                if (numericCount > 0 && (endX - startX > 0 || endY - startY > 0)) {
+                    let avg = sum / numericCount;
+                    let sumText = hasCurrency ? 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum)) : new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(sum);
+                    let avgText = hasCurrency ? 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(avg)) : new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(avg);
+                    showFloatingSummary(avgText, numericCount, sumText);
+                } else {
+                    hideFloatingSummary();
+                }
+            }
+
+            function showFloatingSummary(avg, count, sum) {
+                let summaryDiv = $('#spreadsheet-selection-summary');
+                if (summaryDiv.length === 0) {
+                    summaryDiv = $(`
+                        <div id="spreadsheet-selection-summary" class="position-fixed bottom-0 start-50 translate-middle-x mb-10 shadow-lg d-flex align-items-center gap-4 px-6 py-3 rounded-pill" style="transition: all 0.25s ease-in-out; z-index: 1050; opacity: 0; transform: translate(-50%, 20px) scale(0.95); pointer-events: none;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Rata-rata:</span>
+                                <span class="fw-bold fs-7 sum-val-avg"></span>
+                            </div>
+                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah Sel:</span>
+                                <span class="fw-bold fs-7 sum-val-count"></span>
+                            </div>
+                            <div class="vr bg-gray-300" style="height: 16px; width: 1px;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted fw-semibold fs-8 text-uppercase">Jumlah:</span>
+                                <span class="fw-bold fs-6 sum-val-sum"></span>
+                            </div>
+                        </div>
+                    `);
+                    $('body').append(summaryDiv);
+                }
+
+                const isDark = $('html').attr('data-bs-theme') === 'dark' || $('body').attr('data-bs-theme') === 'dark';
+                if (isDark) {
+                    summaryDiv.css({'background-color': 'rgba(30, 30, 45, 0.95)', 'border': '1px solid rgba(255, 255, 255, 0.1)', 'color': '#ffffff'});
+                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#ffffff');
+                    summaryDiv.find('.sum-val-sum').css('color', '#50cd89');
+                    summaryDiv.find('.vr').css('background-color', 'rgba(255, 255, 255, 0.15)');
+                } else {
+                    summaryDiv.css({'background-color': 'rgba(255, 255, 255, 0.95)', 'border': '1px solid rgba(0, 0, 0, 0.1)', 'color': '#181C32'});
+                    summaryDiv.find('.sum-val-avg, .sum-val-count').css('color', '#181C32');
+                    summaryDiv.find('.sum-val-sum').css('color', '#009EF7');
+                    summaryDiv.find('.vr').css('background-color', 'rgba(0, 0, 0, 0.1)');
+                }
+
+                summaryDiv.find('.sum-val-avg').text(avg);
+                summaryDiv.find('.sum-val-count').text(count);
+                summaryDiv.find('.sum-val-sum').text(sum);
+
+                summaryDiv.show();
+                summaryDiv[0].offsetHeight;
+                summaryDiv.css({'opacity': '1', 'transform': 'translate(-50%, 0) scale(1)'});
+            }
+
+            function hideFloatingSummary() {
+                let summaryDiv = $('#spreadsheet-selection-summary');
+                if (summaryDiv.length > 0 && summaryDiv.css('opacity') !== '0') {
+                    summaryDiv.css({'opacity': '0', 'transform': 'translate(-50%, 20px) scale(0.95)'});
+                    setTimeout(function() { if (summaryDiv.css('opacity') === '0') summaryDiv.hide(); }, 250);
+                }
+            }
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#spreadsheet').length) hideFloatingSummary();
+            });
 
             // Fullscreen toggle
             var savedTableHeight = null;
@@ -1126,8 +1269,7 @@
                     savedTableHeight = el.jexcel.options.tableHeight;
                 }
                 resizeSpreadsheetForFullscreen();
-                // Sync total to fullscreen header
-                // Sync total removed
+                $('.total-amount-fs').text($('#total-amount').text());
                 $('body').css('overflow', 'hidden');
             }
 
