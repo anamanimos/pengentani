@@ -55,16 +55,25 @@ class WhatsappLoginController extends Controller
         
         if ($waProofGroupId && ($fromLid === $waProofGroupId || $chatId === $waProofGroupId)) {
             // Check if it's an image upload
-            if (isset($payload['image']) && isset($payload['image']['path'])) {
-                $imagePathUrl = $payload['image']['path'];
-                $caption = $payload['image']['caption'] ?? '';
+            if (isset($payload['image'])) {
+                $imagePathUrl = '';
+                $caption = '';
                 
-                // Determine file name from caption or timestamp
-                $proofName = !empty($caption) ? trim($caption) : now()->format('Y-m-d H:i:s');
+                if (is_array($payload['image'])) {
+                    $imagePathUrl = $payload['image']['path'] ?? '';
+                    $caption = $payload['image']['caption'] ?? '';
+                } elseif (is_string($payload['image'])) {
+                    $imagePathUrl = $payload['image'];
+                    $caption = $payload['body'] ?? ''; // Some WAG puts caption in body if image is string
+                }
                 
-                // Download image
-                $imageUrl = "https://wag.anam.ch/" . ltrim($imagePathUrl, '/');
-                try {
+                if (!empty($imagePathUrl)) {
+                    // Determine file name from caption or timestamp
+                    $proofName = !empty($caption) ? trim($caption) : now()->format('Y-m-d H:i:s');
+                    
+                    // Download image
+                    $imageUrl = "https://wag.anam.ch/" . ltrim($imagePathUrl, '/');
+                    try {
                     $imageContent = file_get_contents($imageUrl);
                     if ($imageContent) {
                         $extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
@@ -92,6 +101,7 @@ class WhatsappLoginController extends Controller
                     }
                 } catch (\Exception $e) {
                     Log::error("Failed to download WA image: " . $e->getMessage());
+                }
                 }
             }
             
