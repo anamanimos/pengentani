@@ -706,12 +706,12 @@
                             if (!row[1] || !row[2]) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
-                                    else styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
+                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
                                 requiredCols.forEach(function(colIdx) {
-                                    styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
+                                    styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             }
                             let cleanAmount = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^\d.-]/g, '') : null;
@@ -730,12 +730,12 @@
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
-                                else styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
+                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         } else {
                             requiredCols.forEach(function(colIdx) {
-                                styles[jspreadsheet.helpers.getColumnNameFromId([colIdx, i])] = '';
+                                styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         }
                     }
