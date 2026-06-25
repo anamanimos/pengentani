@@ -879,10 +879,11 @@
                     $.ajax({
                         url: '{{ route("purchases.store") }}',
                         type: 'POST',
-                        data: {
+                        contentType: 'application/json',
+                        data: JSON.stringify({
                             _token: '{{ csrf_token() }}',
                             data: validData
-                        },
+                        }),
                         success: function(response) {
                             if (hasIncompleteRow) {
                                 $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
