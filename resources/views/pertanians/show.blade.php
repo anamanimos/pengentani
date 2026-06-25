@@ -194,7 +194,7 @@
                         <div class="position-absolute" style="top: 15px; right: 15px;">
                             <div class="form-check form-switch form-check-custom form-check-solid form-check-sm">
                                 <input class="form-check-input" type="checkbox" id="investor-deal-toggle" />
-                                <label class="form-check-label fs-8 text-muted" for="investor-deal-toggle" title="Hanya hitung investor dengan status Deal">Deal Saja</label>
+                                <label class="form-check-label fs-8 text-muted" for="investor-deal-toggle" title="Hanya hitung investor dengan status Deal"></label>
                             </div>
                         </div>
 
