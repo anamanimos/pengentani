@@ -685,6 +685,9 @@
                                     spreadsheet.options.columns[4].source = categories;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
                                     updateTotal();
+                                    autoSave();
+                                });
+                            }
                         });
                     } else if (x == 10 && value === 'NEW_PROOF') {
                         spreadsheet.setValueFromCoords(x, y, '', true);
