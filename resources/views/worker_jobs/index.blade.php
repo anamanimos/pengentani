@@ -4,7 +4,7 @@
 @section('page_title')
     <div class="d-flex align-items-center flex-row">
         Pencatatan Pekerjaan & Upah
-        <span id="auto-save-status" class="badge badge-light-success fw-bold fs-7 ms-3 d-none">
+        <span id="auto-save-status" class="badge badge-light-success fw-bold fs-7 ms-3">
             <i class="fas fa-check-circle text-success me-1"></i> <span class="status-text">Tersimpan Otomatis</span>
         </span>
     </div>
@@ -52,7 +52,9 @@
             <span class="fs-4 fw-bold">Pencatatan Pekerjaan</span>
             <h4 class="m-0 text-gray-800 ms-auto me-4">Total: <span class="total-amount-fs text-success fw-bolder ms-2">Rp 0</span></h4>
         </div>
-        <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
+        <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3">
+            <i class="fas fa-check-circle text-success me-1"></i> <span class="status-text">Tersimpan Otomatis</span>
+        </span>
         <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
@@ -843,6 +845,8 @@
                                 });
                             }
 
+                            let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                            
                             validData.push({
                                 index: i,
                                 id: row[0] || null,
@@ -853,7 +857,7 @@
                                 description: row[5] || null,
                                 start_time: row[6] || null,
                                 end_time: row[7] || null,
-                                wage: row[8] || 0,
+                                wage: cleanWage,
                                 status: row[9] || 'unpaid',
                                 transaction_proof_id: row[10] || null
                             });
@@ -887,6 +891,9 @@
                         url: '{{ route("worker-jobs.store") }}',
                         type: 'POST',
                         contentType: 'application/json',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
                         data: JSON.stringify({
                             _token: '{{ csrf_token() }}',
                             data: validData
@@ -905,12 +912,8 @@
                                     spreadsheet.setValueFromCoords(0, item.index, item.id, true);
                                 });
                             }
-                            setTimeout(function() {
-                                if (!hasIncompleteRow) {
-                                    $('#auto-save-status').addClass('d-none');
-                                    $('#auto-save-status-fs').addClass('d-none');
-                                }
-                            }, 3000);
+                            // Badge is intentionally kept visible
+
                         },
                         error: function(xhr) {
                             var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan';
