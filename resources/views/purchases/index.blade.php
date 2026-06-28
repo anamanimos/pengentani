@@ -824,9 +824,16 @@
                         }
 
                         var storeVal = row[3];
-                        var pertanianVal = row[2];
-                        var storeVal = row[3];
+                        if (!storeVal) {
+                            var cellStore = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
+                            if (cellStore && cellStore.innerText.trim() !== '') storeVal = cellStore.innerText.trim();
+                        }
+
                         var categoryVal = row[4];
+                        if (!categoryVal) {
+                            var cellCat = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
+                            if (cellCat && cellCat.innerText.trim() !== '') categoryVal = cellCat.innerText.trim();
+                        }
 
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {

@@ -834,9 +834,22 @@
                         var row = data[i];
                         
                         var pertanianVal = row[2];
-                        var pertanianVal = row[2];
+                        if (!pertanianVal) {
+                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
+                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                        }
+
                         var tengkulakVal = row[3];
+                        if (!tengkulakVal) {
+                            var cellTengkulak = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
+                            if (cellTengkulak && cellTengkulak.innerText.trim() !== '') tengkulakVal = cellTengkulak.innerText.trim();
+                        }
+
                         var typeVal = row[4];
+                        if (!typeVal) {
+                            var cellType = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
+                            if (cellType && cellType.innerText.trim() !== '') typeVal = cellType.innerText.trim();
+                        }
 
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
