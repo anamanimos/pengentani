@@ -318,10 +318,10 @@
                         <thead>
                             <tr class="fw-bold text-muted bg-light text-start">
                                 <th class="ps-4 min-w-150px rounded-start">Jenis Tanaman</th>
-                                <th class="min-w-100px text-center">Jumlah Pohon</th>
-                                <th class="min-w-120px text-end">Est. Panen/Pohon</th>
-                                <th class="min-w-120px text-end">Est. Harga/Kg</th>
-                                <th class="min-w-150px text-end rounded-end pe-4">Est. Total Pendapatan</th>
+                                <th class="min-w-100px text-start">Jumlah Pohon</th>
+                                <th class="min-w-120px text-start">Est. Panen/Pohon</th>
+                                <th class="min-w-120px text-start">Est. Harga/Kg</th>
+                                <th class="min-w-150px text-start rounded-end pe-4">Est. Total Pendapatan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -340,14 +340,14 @@
                                         <span class="text-gray-900 fw-bold fs-6">{{ $pt->tanaman->name ?? '-' }}</span>
                                     </div>
                                 </td>
-                                <td class="text-center text-gray-800 fw-semibold">{{ number_format($pt->qty_pohon, 0, ',', '.') }}</td>
-                                <td class="text-end text-gray-800 fw-semibold">{{ number_format($pt->estimasi_berat_per_pohon, 2, ',', '.') }} Kg</td>
-                                <td class="text-end text-gray-800 fw-semibold">Rp {{ number_format($pt->estimasi_harga_per_kg, 0, ',', '.') }}</td>
-                                <td class="text-end text-gray-900 fw-bold pe-4">Rp {{ number_format($totalTanaman, 0, ',', '.') }}</td>
+                                <td class="text-start text-gray-800 fw-semibold">{{ number_format($pt->qty_pohon, 0, ',', '.') }}</td>
+                                <td class="text-start text-gray-800 fw-semibold">{{ number_format($pt->estimasi_berat_per_pohon, 2, ',', '.') }} Kg</td>
+                                <td class="text-start text-gray-800 fw-semibold">Rp {{ number_format($pt->estimasi_harga_per_kg, 0, ',', '.') }}</td>
+                                <td class="text-start text-gray-900 fw-bold pe-4">Rp {{ number_format($totalTanaman, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-5">Belum ada rencana tanaman.</td>
+                                <td colspan="5" class="text-start text-muted py-5">Belum ada rencana tanaman.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -372,9 +372,9 @@
                         <thead>
                             <tr class="fw-bold text-muted bg-light text-start">
                                 <th class="ps-4 min-w-150px rounded-start">Nama Biaya</th>
-                                <th class="min-w-80px text-center">Quantity</th>
-                                <th class="min-w-120px text-end">Harga Satuan</th>
-                                <th class="min-w-150px text-end rounded-end pe-4">Total Biaya</th>
+                                <th class="min-w-80px text-start">Quantity</th>
+                                <th class="min-w-120px text-start">Harga Satuan</th>
+                                <th class="min-w-150px text-start rounded-end pe-4">Total Biaya</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -390,20 +390,20 @@
                                         <span class="text-gray-900 fw-bold fs-6">{{ $biaya->name }}</span>
                                     </div>
                                 </td>
-                                <td class="text-center text-gray-800 fw-semibold">{{ number_format($biaya->qty, 0, ',', '.') }}</td>
-                                <td class="text-end text-gray-800 fw-semibold">Rp {{ number_format($biaya->harga_satuan, 0, ',', '.') }}</td>
-                                <td class="text-end text-danger fw-bold pe-4">Rp {{ number_format($biaya->total, 0, ',', '.') }}</td>
+                                <td class="text-start text-gray-800 fw-semibold">{{ number_format($biaya->qty, 0, ',', '.') }}</td>
+                                <td class="text-start text-gray-800 fw-semibold">Rp {{ number_format($biaya->harga_satuan, 0, ',', '.') }}</td>
+                                <td class="text-start text-danger fw-bold pe-4">Rp {{ number_format($biaya->total, 0, ',', '.') }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-5">Belum ada rincian biaya.</td>
+                                <td colspan="4" class="text-start text-muted py-5">Belum ada rincian biaya.</td>
                             </tr>
                             @endforelse
                         </tbody>
                         <tfoot>
                             <tr class="fw-bold bg-light">
-                                <td colspan="3" class="text-end pe-4">Total Estimasi Biaya</td>
-                                <td class="text-end text-danger pe-4">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
+                                <td colspan="3" class="text-start pe-4">Total Estimasi Biaya</td>
+                                <td class="text-start text-danger pe-4">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -431,7 +431,7 @@
                                         <th class="ps-4 min-w-100px rounded-start">Tanggal</th>
                                         <th class="min-w-150px">Kategori</th>
                                         <th class="min-w-200px">Deskripsi/Keterangan</th>
-                                        <th class="min-w-150px text-end rounded-end pe-4">Nominal</th>
+                                        <th class="min-w-150px text-start rounded-end pe-4">Nominal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -445,11 +445,11 @@
                                             </span>
                                         </td>
                                         <td>{{ $realisasi->deskripsi }}</td>
-                                        <td class="text-end fw-bold text-gray-800 pe-4">Rp {{ number_format($realisasi->nominal, 0, ',', '.') }}</td>
+                                        <td class="text-start fw-bold text-gray-800 pe-4">Rp {{ number_format($realisasi->nominal, 0, ',', '.') }}</td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-5">Belum ada data realisasi.</td>
+                                        <td colspan="4" class="text-start text-muted py-5">Belum ada data realisasi.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -695,7 +695,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-5">Belum ada data penarikan dana.</td>
+                                <td colspan="6" class="text-start text-muted py-5">Belum ada data penarikan dana.</td>
                             </tr>
                             @endforelse
                         </tbody>
