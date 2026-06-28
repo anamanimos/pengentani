@@ -778,6 +778,14 @@
                                     <input type="text" id="withdrawal_daterange" class="form-control form-control-solid form-control-sm" placeholder="Pilih rentang" />
                                 </div>
                                 <div class="mb-5">
+                                    <label class="form-label fw-semibold">Kategori:</label>
+                                    <select id="withdrawal_category_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Kategori" multiple="multiple">
+                                        <option value="bagi_hasil">Bagi Hasil</option>
+                                        <option value="pengembalian_modal">Pengembalian Modal</option>
+                                        <option value="zakat">Zakat</option>
+                                    </select>
+                                </div>
+                                <div class="mb-5">
                                     <label class="form-label fw-semibold">Peran:</label>
                                     <select id="withdrawal_role_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Peran" multiple="multiple">
                                         <option value="admin">Admin</option>
@@ -786,9 +794,8 @@
                                     </select>
                                 </div>
                                 <div class="mb-5">
-                                    <label class="form-label fw-semibold">Penerima:</label>
                                     <select id="withdrawal_user_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-placeholder="Semua Penerima" multiple="multiple">
-                                        @foreach($withdrawalsBagiHasil->unique('user_id') as $wd)
+                                        @foreach($withdrawalsAll->unique('user_id') as $wd)
                                             @if($wd->user)
                                                 <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
                                             @endif
@@ -820,6 +827,7 @@
                             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                                 <th class="text-start">Tanggal</th>
                                 <th class="text-start">Tanggal Input</th>
+                                <th class="text-start">Kategori</th>
                                 <th class="text-start">Penerima</th>
                                 <th class="text-start">Peran</th>
                                 <th class="text-start">Nominal</th>
@@ -828,10 +836,19 @@
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
-                            @forelse($withdrawalsBagiHasil as $withdrawal)
-                            <tr data-date="{{ $withdrawal->date }}">
+                            @forelse($withdrawalsAll as $withdrawal)
+                            <tr data-date="{{ $withdrawal->date }}" data-category="{{ $withdrawal->type }}">
                                 <td class="text-start" data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
                                 <td class="text-start" data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
+                                <td class="text-start">
+                                    @if($withdrawal->type == 'bagi_hasil')
+                                        <span class="badge badge-light-success fs-7">Bagi Hasil</span>
+                                    @elseif($withdrawal->type == 'pengembalian_modal')
+                                        <span class="badge badge-light-warning fs-7">Pengembalian Modal</span>
+                                    @elseif($withdrawal->type == 'zakat')
+                                        <span class="badge badge-light-primary fs-7">Zakat</span>
+                                    @endif
+                                </td>
                                 <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
                                 <td class="text-start">
                                     <span class="badge badge-light-{{ $withdrawal->role == 'admin' ? 'primary' : ($withdrawal->role == 'pengelola' ? 'info' : 'success') }} fs-7 text-capitalize">
@@ -1232,7 +1249,7 @@
                 }
             });
 
-            $('#withdrawal_role_filter, #withdrawal_user_filter').on('change', function() {
+            $('#withdrawal_role_filter, #withdrawal_user_filter, #withdrawal_category_filter').on('change', function() {
                 withdrawalTable.draw();
             });
 
@@ -1262,6 +1279,13 @@
                     $('#withdrawal_user_filter option:selected').each(function() { userTexts.push($(this).text()); });
                     container.append(`<span class="badge badge-light-primary">Penerima: ${userTexts.join(', ')} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('user')"><span class="path1"></span><span class="path2"></span></i></span>`);
                 }
+
+                var categories = $('#withdrawal_category_filter').val();
+                if (categories && categories.length > 0) {
+                    var catTexts = [];
+                    $('#withdrawal_category_filter option:selected').each(function() { catTexts.push($(this).text()); });
+                    container.append(`<span class="badge badge-light-primary">Kategori: ${catTexts.join(', ')} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('category')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
                 
                 if (container.children().length > 0) {
                     container.removeClass('d-none');
@@ -1277,6 +1301,8 @@
                     $('#withdrawal_role_filter').val(null).trigger('change.select2');
                 } else if (type === 'user') {
                     $('#withdrawal_user_filter').val(null).trigger('change.select2');
+                } else if (type === 'category') {
+                    $('#withdrawal_category_filter').val(null).trigger('change.select2');
                 }
                 withdrawalTable.draw();
             };
@@ -1285,6 +1311,7 @@
                 document.getElementById('withdrawal_daterange')._flatpickr.clear();
                 $('#withdrawal_role_filter').val(null).trigger('change.select2');
                 $('#withdrawal_user_filter').val(null).trigger('change.select2');
+                $('#withdrawal_category_filter').val(null).trigger('change.select2');
                 withdrawalTable.draw();
             });
             
@@ -1301,10 +1328,19 @@
                     var searchDate = $('#withdrawal_daterange').val();
                     var searchRoles = $('#withdrawal_role_filter').val();
                     var searchUsers = $('#withdrawal_user_filter').val();
+                    var searchCategories = $('#withdrawal_category_filter').val();
 
                     var rawDate = $(settings.aoData[dataIndex].nTr).data('date');
-                    var rowUser = data[2];
-                    var rowRole = data[3].toLowerCase();
+                    var rawCategory = $(settings.aoData[dataIndex].nTr).data('category');
+                    var rowUser = data[3];
+                    var rowRole = data[4].toLowerCase();
+
+                    // Category filter
+                    if (searchCategories && searchCategories.length > 0) {
+                        if (!searchCategories.includes(rawCategory)) {
+                            return false;
+                        }
+                    }
 
                     // Role filter
                     if (searchRoles && searchRoles.length > 0) {

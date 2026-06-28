@@ -194,9 +194,12 @@ class PertanianController extends Controller
         $totalKasKeluar = $totalRealisasi + $totalPenarikan;
         $sisaUangCash = $totalKasMasuk - $totalKasKeluar;
 
-        $withdrawalsBagiHasil = $pertanian->withdrawals()->where('type', 'bagi_hasil')->latest('date')->get();
-        $withdrawalsModal = $pertanian->withdrawals()->where('type', 'pengembalian_modal')->latest('date')->get();
-        $withdrawalsZakat = $pertanian->withdrawals()->where('type', 'zakat')->latest('date')->get();
+        $withdrawalsAll = $pertanian->withdrawals()->latest('date')->get();
+        
+        // Split for specific calculations if needed elsewhere, or just pass all
+        $withdrawalsBagiHasil = $withdrawalsAll->where('type', 'bagi_hasil');
+        $withdrawalsModal = $withdrawalsAll->where('type', 'pengembalian_modal');
+        $withdrawalsZakat = $withdrawalsAll->where('type', 'zakat');
 
         // Investor Statistics
         $investorStats = collect();
@@ -289,6 +292,7 @@ class PertanianController extends Controller
             'sisaCashAll',
             'sisaCashDeal',
             'realisasiList',
+            'withdrawalsAll',
             'withdrawalsBagiHasil',
             'withdrawalsModal',
             'withdrawalsZakat',
