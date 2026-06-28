@@ -1440,8 +1440,8 @@
                 }
 
                 let formData = new FormData();
-                formData.append('file_path', file);
-                formData.append('name', name);
+                formData.append('file', file);
+                formData.append('name', name || ('Bukti ' + new Date().toLocaleString()));
                 formData.append('_token', '{{ csrf_token() }}');
 
                 let btn = $(this);
