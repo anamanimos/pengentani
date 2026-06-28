@@ -165,14 +165,28 @@
                     <div class="card-body pt-5">
                         <!-- Modal -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal:</span>
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal Terkumpul:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($totalInvestasiAll, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
+                        <!-- Estimasi Pendapatan -->
+                        <div class="d-flex flex-stack mb-4">
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Pendapatan:</span>
+                            <span class="text-success fw-bolder fs-4">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="separator separator-dashed mb-4"></div>
+
+                        <!-- Estimasi Pengeluaran -->
+                        <div class="d-flex flex-stack mb-4">
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Pengeluaran:</span>
+                            <span class="text-danger fw-bolder fs-4">- Rp {{ number_format($totalBiaya, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="separator separator-dashed mb-4"></div>
+
                         <!-- Keuntungan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Keuntungan:</span>
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Laba Kotor:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
@@ -182,11 +196,11 @@
                             <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($zakat, 0, ',', '.') }}</span>
                         </div>
-                        <div class="separator separator-dashed mb-4"></div>
+                        <div class="separator separator-dashed border-success opacity-50 mb-4"></div>
                         
                         <!-- Keuntungan Setelah Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Keuntungan Setelah Zakat:</span>
+                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Laba Bersih Setelah Zakat:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed border-success opacity-50 mb-4"></div>
@@ -226,14 +240,28 @@
                     <div class="card-body pt-5">
                         <!-- Modal -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal:</span>
-                            <span class="text-warning fw-bolder fs-4">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal Terkumpul:</span>
+                            <span class="text-warning fw-bolder fs-4">Rp {{ number_format($totalInvestasiDeal, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
+                        <!-- Total Pendapatan -->
+                        <div class="d-flex flex-stack mb-4">
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Total Pendapatan:</span>
+                            <span class="text-warning fw-bolder fs-4">Rp {{ number_format($totalRealisasiPendapatan, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="separator separator-dashed mb-4"></div>
+
+                        <!-- Total Pengeluaran -->
+                        <div class="d-flex flex-stack mb-4">
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Total Pengeluaran:</span>
+                            <span class="text-danger fw-bolder fs-4">- Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="separator separator-dashed mb-4"></div>
+
                         <!-- Keuntungan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Keuntungan:</span>
+                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Realisasi Laba Kotor:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
@@ -247,7 +275,7 @@
                         
                         <!-- Keuntungan Setelah Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Keuntungan Setelah Zakat:</span>
+                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Laba Bersih Setelah Zakat:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($realisasiSetelahZakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed border-warning opacity-50 mb-4"></div>
