@@ -660,6 +660,7 @@
                         <thead>
                             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                                 <th>Tanggal</th>
+                                <th>Tanggal Input</th>
                                 <th>Penerima</th>
                                 <th>Peran</th>
                                 <th>Nominal</th>
@@ -671,6 +672,7 @@
                             @forelse($withdrawals as $withdrawal)
                             <tr data-date="{{ $withdrawal->date }}">
                                 <td data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
+                                <td data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
                                 <td>{{ $withdrawal->user->name ?? '-' }}</td>
                                 <td>
                                     <span class="badge badge-light-{{ $withdrawal->role == 'admin' ? 'primary' : ($withdrawal->role == 'pengelola' ? 'info' : 'success') }} fs-7 text-capitalize">
@@ -695,7 +697,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-start text-muted py-5">Belum ada data penarikan dana.</td>
+                                <td colspan="7" class="text-start text-muted py-5">Belum ada data penarikan dana.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -940,7 +942,7 @@
                 "order": [],
                 "pageLength": 10,
                 "columnDefs": [
-                    { orderable: false, targets: [4, 5] } // Disable sorting on Bukti and Aksi columns
+                    { orderable: false, targets: [5, 6] } // Disable sorting on Bukti and Aksi columns
                 ]
             });
 
@@ -972,8 +974,8 @@
                     var searchUser = $('#withdrawal_user_filter').val();
 
                     var rawDate = $(settings.aoData[dataIndex].nTr).data('date');
-                    var rowUser = data[1];
-                    var rowRole = data[2].toLowerCase();
+                    var rowUser = data[2];
+                    var rowRole = data[3].toLowerCase();
 
                     // Role filter
                     if (searchRole && searchRole !== 'all') {
