@@ -593,32 +593,6 @@
                 tableHeight: '70vh',
                 tableWidth: '100%',
                 search: false,
-                sorting: function(direction, column) {
-                    return function(a, b) {
-                        var valA = a[column];
-                        var valB = b[column];
-                        var isEmptyA = (valA === null || valA === undefined || valA === '');
-                        var isEmptyB = (valB === null || valB === undefined || valB === '');
-
-                        if (isEmptyA && isEmptyB) return 0;
-                        if (isEmptyA) return 1;
-                        if (isEmptyB) return -1;
-                        
-                        // Parse numbers if applicable for proper numeric sorting
-                        var numA = parseFloat(String(valA).replace(/[^0-9.-]/g, ''));
-                        var numB = parseFloat(String(valB).replace(/[^0-9.-]/g, ''));
-                        if (!isNaN(numA) && !isNaN(numB)) {
-                            valA = numA;
-                            valB = numB;
-                        }
-
-                        if (direction == 0) { // ASC
-                            return (valA > valB) ? 1 : (valA < valB ? -1 : 0);
-                        } else { // DESC
-                            return (valA > valB) ? -1 : (valA < valB ? 1 : 0);
-                        }
-                    }
-                },
                 columns: [
                     { type: 'hidden', title: 'ID' },
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
