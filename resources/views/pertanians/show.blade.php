@@ -264,10 +264,10 @@
                             <i class="ki-duotone ki-map fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item map-layer-btn active" href="#" data-layer="streetmap">StreetMap (OpenStreetMap)</a></li>
+                            <li><a class="dropdown-item map-layer-btn" href="#" data-layer="streetmap">StreetMap (OpenStreetMap)</a></li>
                             <li><a class="dropdown-item map-layer-btn" href="#" data-layer="google_map">Google Map</a></li>
                             <li><a class="dropdown-item map-layer-btn" href="#" data-layer="hybrid">Hybrid</a></li>
-                            <li><a class="dropdown-item map-layer-btn" href="#" data-layer="satelit">Satelit</a></li>
+                            <li><a class="dropdown-item map-layer-btn active" href="#" data-layer="satelit">Satelit</a></li>
                         </ul>
                     </div>
                 </div>
@@ -834,7 +834,7 @@
             // Initialize Map
             const detailMap = L.map('detail_map', {
                 zoomControl: true,
-                layers: [osmLayer] // Default layer
+                layers: [googleSatellite] // Default layer
             }).setView(initialCenter, initialZoom);
 
             // Base maps collection
