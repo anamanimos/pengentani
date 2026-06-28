@@ -186,6 +186,26 @@ class PertanianController extends Controller
 
         $withdrawals = $pertanian->withdrawals()->latest('date')->get();
 
+        // Investor Statistics
+        $investorStats = collect();
+        if ($totalInvestasiDeal > 0) {
+            foreach ($pertanian->investors->where('status', 'Deal') as $inv) {
+                $porsi = $inv->besaran_investasi / $totalInvestasiDeal;
+                $alokasiInv = $alokasiInvestorTotal * $porsi;
+                $ditarikInv = $pertanian->withdrawals->where('role', 'investor')->where('user_id', $inv->user_id)->sum('amount');
+                $sisaInv = $alokasiInv - $ditarikInv;
+                
+                $investorStats->push((object)[
+                    'name' => $inv->user->name ?? 'Investor',
+                    'investasi' => $inv->besaran_investasi,
+                    'porsi' => $porsi * 100,
+                    'alokasi' => $alokasiInv,
+                    'ditarik' => $ditarikInv,
+                    'sisa' => $sisaInv,
+                ]);
+            }
+        }
+
         // Combine for table
         $realisasiList = collect();
 
@@ -246,7 +266,8 @@ class PertanianController extends Controller
             'sisaCashAll',
             'sisaCashDeal',
             'realisasiList',
-            'withdrawals'
+            'withdrawals',
+            'investorStats'
         ));
     }
 

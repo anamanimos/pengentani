@@ -638,6 +638,54 @@
                 </div>
             </div>
         </div>
+        @if($investorStats->count() > 0)
+        <div class="card shadow-sm mb-5 mb-xl-10 border-0">
+            <div class="card-header border-0 pt-5">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold text-gray-900 fs-4">Rincian Saldo Per Investor</span>
+                    <span class="text-muted mt-1 fw-semibold fs-7">Alokasi bagi hasil dan penarikan untuk masing-masing investor</span>
+                </h3>
+            </div>
+            <div class="card-body py-3">
+                <div class="table-responsive">
+                    <table class="table align-middle table-row-dashed fs-6 gy-3">
+                        <thead>
+                            <tr class="fw-bold text-muted bg-light text-start text-uppercase fs-7">
+                                <th class="ps-4 min-w-150px rounded-start">Investor</th>
+                                <th class="min-w-100px">Porsi</th>
+                                <th class="min-w-125px">Alokasi</th>
+                                <th class="min-w-125px">Ditarik</th>
+                                <th class="min-w-125px text-end rounded-end pe-4">Sisa Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($investorStats as $stat)
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="symbol symbol-35px symbol-circle me-3">
+                                            <span class="symbol-label bg-light-primary text-primary fw-semibold">{{ substr($stat->name, 0, 1) }}</span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="text-gray-800 fw-bold mb-1">{{ $stat->name }}</span>
+                                            <span class="text-muted fs-8">Inv: Rp {{ number_format($stat->investasi, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-light-success fs-8">{{ number_format($stat->porsi, 2) }}%</span>
+                                </td>
+                                <td><span class="text-gray-800 fw-semibold">Rp {{ number_format($stat->alokasi, 0, ',', '.') }}</span></td>
+                                <td><span class="text-danger fw-semibold">Rp {{ number_format($stat->ditarik, 0, ',', '.') }}</span></td>
+                                <td class="text-end pe-4"><span class="text-success fw-bold fs-6">Rp {{ number_format($stat->sisa, 0, ',', '.') }}</span></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <div class="card shadow-sm mb-5 mb-xl-10">
             <div class="card-header border-0 pt-6">
