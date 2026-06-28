@@ -48,19 +48,21 @@ class PertanianInvestorController extends Controller
     {
         if ($pertanian->user_id !== Auth::id()) abort(403);
 
+        $request->merge([
+            'besaran_investasi' => str_replace(',', '', $request->besaran_investasi)
+        ]);
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'besaran_investasi' => 'required',
+            'besaran_investasi' => 'required|numeric|min:1',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
 
-        $besaran = str_replace(',', '', $request->besaran_investasi);
-
         $pertanian->investors()->create([
             'user_id' => $request->user_id,
-            'besaran_investasi' => $besaran,
+            'besaran_investasi' => $request->besaran_investasi,
             'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,
             'keterangan' => $request->keterangan,
@@ -89,19 +91,21 @@ class PertanianInvestorController extends Controller
         if ($pertanian->user_id !== Auth::id()) abort(403);
         if ($investor->pertanian_id !== $pertanian->id) abort(404);
 
+        $request->merge([
+            'besaran_investasi' => str_replace(',', '', $request->besaran_investasi)
+        ]);
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'besaran_investasi' => 'required',
+            'besaran_investasi' => 'required|numeric|min:1',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
 
-        $besaran = str_replace(',', '', $request->besaran_investasi);
-
         $investor->update([
             'user_id' => $request->user_id,
-            'besaran_investasi' => $besaran,
+            'besaran_investasi' => $request->besaran_investasi,
             'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,
             'keterangan' => $request->keterangan,
