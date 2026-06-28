@@ -742,9 +742,26 @@
                 </div>
             </div>
         </div>
-        @if($investorStats->count() > 0)
-        <div class="card shadow-sm mb-5 mb-xl-10 border-0">
-            <div class="card-header border-0 pt-5">
+        </div>
+
+        {{-- Sub Navigation untuk Tabel Distribusi --}}
+        <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6">
+            <li class="nav-item">
+                <a class="nav-link active text-active-primary" data-bs-toggle="tab" href="#subtab_riwayat_penarikan">Riwayat Penarikan Dana</a>
+            </li>
+            @if($investorStats->count() > 0)
+            <li class="nav-item">
+                <a class="nav-link text-active-primary" data-bs-toggle="tab" href="#subtab_rincian_investor">Rincian Saldo Per Investor</a>
+            </li>
+            @endif
+        </ul>
+
+        <div class="tab-content" id="myTabContentDistribution">
+            {{-- Tab Pane: Rincian Saldo Investor --}}
+            @if($investorStats->count() > 0)
+            <div class="tab-pane fade" id="subtab_rincian_investor" role="tabpanel">
+                <div class="card shadow-sm mb-5 mb-xl-10 border-0">
+                    <div class="card-header border-0 pt-5">
                 <h3 class="card-title align-items-start flex-column">
                     <span class="card-label fw-bold text-gray-900 fs-4">Rincian Saldo Per Investor</span>
                     <span class="text-muted mt-1 fw-semibold fs-7">Alokasi bagi hasil dan penarikan untuk masing-masing investor</span>
@@ -789,10 +806,14 @@
                 </div>
             </div>
         </div>
-        @endif
-
-        <div class="card shadow-sm mb-5 mb-xl-10">
-            <div class="card-header border-0 pt-6">
+                </div>
+            </div>
+            @endif
+            
+            {{-- Tab Pane: Riwayat Penarikan --}}
+            <div class="tab-pane fade show active" id="subtab_riwayat_penarikan" role="tabpanel">
+                <div class="card shadow-sm mb-5 mb-xl-10">
+                    <div class="card-header border-0 pt-6">
                 <h3 class="card-title align-items-start flex-column">
                     <span class="card-label fw-bold fs-3 mb-1">Riwayat Penarikan Dana</span>
                     <span class="text-muted fw-semibold fs-7">Seluruh penarikan bagi hasil oleh Admin, Pengelola, maupun Investor</span>
@@ -923,112 +944,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- Tabel Pengembalian Modal --}}
-        <div class="card shadow-sm mb-5 mb-xl-10">
-            <div class="card-header border-0 pt-6">
-                <h3 class="card-title align-items-start flex-column">
-                    <span class="card-label fw-bold fs-3 mb-1">Riwayat Pengembalian Modal</span>
-                    <span class="text-muted fw-semibold fs-7">Pengembalian uang muka investasi (modal awal) kepada investor</span>
-                </h3>
-            </div>
-            <div class="card-body py-3">
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle table-row-dashed fs-7 gy-2">
-                        <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                <th class="text-start">Tanggal</th>
-                                <th class="text-start">Investor</th>
-                                <th class="text-start">Nominal Dikembalikan</th>
-                                <th class="text-start">Bukti</th>
-                                <th class="text-start">Keterangan</th>
-                                <th class="text-start">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @forelse($withdrawalsModal as $withdrawal)
-                            <tr>
-                                <td class="text-start">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
-                                <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
-                                <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
-                                <td class="text-start">
-                                    @if($withdrawal->proof_image)
-                                        <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>{{ $withdrawal->notes ?? '-' }}</td>
-                                <td class="text-start">
-                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-start text-muted py-5">Belum ada pengembalian modal.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        {{-- Tabel Penyaluran Zakat --}}
-        <div class="card shadow-sm mb-5 mb-xl-10">
-            <div class="card-header border-0 pt-6">
-                <h3 class="card-title align-items-start flex-column">
-                    <span class="card-label fw-bold fs-3 mb-1">Riwayat Penyaluran Zakat</span>
-                    <span class="text-muted fw-semibold fs-7">Sisa Dana Zakat yang belum disalurkan: <span class="fw-bold text-success">Rp {{ number_format($sisaZakat, 0, ',', '.') }}</span> dari total kewajiban <span class="fw-bold">Rp {{ number_format($realisasiZakat, 0, ',', '.') }}</span></span>
-                </h3>
-            </div>
-            <div class="card-body py-3">
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle table-row-dashed fs-7 gy-2">
-                        <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                <th class="text-start">Tanggal</th>
-                                <th class="text-start">Penerima/Lembaga (Opsional)</th>
-                                <th class="text-start">Nominal Disalurkan</th>
-                                <th class="text-start">Bukti</th>
-                                <th class="text-start">Keterangan</th>
-                                <th class="text-start">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @forelse($withdrawalsZakat as $withdrawal)
-                            <tr>
-                                <td class="text-start">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
-                                <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
-                                <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
-                                <td class="text-start">
-                                    @if($withdrawal->proof_image)
-                                        <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>{{ $withdrawal->notes ?? '-' }}</td>
-                                <td class="text-start">
-                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-start text-muted py-5">Belum ada penyaluran zakat.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </div>
