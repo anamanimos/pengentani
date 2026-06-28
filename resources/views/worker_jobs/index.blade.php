@@ -1414,19 +1414,52 @@
             // Handle Paste globally when modal is open
             const modalEl = document.getElementById('modal_upload_proof');
             const bsPasteHandler = (e) => {
-                if ($(modalEl).is(':visible')) {
-                    if(e.clipboardData && e.clipboardData.files.length > 0) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.stopImmediatePropagation();
-                        const file = e.clipboardData.files[0];
-                        if(file.type.startsWith('image/')) {
-                            const dataTransfer = new DataTransfer();
-                            dataTransfer.items.add(file);
-                            bsFileInput.files = dataTransfer.files;
-                            showBsPreview(file);
-                        }
+                let hasImage = false;
+                let imageFile = null;
+
+                if (e.clipboardData && e.clipboardData.files.length > 0) {
+                    const file = e.clipboardData.files[0];
+                    if (file.type.startsWith('image/')) {
+                        hasImage = true;
+                        imageFile = file;
                     }
+                }
+
+                if (hasImage && imageFile) {
+                    // Block Jspreadsheet from receiving mixed text/URL from clipboard
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    if (!$(modalEl).is(':visible')) {
+                        // Check if focused on column 10 (Bukti Transaksi)
+                        if (typeof spreadsheet !== 'undefined' && spreadsheet.selectedCell) {
+                            let x = parseInt(spreadsheet.selectedCell[0]);
+                            let y = parseInt(spreadsheet.selectedCell[1]);
+                            if (x === 10) {
+                                window._activeProofCell = { x: x, y: y };
+                            } else {
+                                window._activeProofCell = null;
+                            }
+                        } else {
+                            window._activeProofCell = null;
+                        }
+
+                        // Reset modal
+                        $('#bs_new_proof_file').val('');
+                        $('#bs_new_proof_name').val('');
+                        $('#bs_proof_preview_img').attr('src', '').addClass('d-none');
+                        $('#bs_proof_remove_btn').addClass('d-none');
+                        $('#bs_proof_placeholder').removeClass('d-none');
+                        
+                        var myModal = new bootstrap.Modal(modalEl);
+                        myModal.show();
+                    }
+
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(imageFile);
+                    bsFileInput.files = dataTransfer.files;
+                    showBsPreview(imageFile);
                 }
             };
             window.addEventListener('paste', bsPasteHandler, true);
