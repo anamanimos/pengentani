@@ -110,6 +110,7 @@
                 url: url,
                 type: 'POST',
                 data: form.serialize(),
+                dataType: 'json',
                 success: function (response) {
                     Swal.fire({
                         text: response.message || "Investor berhasil ditambahkan!",

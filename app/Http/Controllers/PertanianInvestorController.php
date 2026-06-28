@@ -68,7 +68,7 @@ class PertanianInvestorController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'message' => 'Investor berhasil ditambahkan.',
                 'redirect' => route('pertanians.investors.index', $pertanian)
@@ -111,7 +111,7 @@ class PertanianInvestorController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        if ($request->ajax()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'message' => 'Investor berhasil diperbarui.',
                 'redirect' => route('pertanians.investors.index', $pertanian)
