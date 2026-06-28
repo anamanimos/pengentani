@@ -158,70 +158,70 @@
                 <div class="card card-flush shadow-sm h-100">
                     <div class="card-header pt-5 border-0">
                         <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-success fs-3 text-uppercase">Target Pembagian</span>
+                            <span class="card-label fw-bold text-success fs-3">Target Pembagian</span>
                             <span class="text-muted mt-1 fw-semibold fs-7">Estimasi pembagian awal</span>
                         </h3>
                     </div>
                     <div class="card-body pt-5">
                         <!-- Modal -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal Terkumpul:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Modal Terkumpul:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($totalInvestasiAll, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Estimasi Pendapatan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Pendapatan:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Estimasi Pendapatan:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
 
                         <!-- Estimasi Pengeluaran -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Pengeluaran:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Estimasi Pengeluaran:</span>
                             <span class="text-danger fw-bolder fs-4">- Rp {{ number_format($totalBiaya, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
 
                         <!-- Keuntungan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Estimasi Laba Kotor:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Estimasi Laba Kotor:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($zakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed border-success opacity-50 mb-4"></div>
                         
                         <!-- Keuntungan Setelah Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Laba Bersih Setelah Zakat:</span>
+                            <span class="text-gray-800 fw-bold fs-6">Laba Bersih Setelah Zakat:</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed border-success opacity-50 mb-4"></div>
                         
                         <!-- Saham Investor -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($labaInvestor, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Saham Admin -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($labaAdmin, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Saham Pengelola -->
                         <div class="d-flex flex-stack">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Pengelola ({{ $pertanian->persentase_pengelola }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Pengelola ({{ $pertanian->persentase_pengelola }}%):</span>
                             <span class="text-success fw-bolder fs-4">Rp {{ number_format($labaPengelola, 0, ',', '.') }}</span>
                         </div>
                     </div>
@@ -233,70 +233,70 @@
                 <div class="card card-flush shadow-sm h-100">
                     <div class="card-header pt-5 border-0">
                         <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-warning fs-3 text-uppercase">Realisasi Pembagian</span>
+                            <span class="card-label fw-bold text-warning fs-3">Realisasi Pembagian</span>
                             <span class="text-muted mt-1 fw-semibold fs-7">Hasil akhir sebenarnya</span>
                         </h3>
                     </div>
                     <div class="card-body pt-5">
                         <!-- Modal -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Modal Terkumpul:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Modal Terkumpul:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($totalInvestasiDeal, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Total Pendapatan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Total Pendapatan:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Total Pendapatan:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($totalRealisasiPendapatan, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
 
                         <!-- Total Pengeluaran -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Total Pengeluaran:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Total Pengeluaran:</span>
                             <span class="text-danger fw-bolder fs-4">- Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
 
                         <!-- Keuntungan -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Realisasi Laba Kotor:</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Realisasi Laba Kotor:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($realisasiZakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Keuntungan Setelah Zakat -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-800 fw-bold fs-6 text-uppercase">Laba Bersih Setelah Zakat:</span>
+                            <span class="text-gray-800 fw-bold fs-6">Laba Bersih Setelah Zakat:</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($realisasiSetelahZakat, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed border-warning opacity-50 mb-4"></div>
                         
                         <!-- Saham Investor -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($alokasiInvestorTotal, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Saham Admin -->
                         <div class="d-flex flex-stack mb-4">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($alokasiAdmin, 0, ',', '.') }}</span>
                         </div>
                         <div class="separator separator-dashed mb-4"></div>
                         
                         <!-- Saham Pengelola -->
                         <div class="d-flex flex-stack">
-                            <span class="text-gray-600 fw-semibold fs-6 text-uppercase">Saham Pengelola ({{ $pertanian->persentase_pengelola }}%):</span>
+                            <span class="text-gray-600 fw-semibold fs-6">Saham Pengelola ({{ $pertanian->persentase_pengelola }}%):</span>
                             <span class="text-warning fw-bolder fs-4">Rp {{ number_format($alokasiPengelola, 0, ',', '.') }}</span>
                         </div>
                     </div>
@@ -539,7 +539,7 @@
                 <div class="table-responsive">
                     <table id="kt_table_realisasi" class="table table-sm align-middle table-row-dashed fs-7 gy-2">
                         <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <tr class="text-start text-muted fw-bold fs-7 gs-0">
                                 <th class="text-start min-w-100px">Tanggal</th>
                                 <th class="text-start min-w-150px">Kategori</th>
                                 <th class="text-start min-w-200px">Deskripsi/Keterangan</th>
@@ -583,7 +583,7 @@
                 <div class="table-responsive">
                     <table class="table align-middle table-row-dashed fs-6 gy-5">
                         <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <tr class="text-start text-muted fw-bold fs-7 gs-0">
                                 <th class="min-w-50px">No</th>
                                 <th class="min-w-200px">Nama Investor</th>
                                 <th class="min-w-150px">Besaran Investasi</th>
@@ -770,7 +770,7 @@
                 <div class="table-responsive">
                     <table class="table align-middle table-row-dashed fs-6 gy-3">
                         <thead>
-                            <tr class="fw-bold text-muted bg-light text-start text-uppercase fs-7">
+                            <tr class="fw-bold text-muted bg-light text-start fs-7">
                                 <th class="ps-4 min-w-150px rounded-start">Investor</th>
                                 <th class="min-w-100px">Porsi</th>
                                 <th class="min-w-125px">Alokasi</th>
@@ -886,7 +886,7 @@
                 <div class="table-responsive">
                     <table id="kt_table_withdrawals" class="table table-sm align-middle table-row-dashed fs-7 gy-2">
                         <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <tr class="text-start text-muted fw-bold fs-7 gs-0">
                                 <th class="text-start">Tanggal</th>
                                 <th class="text-start">Tanggal Input</th>
                                 <th class="text-start">Kategori</th>
