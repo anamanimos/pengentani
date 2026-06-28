@@ -1135,13 +1135,16 @@
             function updateTotal() {
                 if (!spreadsheet) return;
                 var data = spreadsheet.getData();
+                let rows = $('#spreadsheet > div > table > tbody > tr');
                 var sum = 0;
                 for(var i = 0; i < data.length; i++) {
-                    var valStr = data[i][8];
-                    if (valStr !== null && valStr !== undefined && valStr !== '') {
-                        var cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
-                        var val = parseFloat(cleanValStr);
-                        if (!isNaN(val)) sum += val;
+                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                        var valStr = data[i][8];
+                        if (valStr !== null && valStr !== undefined && valStr !== '') {
+                            var cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                            var val = parseFloat(cleanValStr);
+                            if (!isNaN(val)) sum += val;
+                        }
                     }
                 }
                 var formatted = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum));
