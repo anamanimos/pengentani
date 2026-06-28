@@ -142,8 +142,8 @@
 
 @push('styles')
     <!-- Jspreadsheet CE -->
-    <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jexcel.css" type="text/css" />
-    <link rel="stylesheet" href="https://jsuites.net/v4/jsuites.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/jspreadsheet.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites@4/dist/jsuites.min.css" type="text/css" />
     <style>
         /* Fullscreen Mode */
         #spreadsheet-wrapper.fullscreen-mode {
@@ -502,8 +502,8 @@
 
 @push('scripts')
     <!-- Jspreadsheet CE -->
-    <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
-    <script src="https://jsuites.net/v4/jsuites.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsuites@4/dist/jsuites.min.js"></script>
 
     <script>
         $(document).ready(function() {
