@@ -246,5 +246,56 @@ class PurchaseController extends Controller
         $request->validate(['name' => 'required|string|max:255']);
         $cat = \App\Models\PurchaseCategory::firstOrCreate(['name' => trim($request->name)]);
         return response()->json(['id' => $cat->id, 'name' => $cat->name]);
+    public function export(Request $request)
+    {
+        $query = Purchase::whereHas('pertanian', function ($q) {
+            $q->where('user_id', Auth::id());
+        })->with(['pertanian', 'items.category', 'store']);
+
+        if ($request->filled('pertanian_id')) {
+            $query->where('pertanian_id', $request->pertanian_id);
+        }
+
+        $purchases = $query->orderBy('id', 'asc')->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Header
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Tanggal');
+        $sheet->setCellValue('C1', 'Pertanian');
+        $sheet->setCellValue('D1', 'Toko / Vendor');
+        $sheet->setCellValue('E1', 'Kategori Barang');
+        $sheet->setCellValue('F1', 'Nama Barang / Deskripsi');
+        $sheet->setCellValue('G1', 'Qty');
+        $sheet->setCellValue('H1', 'Harga Satuan (Rp)');
+        $sheet->setCellValue('I1', 'Total (Rp)');
+
+        $rowNum = 2;
+        $index = 1;
+        foreach ($purchases as $p) {
+            foreach ($p->items as $item) {
+                $sheet->setCellValue('A' . $rowNum, $index);
+                $sheet->setCellValue('B' . $rowNum, $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : '-');
+                $sheet->setCellValue('C' . $rowNum, $p->pertanian->name ?? '-');
+                $sheet->setCellValue('D' . $rowNum, $p->store->name ?? '-');
+                $sheet->setCellValue('E' . $rowNum, $item->category->name ?? '-');
+                $sheet->setCellValue('F' . $rowNum, $item->description ?? '-');
+                $sheet->setCellValue('G' . $rowNum, (float) $item->qty);
+                $sheet->setCellValue('H' . $rowNum, (float) $item->unit_price);
+                $sheet->setCellValue('I' . $rowNum, (float) $item->total_price);
+                $rowNum++;
+                $index++;
+            }
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $fileName = 'Laporan_Pembelian_' . date('Ymd_His') . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'. urlencode($fileName).'"');
+        $writer->save('php://output');
+        exit;
     }
 }

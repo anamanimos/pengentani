@@ -143,5 +143,55 @@ class IncomeController extends Controller
             'name' => $request->name
         ]);
         return response()->json(['id' => $category->id, 'name' => $category->name]);
+    public function export(Request $request)
+    {
+        $query = \App\Models\Income::with(['pertanian.kebun', 'tengkulak', 'category']);
+
+        if ($request->filled('pertanian_id')) {
+            $query->where('pertanian_id', $request->pertanian_id);
+        }
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+
+        $incomes = $query->orderBy('id', 'asc')->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Header
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Tanggal');
+        $sheet->setCellValue('C1', 'Pertanian');
+        $sheet->setCellValue('D1', 'Tengkulak / Pembeli');
+        $sheet->setCellValue('E1', 'Kategori');
+        $sheet->setCellValue('F1', 'Nama Barang / Deskripsi');
+        $sheet->setCellValue('G1', 'Qty');
+        $sheet->setCellValue('H1', 'Harga Satuan (Rp)');
+        $sheet->setCellValue('I1', 'Total (Rp)');
+
+        $rowNum = 2;
+        $index = 1;
+        foreach ($incomes as $income) {
+            $sheet->setCellValue('A' . $rowNum, $index);
+            $sheet->setCellValue('B' . $rowNum, $income->date ? \Carbon\Carbon::parse($income->date)->format('Y-m-d') : '-');
+            $sheet->setCellValue('C' . $rowNum, $income->pertanian->name ?? '-');
+            $sheet->setCellValue('D' . $rowNum, $income->tengkulak->name ?? '-');
+            $sheet->setCellValue('E' . $rowNum, $income->category->name ?? '-');
+            $sheet->setCellValue('F' . $rowNum, $income->description ?? '-');
+            $sheet->setCellValue('G' . $rowNum, (float) $income->qty);
+            $sheet->setCellValue('H' . $rowNum, (float) $income->unit_price);
+            $sheet->setCellValue('I' . $rowNum, (float) $income->amount);
+            $rowNum++;
+            $index++;
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $fileName = 'Laporan_Pendapatan_' . date('Ymd_His') . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'. urlencode($fileName).'"');
+        $writer->save('php://output');
+        exit;
     }
 }

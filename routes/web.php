@@ -46,6 +46,11 @@ Route::prefix('console')->middleware('auth')->group(function () {
     
     // Auto Login Generation (Admin side) -> Actually we don't need a specific route for generation, just the endpoint
     
+    // Entity Management
+    Route::resource('entities', \App\Http\Controllers\EntityController::class);
+    Route::post('entities/{entity}/members', [\App\Http\Controllers\EntityController::class, 'addMember'])->name('entities.members.add');
+    Route::delete('entities/{entity}/members/{user}', [\App\Http\Controllers\EntityController::class, 'removeMember'])->name('entities.members.remove');
+
     // User Management
     Route::post('users/stop-impersonate', [\App\Http\Controllers\UserController::class, 'stopImpersonate'])->name('users.stop_impersonate');
     Route::post('/users/{user}/impersonate', [\App\Http\Controllers\UserController::class, 'impersonate'])->name('users.impersonate');
@@ -67,6 +72,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('purchases/ajax-dropdowns', [\App\Http\Controllers\PurchaseController::class, 'getDropdownsAjax'])->name('purchases.ajax-dropdowns');
     Route::post('purchases/ajax-store', [\App\Http\Controllers\PurchaseController::class, 'storeStoreAjax'])->name('purchases.ajax-store');
     Route::post('purchases/ajax-category', [\App\Http\Controllers\PurchaseController::class, 'storeCategoryAjax'])->name('purchases.ajax-category');
+    Route::get('purchases/export', [\App\Http\Controllers\PurchaseController::class, 'export'])->name('purchases.export');
     Route::resource('purchases', \App\Http\Controllers\PurchaseController::class)->except(['create', 'show', 'edit', 'update']);
     Route::resource('purchases/vendor', \App\Http\Controllers\StoreController::class)
         ->names('stores')
@@ -83,6 +89,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     // Pencatatan Pendapatan (Incomes)
     Route::post('incomes/ajax-category', [\App\Http\Controllers\IncomeController::class, 'storeCategoryAjax'])->name('incomes.ajax-category');
     Route::resource('incomes/categories', \App\Http\Controllers\IncomeCategoryController::class)->names('income-categories');
+    Route::get('incomes/export', [\App\Http\Controllers\IncomeController::class, 'export'])->name('incomes.export');
     Route::resource('incomes', \App\Http\Controllers\IncomeController::class)->except(['create', 'show', 'edit', 'update']);
 
     // Pertanian Investors

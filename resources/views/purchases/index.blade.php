@@ -14,6 +14,14 @@
     <button type="button" id="btn-show-alert" class="btn btn-icon btn-light-info btn-sm me-3 d-none" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
+    <form action="{{ route('purchases.export') }}" method="GET" class="m-0 d-flex align-items-center me-3">
+        @if(request('pertanian_id'))
+            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+        @endif
+        <button type="submit" class="btn btn-success btn-sm">
+            <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
+        </button>
+    </form>
     <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
         <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
     </button>
@@ -47,6 +55,14 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('purchases.export') }}" method="GET" class="m-0 d-flex align-items-center">
+                @if(request('pertanian_id'))
+                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+                @endif
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
+                </button>
+            </form>
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
             </button>
