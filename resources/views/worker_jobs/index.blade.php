@@ -480,6 +480,40 @@
     </style>
 @endpush
 
+<!-- Upload Bukti Modal -->
+<div class="modal fade" id="modal_upload_proof" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Bukti Baru</h5>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="bs_proof_preview_container" class="border border-dashed border-gray-300 rounded mb-4 d-flex align-items-center justify-content-center bg-light" style="height: 400px; overflow: hidden; cursor: pointer; position: relative;">
+                    <div id="bs_proof_placeholder" class="text-muted text-center">
+                        <i class="fas fa-cloud-upload-alt fs-3x mb-3"></i><br>
+                        <span class="fs-4">Klik untuk pilih file<br>atau paste gambar (Ctrl+V)</span>
+                    </div>
+                    <img id="bs_proof_preview_img" src="" class="d-none" style="max-width: 100%; max-height: 100%; object-fit: contain; position: absolute; z-index: 1;">
+                    <button type="button" id="bs_proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
+                </div>
+                <input type="file" id="bs_new_proof_file" class="d-none" accept="image/*">
+                <input type="text" id="bs_new_proof_name" class="form-control form-control-lg form-control-solid" placeholder="Ketik Nama Bukti (Opsional)">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="bs_btn_upload_proof">
+                    <span class="indicator-label">Upload</span>
+                    <span class="indicator-progress">Please wait... 
+                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
     <!-- Jspreadsheet CE -->
     <script src="https://bossanova.uk/jspreadsheet/v4/jexcel.js"></script>
@@ -691,142 +725,20 @@
                         });
                     } else if (x == 10 && value === 'NEW_PROOF') {
                         spreadsheet.setValueFromCoords(x, y, '', true);
-                        Swal.fire({
-                            title: 'Upload Bukti Baru',
-                            html: `
-                                <style>.no-scroll-html-container { overflow: visible !important; }</style>
-                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-4 d-flex align-items-center justify-content-center bg-light" style="height: 400px; overflow: hidden; cursor: pointer; position: relative;">
-                                    <div id="proof_placeholder" class="text-muted text-center">
-                                        <i class="fas fa-cloud-upload-alt fs-3x mb-3"></i><br>
-                                        <span class="fs-4">Klik untuk pilih file<br>atau paste gambar (Ctrl+V)</span>
-                                    </div>
-                                    <img id="proof_preview_img" src="" class="d-none" style="max-width: 100%; max-height: 100%; object-fit: contain; position: absolute; z-index: 1;">
-                                    <button type="button" id="proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
-                                </div>
-                                <input type="file" id="new_proof_file" class="d-none" accept="image/*">
-                                <input type="text" id="new_proof_name" class="form-control form-control-lg form-control-solid" placeholder="Ketik Nama Bukti (Opsional)">
-                            `,
-                            width: '800px',
-                            customClass: {
-                                htmlContainer: 'no-scroll-html-container'
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Upload',
-                            cancelButtonText: 'Batal',
-                            didOpen: () => {
-                                const container = document.getElementById('proof_preview_container');
-                                const fileInput = document.getElementById('new_proof_file');
-                                const imgPreview = document.getElementById('proof_preview_img');
-                                const placeholder = document.getElementById('proof_placeholder');
-                                const removeBtn = document.getElementById('proof_remove_btn');
+                        
+                        // Set cell coord
+                        window._activeProofCell = { x: x, y: y };
 
-                                // Handle click on container
-                                container.addEventListener('click', (e) => {
-                                    if(e.target !== removeBtn && !removeBtn.contains(e.target)) {
-                                        fileInput.click();
-                                    }
-                                });
-
-                                // Handle file selection
-                                fileInput.addEventListener('change', function() {
-                                    if(this.files && this.files[0]) {
-                                        showPreview(this.files[0]);
-                                    }
-                                });
-
-                                // Handle paste globally while swal is open (using capture phase to intercept before JExcel)
-                                const pasteHandler = (e) => {
-                                    if(e.clipboardData && e.clipboardData.files.length > 0) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        e.stopImmediatePropagation();
-                                        const file = e.clipboardData.files[0];
-                                        if(file.type.startsWith('image/')) {
-                                            // Assign file to input
-                                            const dataTransfer = new DataTransfer();
-                                            dataTransfer.items.add(file);
-                                            fileInput.files = dataTransfer.files;
-                                            showPreview(file);
-                                        }
-                                    }
-                                };
-                                window.addEventListener('paste', pasteHandler, true);
-
-                                // Handle remove button
-                                removeBtn.addEventListener('click', () => {
-                                    fileInput.value = '';
-                                    imgPreview.src = '';
-                                    imgPreview.classList.add('d-none');
-                                    removeBtn.classList.add('d-none');
-                                    placeholder.classList.remove('d-none');
-                                });
-
-                                function showPreview(file) {
-                                    const reader = new FileReader();
-                                    reader.onload = function(e) {
-                                        imgPreview.src = e.target.result;
-                                        imgPreview.classList.remove('d-none');
-                                        removeBtn.classList.remove('d-none');
-                                        placeholder.classList.add('d-none');
-                                    }
-                                    reader.readAsDataURL(file);
-                                }
-
-                                // Store the pasteHandler to remove it later
-                                Swal.getPopup()._pasteHandler = pasteHandler;
-                            },
-                            willClose: () => {
-                                const handler = Swal.getPopup()._pasteHandler;
-                                if(handler) window.removeEventListener('paste', handler, true);
-                            },
-                            preConfirm: () => {
-                                const file = document.getElementById('new_proof_file').files[0];
-                                const name = document.getElementById('new_proof_name').value;
-                                if (!file) {
-                                    Swal.showValidationMessage('File bukti harus dipilih!');
-                                    return false;
-                                }
-                                return { file: file, name: name };
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                let formData = new FormData();
-                                formData.append('file_path', result.value.file);
-                                formData.append('name', result.value.name);
-                                formData.append('_token', '{{ csrf_token() }}');
-                                
-                                Swal.fire({
-                                    title: 'Mengunggah...',
-                                    allowOutsideClick: false,
-                                    didOpen: () => { Swal.showLoading(); }
-                                });
-
-                                $.ajax({
-                                    url: '{{ route("transaction-proofs.store") }}',
-                                    type: 'POST',
-                                    data: formData,
-                                    processData: false,
-                                    contentType: false,
-                                    headers: {
-                                        'Accept': 'application/json'
-                                    },
-                                    success: function(res) {
-                                        if(res.success) {
-                                            Swal.close();
-                                            proofs.push({ id: res.proof.id, name: res.proof.name });
-                                            // Use native laragon storage path structure
-                                            proofUrls[res.proof.id] = '/storage/' + res.proof.file_path;
-                                            spreadsheet.options.columns[10].source = proofs;
-                                            spreadsheet.setValueFromCoords(x, y, res.proof.id, true);
-                                            autoSave();
-                                        }
-                                    },
-                                    error: function(xhr) {
-                                        Swal.fire('Error', 'Gagal mengunggah bukti', 'error');
-                                    }
-                                });
-                            }
-                        });
+                        // Reset modal fields
+                        $('#bs_new_proof_file').val('');
+                        $('#bs_new_proof_name').val('');
+                        $('#bs_proof_preview_img').attr('src', '').addClass('d-none');
+                        $('#bs_proof_remove_btn').addClass('d-none');
+                        $('#bs_proof_placeholder').removeClass('d-none');
+                        
+                        // Show modal
+                        var myModal = new bootstrap.Modal(document.getElementById('modal_upload_proof'));
+                        myModal.show();
                     } else {
                         updateTotal();
                         autoSave();
@@ -1459,6 +1371,114 @@
                 if ($('#spreadsheet-wrapper').hasClass('fullscreen-mode')) {
                     resizeSpreadsheetForFullscreen();
                 }
+            });
+
+            // Bootstrap Modal logic for Uploading Proof
+            const bsContainer = document.getElementById('bs_proof_preview_container');
+            const bsFileInput = document.getElementById('bs_new_proof_file');
+            const bsImgPreview = document.getElementById('bs_proof_preview_img');
+            const bsPlaceholder = document.getElementById('bs_proof_placeholder');
+            const bsRemoveBtn = document.getElementById('bs_proof_remove_btn');
+
+            bsContainer.addEventListener('click', (e) => {
+                if(e.target !== bsRemoveBtn && !bsRemoveBtn.contains(e.target)) {
+                    bsFileInput.click();
+                }
+            });
+
+            bsFileInput.addEventListener('change', function() {
+                if(this.files && this.files[0]) {
+                    showBsPreview(this.files[0]);
+                }
+            });
+
+            bsRemoveBtn.addEventListener('click', () => {
+                bsFileInput.value = '';
+                bsImgPreview.src = '';
+                bsImgPreview.classList.add('d-none');
+                bsRemoveBtn.classList.add('d-none');
+                bsPlaceholder.classList.remove('d-none');
+            });
+
+            function showBsPreview(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    bsImgPreview.src = e.target.result;
+                    bsImgPreview.classList.remove('d-none');
+                    bsRemoveBtn.classList.remove('d-none');
+                    bsPlaceholder.classList.add('d-none');
+                }
+                reader.readAsDataURL(file);
+            }
+
+            // Handle Paste globally when modal is open
+            const modalEl = document.getElementById('modal_upload_proof');
+            const bsPasteHandler = (e) => {
+                if ($(modalEl).is(':visible')) {
+                    if(e.clipboardData && e.clipboardData.files.length > 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        const file = e.clipboardData.files[0];
+                        if(file.type.startsWith('image/')) {
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            bsFileInput.files = dataTransfer.files;
+                            showBsPreview(file);
+                        }
+                    }
+                }
+            };
+            window.addEventListener('paste', bsPasteHandler, true);
+
+            $('#bs_btn_upload_proof').click(function() {
+                const file = bsFileInput.files[0];
+                const name = $('#bs_new_proof_name').val();
+                if (!file) {
+                    toastr.warning('File bukti harus dipilih!');
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append('file_path', file);
+                formData.append('name', name);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                let btn = $(this);
+                btn.attr('data-kt-indicator', 'on').prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ route("transaction-proofs.store") }}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    success: function(res) {
+                        btn.removeAttr('data-kt-indicator').prop('disabled', false);
+                        if(res.success) {
+                            var myModalEl = document.getElementById('modal_upload_proof');
+                            var modal = bootstrap.Modal.getInstance(myModalEl);
+                            modal.hide();
+
+                            proofs.push({ id: res.proof.id, name: res.proof.name });
+                            proofUrls[res.proof.id] = '/storage/' + res.proof.file_path;
+                            spreadsheet.options.columns[10].source = proofs;
+                            
+                            if (window._activeProofCell) {
+                                spreadsheet.setValueFromCoords(window._activeProofCell.x, window._activeProofCell.y, res.proof.id, true);
+                            }
+                            autoSave();
+                            toastr.success('Bukti berhasil diunggah.');
+                        }
+                    },
+                    error: function(xhr) {
+                        btn.removeAttr('data-kt-indicator').prop('disabled', false);
+                        toastr.error('Gagal mengunggah bukti.');
+                    }
+                });
             });
 
         });
