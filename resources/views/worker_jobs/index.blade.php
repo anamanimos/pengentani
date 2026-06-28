@@ -848,28 +848,11 @@
                         var row = data[i];
 
                         var pertanianVal = row[2];
-                        if (!pertanianVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
-                        }
-
                         var workerVal = row[3];
-                        if (!workerVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') workerVal = cellEl.innerText.trim();
-                        }
-
                         var categoryVal = row[4];
-                        if (!categoryVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') categoryVal = cellEl.innerText.trim();
-                        }
                         
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
-                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
-                            if (j === 3 && workerVal) { hasAnyData = true; break; }
-                            if (j === 4 && categoryVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
@@ -882,40 +865,35 @@
                             if (!row[1] || !pertanianVal || !workerVal || !categoryVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    var val = row[colIdx];
-                                    if (colIdx === 2) val = pertanianVal;
-                                    if (colIdx === 3) val = workerVal;
-                                    if (colIdx === 4) val = categoryVal;
-
-                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
                                 requiredCols.forEach(function(colIdx) {
                                     styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
-                            }
 
-                            let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
-                            
-                            validData.push({
-                                index: i,
-                                id: row[0] || null,
-                                date: row[1] || null,
-                                pertanian_id: pertanianVal || null,
-                                worker_id: workerVal || null,
-                                job_category_id: categoryVal || null,
-                                description: row[5] || null,
-                                start_time: row[6] || null,
-                                end_time: row[7] || null,
-                                wage: cleanWage,
-                                status: row[9] || 'unpaid',
-                                transaction_proof_id: row[10] || null
-                            });
+                                let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                                
+                                validData.push({
+                                    index: i,
+                                    id: row[0] || null,
+                                    date: row[1] || null,
+                                    pertanian_id: pertanianVal || null,
+                                    worker_id: workerVal || null,
+                                    job_category_id: categoryVal || null,
+                                    description: row[5] || null,
+                                    start_time: row[6] || null,
+                                    end_time: row[7] || null,
+                                    wage: cleanWage,
+                                    status: row[9] || 'unpaid',
+                                    transaction_proof_id: row[10] || null
+                                });
+                            }
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                 else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         } else {

@@ -807,36 +807,25 @@
                         }
 
                         var storeVal = row[3];
-                        if (!storeVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') storeVal = cellEl.innerText.trim();
-                        }
-
+                        var pertanianVal = row[2];
+                        var storeVal = row[3];
                         var categoryVal = row[4];
-                        if (!categoryVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') categoryVal = cellEl.innerText.trim();
-                        }
 
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
-                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
-                            if (j === 3 && storeVal) { hasAnyData = true; break; }
-                            if (j === 4 && categoryVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
                             }
                         }
 
-                        var requiredCols = [1, 2];
+                        var requiredCols = [1, 2, 4]; // Tanggal, Pertanian, Kategori
 
-                        if (row[0] || (row[1] && pertanianVal)) {
-                            if (!row[1] || !pertanianVal) {
+                        if (row[0] || (row[1] && pertanianVal && categoryVal)) {
+                            if (!row[1] || !pertanianVal || !categoryVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    var val = colIdx === 2 ? pertanianVal : row[colIdx];
-                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
@@ -865,8 +854,7 @@
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                var val = colIdx === 2 ? pertanianVal : row[colIdx];
-                                if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                 else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         } else {

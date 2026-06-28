@@ -817,72 +817,55 @@
                         var row = data[i];
                         
                         var pertanianVal = row[2];
-                        if (!pertanianVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
-                        }
-
+                        var pertanianVal = row[2];
                         var tengkulakVal = row[3];
-                        if (!tengkulakVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') tengkulakVal = cellEl.innerText.trim();
-                        }
-
                         var typeVal = row[4];
-                        if (!typeVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') typeVal = cellEl.innerText.trim();
-                        }
 
                         var hasAnyData = false;
                         for(var j=1; j<row.length; j++) {
-                            if (j === 2 && pertanianVal) { hasAnyData = true; break; }
-                            if (j === 3 && tengkulakVal) { hasAnyData = true; break; }
-                            if (j === 4 && typeVal) { hasAnyData = true; break; }
                             if (row[j] !== null && row[j] !== '') {
                                 hasAnyData = true;
                                 break;
                             }
                         }
 
-                        var requiredCols = [1, 2];
+                        var requiredCols = [1, 2]; // Tanggal and Pertanian are required
 
                         if (row[0] || (row[1] && pertanianVal)) {
                             if (!row[1] || !pertanianVal) {
                                 hasIncompleteRow = true;
                                 requiredCols.forEach(function(colIdx) {
-                                    var val = colIdx === 2 ? pertanianVal : row[colIdx];
-                                    if (!val) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                     else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
                             } else {
                                 requiredCols.forEach(function(colIdx) {
                                     styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                                 });
-                            }
 
-                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
-                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
-                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
-                            
-                            validData.push({
-                                index: i,
-                                id: row[0] || null,
-                                date: row[1] || null,
-                                pertanian_id: pertanianVal || null,
-                                tengkulak_id: tengkulakVal || null,
-                                income_category_id: typeVal || null,
-                                description: row[5] || null,
-                                qty: cleanQty,
-                                unit_price: cleanUnitPrice,
-                                amount: cleanAmount,
-                                transaction_proof_id: row[9] || null
-                            });
-                            rowMapping.push(i);
+                                let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
+                                let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
+                                let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                                
+                                validData.push({
+                                    index: i,
+                                    id: row[0] || null,
+                                    date: row[1] || null,
+                                    pertanian_id: pertanianVal || null,
+                                    tengkulak_id: tengkulakVal || null,
+                                    income_category_id: typeVal || null,
+                                    description: row[5] || null,
+                                    qty: cleanQty,
+                                    unit_price: cleanUnitPrice,
+                                    amount: cleanAmount,
+                                    transaction_proof_id: row[9] || null
+                                });
+                                rowMapping.push(i);
+                            }
                         } else if (hasAnyData) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
-                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: rgba(241, 65, 108, 0.15) !important;';
+                                if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
                                 else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
                         } else {
