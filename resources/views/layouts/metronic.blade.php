@@ -31,6 +31,24 @@
         [data-bs-theme="dark"] .table-responsive .table td:first-child {
             box-shadow: 2px 0 5px rgba(0,0,0,0.5);
         }
+
+        /* Sticky Row Numbers for Jspreadsheet */
+        .jexcel > thead > tr > td.jexcel_selectall,
+        .jexcel > tbody > tr > td.jexcel_row {
+            position: sticky;
+            left: 0;
+            z-index: 4 !important;
+            background-color: #f4f6fa !important;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .jexcel > thead > tr > td.jexcel_selectall {
+            z-index: 5 !important;
+        }
+        [data-bs-theme="dark"] .jexcel > thead > tr > td.jexcel_selectall,
+        [data-bs-theme="dark"] .jexcel > tbody > tr > td.jexcel_row {
+            background-color: #2b2b40 !important;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        }
     </style>
     @stack('styles')
 </head>
