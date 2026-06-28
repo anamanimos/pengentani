@@ -83,7 +83,7 @@
 </div>
 
 <!-- Modal Universal Filter -->
-<div class="modal fade" id="universalFilterModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="universalFilterModal" tabindex="-1" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-dialog-centered mw-400px">
         <div class="modal-content">
             <div class="modal-header pb-0 border-0 justify-content-end">
