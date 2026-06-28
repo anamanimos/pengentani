@@ -1305,8 +1305,11 @@
                 if (el && el.jexcel) {
                     savedTableHeight = el.jexcel.options.tableHeight;
                 }
-                resizeSpreadsheetForFullscreen();
                 $('body').css('overflow', 'hidden');
+                // Delay resize until browser has reflowed the fullscreen layout
+                requestAnimationFrame(function() {
+                    resizeSpreadsheetForFullscreen();
+                });
             }
 
             function exitFullscreen() {
@@ -1326,12 +1329,14 @@
             function resizeSpreadsheetForFullscreen() {
                 var el = document.getElementById('spreadsheet');
                 if (!el || !el.jexcel) return;
-                var headerH = $('.spreadsheet-fs-header').outerHeight() || 50;
-                var footerH = $('#spreadsheet-footer').outerHeight() || 50;
-                var toolbarH = $('#spreadsheet-wrapper > .d-flex.justify-content-end.mb-2').outerHeight() || 0;
-                var availableH = window.innerHeight - headerH - footerH - toolbarH - 2;
+                var headerH = $('.spreadsheet-fs-header:visible').outerHeight(true) || 0;
+                var footerH = $('#spreadsheet-footer:visible').outerHeight(true) || 0;
+                var toolbarH = $('#spreadsheet-wrapper > .d-flex.justify-content-end.mb-2:visible').outerHeight(true) || 0;
+                var availableH = window.innerHeight - headerH - footerH - toolbarH;
                 el.jexcel.options.tableHeight = availableH + 'px';
                 el.jexcel.setHeight();
+                // Also force the jexcel_content to match
+                $(el).find('.jexcel_content').css('max-height', availableH + 'px');
             }
 
             $('#btn-toggle-fullscreen').click(function() {
