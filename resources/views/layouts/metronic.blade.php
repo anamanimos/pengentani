@@ -13,6 +13,20 @@
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
+    <style>
+        /* Fix sidebar toggle button clickability and clipping */
+        #kt_app_sidebar,
+        #kt_app_sidebar_logo {
+            overflow: visible !important;
+        }
+        #kt_app_sidebar {
+            z-index: 110 !important;
+        }
+        #kt_app_sidebar_toggle {
+            z-index: 99999 !important;
+            cursor: pointer !important;
+        }
+    </style>
     @stack('styles')
 </head>
 <!--end::Head-->
