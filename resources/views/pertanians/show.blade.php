@@ -104,162 +104,106 @@
 <div class="tab-content" id="myTabContent">
     {{-- Tab 1: Ringkasan & Bagi Hasil --}}
     <div class="tab-pane fade show active" id="kt_tab_pane_financial" role="tabpanel">
-        {{-- Kartu Ringkasan Finansial --}}
-        {{-- Kartu Finansial (Estimasi vs Realisasi) --}}
-        <div class="row g-5 g-xl-8 mb-5">
-            {{-- Biaya Operasional --}}
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-danger mb-5 mb-xl-10 h-100">
-                    <div class="card-body py-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="ki-duotone ki-finance-calculator fs-1 text-danger me-3">
-                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span>
-                            </i>
-                            <h4 class="text-danger fw-bold m-0">Biaya Operasional</h4>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
-                            <span class="text-gray-900 fw-bold">Rp {{ number_format($totalBiaya, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
-                            <span class="text-danger fw-bold">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
-                        </div>
+        <div class="row g-5 mb-5">
+            {{-- Kolom Kiri: Target Pembagian --}}
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100" style="background-color: #d1f5e8;">
+                    <div class="card-header border-0 min-h-50px py-3" style="background-color: #40d08a;">
+                        <h3 class="card-title text-white fw-bold m-0 text-uppercase">Target Pembagian</h3>
                     </div>
-                </div>
-            </div>
-
-            {{-- Pendapatan --}}
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-info mb-5 mb-xl-10 h-100">
-                    <div class="card-body py-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="ki-duotone ki-graph-up fs-1 text-info me-3">
-                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span>
-                            </i>
-                            <h4 class="text-info fw-bold m-0">Pendapatan</h4>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
-                            <span class="text-gray-900 fw-bold">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
-                            <span class="text-info fw-bold">Rp {{ number_format($totalRealisasiPendapatan, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Laba Bersih --}}
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} mb-5 mb-xl-10 h-100">
-                    <div class="card-body py-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="ki-duotone ki-badge fs-1 text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} me-3">
-                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
-                            </i>
-                            <h4 class="text-{{ $estimasiLaba >= 0 ? 'success' : 'danger' }} fw-bold m-0">Laba Bersih</h4>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-gray-600 fw-semibold">Estimasi:</span>
-                            <span class="text-gray-900 fw-bold">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-gray-600 fw-semibold">Realisasi:</span>
-                            <span class="text-{{ $realisasiLabaBersih >= 0 ? 'success' : 'danger' }} fw-bold">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
-                        </div>
-                        @if($estimasiLaba > 0)
-                            <div class="separator separator-dashed my-2"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-gray-600 fs-8">Est. Sisa Laba (Stlh Zkt):</span>
-                                <span class="text-success fw-bold fs-8">Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            {{-- Investasi Terkumpul --}}
-            <div class="col-xl-3 col-md-6">
-                <div class="card bg-light-primary mb-5 mb-xl-10 h-100 position-relative">
-                    <div class="card-body py-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <i class="ki-duotone ki-wallet fs-1 text-primary me-3">
-                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
-                            </i>
-                            <h4 class="text-primary fw-bold m-0">Investasi Terkumpul</h4>
+                    <div class="card-body p-8">
+                        <!-- Modal -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Modal:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($totalInvestasiAll, 0, ',', '.') }}</span>
                         </div>
                         
-                        <div class="position-absolute" style="top: 15px; right: 15px;">
-                            <div class="form-check form-switch form-check-custom form-check-solid form-check-sm">
-                                <input class="form-check-input" type="checkbox" id="investor-deal-toggle" />
-                                <label class="form-check-label fs-8 text-muted" for="investor-deal-toggle" title="Hanya hitung investor dengan status Deal"></label>
-                            </div>
+                        <!-- Keuntungan -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Keuntungan:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</span>
                         </div>
-
-                        <div class="d-flex justify-content-between mb-2 mt-4">
-                            <span class="text-gray-600 fw-semibold">Total:</span>
-                            <span class="text-gray-900 fw-bold fs-5" id="inv-total-text">Rp {{ number_format($totalInvestasiAll, 0, ',', '.') }}</span>
+                        
+                        <!-- Zakat -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($zakat, 0, ',', '.') }}</span>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-gray-600 fw-semibold">Sisa Cash:</span>
-                            <span class="text-primary fw-bold fs-5" id="inv-cash-text">Rp {{ number_format($sisaCashAll, 0, ',', '.') }}</span>
+                        
+                        <!-- Keuntungan Setelah Zakat -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Keuntungan Setelah Zakat:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Investor -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($labaInvestor, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Admin -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($labaAdmin, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Pengelola -->
+                        <div class="d-flex flex-column mb-2">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Pengelola Lahan ({{ $pertanian->persentase_pengelola }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($labaPengelola, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        {{-- Skema Bagi Hasil --}}
-        <div class="card">
-            <div class="card-body">
-                <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed mb-9 p-6">
-                    <i class="ki-duotone ki-information-5 fs-1 text-warning me-4">
-                        <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-                    </i>
-                    <div class="d-flex flex-stack flex-grow-1">
-                        <div class="fw-semibold">
-                            <h4 class="text-gray-900 fw-bold">Skema Zakat & Bagi Hasil</h4>
-                            <div class="fs-6 text-gray-700">
-                                @if($estimasiLaba > 0)
-                                    Persentase Zakat (<strong>{{ number_format($zakatPersen, 2, ',', '.') }}%</strong>) dipotong terlebih dahulu dari Estimasi Laba Bersih (<strong>Rp {{ number_format($estimasiLaba, 0, ',', '.') }}</strong>).
-                                    Sisa laba setelah zakat sebesar <strong>Rp {{ number_format($labaSetelahZakat, 0, ',', '.') }}</strong> kemudian dibagi sesuai dengan porsi masing-masing pihak (Investor, Pengelola Lahan, dan Admin).
-                                @else
-                                    Persentase Zakat (<strong>{{ number_format($zakatPersen, 2, ',', '.') }}%</strong>) akan dipotong terlebih dahulu dari Estimasi Laba Bersih sebelum dibagikan ke masing-masing pihak. Saat ini, estimasi laba bersih belum menghasilkan nilai positif.
-                                @endif
-                            </div>
-                        </div>
+            
+            {{-- Kolom Kanan: Realisasi Pembagian --}}
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100" style="background-color: #fdf0ce;">
+                    <div class="card-header border-0 min-h-50px py-3" style="background-color: #f0a500;">
+                        <h3 class="card-title text-white fw-bold m-0 text-uppercase">Realisasi Pembagian</h3>
                     </div>
-                </div>
-
-                <div class="row text-center">
-                    <div class="col-md-3 col-6">
-                        <div class="border border-dashed border-gray-300 rounded min-w-125px py-3 px-4 mb-3 bg-light-warning">
-                            <div class="fs-3 fw-bold text-warning">{{ number_format($zakatPersen, 2, ',', '.') }}%</div>
-                            <div class="fw-semibold text-muted fs-7">Zakat</div>
-                            <div class="fs-6 fw-bold text-gray-800 mt-2">Rp {{ number_format($zakat, 0, ',', '.') }}</div>
+                    <div class="card-body p-8">
+                        <!-- Modal -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Modal:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
                         </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="border border-dashed border-gray-300 rounded min-w-125px py-3 px-4 mb-3">
-                            <div class="fs-3 fw-bold text-primary">{{ $pertanian->persentase_investor }}%</div>
-                            <div class="fw-semibold text-muted fs-7">Investor</div>
-                            <div class="fs-6 fw-bold text-gray-800 mt-2">Rp {{ number_format($labaInvestor, 0, ',', '.') }}</div>
+                        
+                        <!-- Keuntungan -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Keuntungan:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($realisasiLabaBersih, 0, ',', '.') }}</span>
                         </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="border border-dashed border-gray-300 rounded min-w-125px py-3 px-4 mb-3">
-                            <div class="fs-3 fw-bold text-success">{{ $pertanian->persentase_pengelola }}%</div>
-                            <div class="fw-semibold text-muted fs-7">Pengelola Lahan</div>
-                            <div class="fs-6 fw-bold text-gray-800 mt-2">Rp {{ number_format($labaPengelola, 0, ',', '.') }}</div>
+                        
+                        <!-- Zakat -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Zakat ({{ number_format($zakatPersen, 2, ',', '.') }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($realisasiZakat, 0, ',', '.') }}</span>
                         </div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="border border-dashed border-gray-300 rounded min-w-125px py-3 px-4 mb-3">
-                            <div class="fs-3 fw-bold text-info">{{ $pertanian->persentase_admin }}%</div>
-                            <div class="fw-semibold text-muted fs-7">Admin</div>
-                            <div class="fs-6 fw-bold text-gray-800 mt-2">Rp {{ number_format($labaAdmin, 0, ',', '.') }}</div>
+                        
+                        <!-- Keuntungan Setelah Zakat -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Keuntungan Setelah Zakat:</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($realisasiSetelahZakat, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Investor -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Investor ({{ $pertanian->persentase_investor }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($alokasiInvestorTotal, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Admin -->
+                        <div class="d-flex flex-column mb-8">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Admin ({{ $pertanian->persentase_admin }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($alokasiAdmin, 0, ',', '.') }}</span>
+                        </div>
+                        
+                        <!-- Saham Pengelola -->
+                        <div class="d-flex flex-column mb-2">
+                            <span class="text-uppercase fw-bold text-dark fs-5 mb-2">Saham Pengelola Lahan ({{ $pertanian->persentase_pengelola }}%):</span>
+                            <span class="text-end fw-bolder text-dark fs-1">Rp {{ number_format($alokasiPengelola, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
