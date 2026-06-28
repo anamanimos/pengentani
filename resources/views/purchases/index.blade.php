@@ -651,10 +651,15 @@
                         });
                         applyAllFilters();
                         
-                        // Scroll to bottom (WhatsApp style)
+                        // Scroll to bottom (WhatsApp style) robustly for lazy loading
                         var contentDiv = document.querySelector('.jexcel_content');
                         if (contentDiv) {
-                            contentDiv.scrollTop = contentDiv.scrollHeight;
+                            var scrollAttempts = 0;
+                            var scrollInterval = setInterval(function() {
+                                contentDiv.scrollTop = contentDiv.scrollHeight + 10000;
+                                scrollAttempts++;
+                                if (scrollAttempts > 8) clearInterval(scrollInterval);
+                            }, 150);
                         }
                     }, 100);
                 },
