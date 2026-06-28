@@ -623,40 +623,65 @@
                     </div>
                 </div>
 
-                {{-- Filter & Pencarian --}}
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-5">
+                {{-- Filter & Pencarian (Notion-style) --}}
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
                     <div class="position-relative my-1">
                         <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y"><span class="path1"></span><span class="path2"></span></i>
-                        <input type="text" id="withdrawal_search" class="form-control form-control-solid w-200px ps-12" placeholder="Cari penarikan..." />
+                        <input type="text" id="withdrawal_search" class="form-control form-control-solid form-control-sm w-200px ps-12" placeholder="Cari penarikan..." />
                     </div>
+                    
+                    {{-- Filter Dropdown --}}
                     <div class="my-1">
-                        <input type="text" id="withdrawal_daterange" class="form-control form-control-solid w-200px" placeholder="Filter Tanggal" />
-                    </div>
-                    <div class="my-1">
-                        <select id="withdrawal_role_filter" class="form-select form-select-solid w-150px" data-control="select2" data-hide-search="true" data-placeholder="Filter Peran">
-                            <option value=""></option>
-                            <option value="all">Semua Peran</option>
-                            <option value="admin">Admin</option>
-                            <option value="pengelola">Pengelola</option>
-                            <option value="investor">Investor</option>
-                        </select>
-                    </div>
-                    <div class="my-1">
-                        <select id="withdrawal_user_filter" class="form-select form-select-solid w-200px" data-control="select2" data-placeholder="Filter Penerima">
-                            <option value=""></option>
-                            <option value="all">Semua Penerima</option>
-                            @foreach($withdrawals->unique('user_id') as $wd)
-                                @if($wd->user)
-                                    <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
+                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start">
+                            <i class="ki-duotone ki-filter fs-2"><span class="path1"></span><span class="path2"></span></i> Filter
+                        </button>
+                        <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_filter_withdrawal">
+                            <div class="px-7 py-5">
+                                <div class="fs-5 text-dark fw-bold">Filter Data</div>
+                            </div>
+                            <div class="separator border-gray-200"></div>
+                            <div class="px-7 py-5">
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold">Tanggal:</label>
+                                    <input type="text" id="withdrawal_daterange" class="form-control form-control-solid form-control-sm" placeholder="Pilih rentang" />
+                                </div>
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold">Peran:</label>
+                                    <select id="withdrawal_role_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Peran">
+                                        <option value=""></option>
+                                        <option value="all">Semua Peran</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="pengelola">Pengelola</option>
+                                        <option value="investor">Investor</option>
+                                    </select>
+                                </div>
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold">Penerima:</label>
+                                    <select id="withdrawal_user_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-placeholder="Semua Penerima">
+                                        <option value=""></option>
+                                        <option value="all">Semua Penerima</option>
+                                        @foreach($withdrawals->unique('user_id') as $wd)
+                                            @if($wd->user)
+                                                <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true" id="withdrawal_filter_reset">Reset</button>
+                                    <button type="button" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Terapkan</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                {{-- Active Filters Chips Container --}}
+                <div id="withdrawal_active_filters" class="d-flex flex-wrap gap-2 mb-4 empty-hidden"></div>
+
                 {{-- Tabel Penarikan --}}
                 <div class="table-responsive">
-                    <table id="kt_table_withdrawals" class="table align-middle table-row-dashed fs-6 gy-5">
+                    <table id="kt_table_withdrawals" class="table table-sm align-middle table-row-dashed fs-7 gy-2">
                         <thead>
                             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                                 <th class="text-start">Tanggal</th>
@@ -961,6 +986,54 @@
 
             $('#withdrawal_search').on('keyup', function () {
                 withdrawalTable.search(this.value).draw();
+            });
+            
+            function updateWithdrawalActiveFilters() {
+                var container = $('#withdrawal_active_filters');
+                container.empty();
+                
+                var date = $('#withdrawal_daterange').val();
+                if (date) {
+                    container.append(`<span class="badge badge-light-primary">Tanggal: ${date} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('date')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
+                
+                var role = $('#withdrawal_role_filter').val();
+                if (role && role !== 'all') {
+                    container.append(`<span class="badge badge-light-primary">Peran: ${$('#withdrawal_role_filter option:selected').text()} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('role')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
+                
+                var user = $('#withdrawal_user_filter').val();
+                if (user && user !== 'all') {
+                    container.append(`<span class="badge badge-light-primary">Penerima: ${$('#withdrawal_user_filter option:selected').text()} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('user')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
+                
+                if (container.children().length > 0) {
+                    container.removeClass('d-none');
+                } else {
+                    container.addClass('d-none');
+                }
+            }
+
+            window.clearWithdrawalFilter = function(type) {
+                if (type === 'date') {
+                    document.getElementById('withdrawal_daterange')._flatpickr.clear();
+                } else if (type === 'role') {
+                    $('#withdrawal_role_filter').val('all').trigger('change.select2');
+                } else if (type === 'user') {
+                    $('#withdrawal_user_filter').val('all').trigger('change.select2');
+                }
+                withdrawalTable.draw();
+            };
+            
+            $('#withdrawal_filter_reset').on('click', function() {
+                document.getElementById('withdrawal_daterange')._flatpickr.clear();
+                $('#withdrawal_role_filter').val('all').trigger('change.select2');
+                $('#withdrawal_user_filter').val('all').trigger('change.select2');
+                withdrawalTable.draw();
+            });
+            
+            withdrawalTable.on('draw', function() {
+                updateWithdrawalActiveFilters();
             });
 
             $.fn.dataTable.ext.search.push(
