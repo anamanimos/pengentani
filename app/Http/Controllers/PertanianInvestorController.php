@@ -54,7 +54,7 @@ class PertanianInvestorController extends Controller
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
-            'besaran_investasi' => 'required|numeric|min:1',
+            'besaran_investasi' => 'required|numeric|min:0',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
@@ -104,7 +104,7 @@ class PertanianInvestorController extends Controller
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
-            'besaran_investasi' => 'required|numeric|min:1',
+            'besaran_investasi' => 'required|numeric|min:0',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
