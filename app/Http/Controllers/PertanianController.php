@@ -236,10 +236,15 @@ class PertanianController extends Controller
         $realisasiList = collect();
 
         foreach ($pertanian->purchases as $purchase) {
+            $desc = $purchase->store->name ?? '-';
+            if (!empty($purchase->invoice_number) && $purchase->invoice_number !== '-') {
+                $desc .= ' (Inv: ' . $purchase->invoice_number . ')';
+            }
+
             $realisasiList->push((object)[
                 'date' => $purchase->date,
                 'kategori' => 'Pembelian Material',
-                'deskripsi' => ($purchase->store->name ?? '-') . ' (Inv: ' . $purchase->invoice_number . ')',
+                'deskripsi' => $desc,
                 'nominal' => $purchase->total_amount,
                 'icon' => 'ki-shop',
                 'color' => 'primary'
