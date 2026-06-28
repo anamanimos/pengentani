@@ -17,13 +17,31 @@ class WithdrawalController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|in:admin,pengelola,investor',
-            'user_id' => 'required|exists:users,id',
+            'type' => 'required|in:bagi_hasil,pengembalian_modal,zakat',
             'amount' => 'required|numeric|min:1',
             'date' => 'required|date',
             'proof_image' => 'nullable|image|max:5120', // Max 5MB
             'notes' => 'nullable|string'
         ]);
+
+        $role = $request->role;
+        $userId = $request->user_id;
+
+        if ($request->type === 'bagi_hasil') {
+            $request->validate([
+                'role' => 'required|in:admin,pengelola,investor',
+                'user_id' => 'required|exists:users,id',
+            ]);
+        } elseif ($request->type === 'pengembalian_modal') {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+            ]);
+            $role = 'investor';
+        } else {
+            // Zakat
+            $role = null;
+            $userId = null;
+        }
 
         $proofImagePath = null;
         if ($request->hasFile('proof_image')) {
@@ -31,8 +49,9 @@ class WithdrawalController extends Controller
         }
 
         $pertanian->withdrawals()->create([
-            'user_id' => $request->user_id,
-            'role' => $request->role,
+            'type' => $request->type,
+            'user_id' => $userId,
+            'role' => $role,
             'amount' => str_replace(',', '', $request->amount),
             'date' => $request->date,
             'proof_image' => $proofImagePath,

@@ -176,20 +176,27 @@ class PertanianController extends Controller
         $alokasiPengelola = $realisasiSetelahZakat > 0 ? $realisasiSetelahZakat * ($pertanian->persentase_pengelola / 100) : 0;
         $alokasiInvestorTotal = $realisasiSetelahZakat > 0 ? $realisasiSetelahZakat * ($pertanian->persentase_investor / 100) : 0;
 
-        $ditarikAdmin = $pertanian->withdrawals->where('role', 'admin')->sum('amount');
-        $ditarikPengelola = $pertanian->withdrawals->where('role', 'pengelola')->sum('amount');
-        $ditarikInvestorTotal = $pertanian->withdrawals->where('role', 'investor')->sum('amount');
+        $ditarikAdmin = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'admin')->sum('amount');
+        $ditarikPengelola = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'pengelola')->sum('amount');
+        $ditarikInvestorTotal = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'investor')->sum('amount');
+        
+        $ditarikZakat = $pertanian->withdrawals->where('type', 'zakat')->sum('amount');
+        $sisaZakat = $realisasiZakat - $ditarikZakat;
+        
+        $ditarikModalTotal = $pertanian->withdrawals->where('type', 'pengembalian_modal')->sum('amount');
 
         $sisaAdmin = $alokasiAdmin - $ditarikAdmin;
         $sisaPengelola = $alokasiPengelola - $ditarikPengelola;
         $sisaInvestorTotal = $alokasiInvestorTotal - $ditarikInvestorTotal;
 
-        $totalPenarikan = $ditarikAdmin + $ditarikPengelola + $ditarikInvestorTotal;
+        $totalPenarikan = $pertanian->withdrawals->sum('amount');
         $totalKasMasuk = $totalInvestasiDeal + $totalRealisasiPendapatan;
         $totalKasKeluar = $totalRealisasi + $totalPenarikan;
         $sisaUangCash = $totalKasMasuk - $totalKasKeluar;
 
-        $withdrawals = $pertanian->withdrawals()->latest('date')->get();
+        $withdrawalsBagiHasil = $pertanian->withdrawals()->where('type', 'bagi_hasil')->latest('date')->get();
+        $withdrawalsModal = $pertanian->withdrawals()->where('type', 'pengembalian_modal')->latest('date')->get();
+        $withdrawalsZakat = $pertanian->withdrawals()->where('type', 'zakat')->latest('date')->get();
 
         // Investor Statistics
         $investorStats = collect();
@@ -203,8 +210,11 @@ class PertanianController extends Controller
                 }
                 
                 $alokasiInv = $alokasiInvestorTotal * $porsi;
-                $ditarikInv = $pertanian->withdrawals->where('role', 'investor')->where('user_id', $inv->user_id)->sum('amount');
+                $ditarikInv = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'investor')->where('user_id', $inv->user_id)->sum('amount');
                 $sisaInv = $alokasiInv - $ditarikInv;
+                
+                $ditarikModalInv = $pertanian->withdrawals->where('type', 'pengembalian_modal')->where('user_id', $inv->user_id)->sum('amount');
+                $sisaModalInv = $inv->besaran_investasi - $ditarikModalInv;
                 
                 $investorStats->push((object)[
                     'name' => $inv->user->name ?? 'Investor',
@@ -213,6 +223,8 @@ class PertanianController extends Controller
                     'alokasi' => $alokasiInv,
                     'ditarik' => $ditarikInv,
                     'sisa' => $sisaInv,
+                    'ditarik_modal' => $ditarikModalInv,
+                    'sisa_modal' => $sisaModalInv
                 ]);
             }
         }
@@ -277,8 +289,15 @@ class PertanianController extends Controller
             'sisaCashAll',
             'sisaCashDeal',
             'realisasiList',
-            'withdrawals',
+            'withdrawalsBagiHasil',
+            'withdrawalsModal',
+            'withdrawalsZakat',
             'investorStats',
+            'realisasiZakat',
+            'ditarikZakat',
+            'sisaZakat',
+            'totalInvestasiDeal',
+            'ditarikModalTotal',
             'totalPenarikan',
             'totalKasMasuk',
             'totalKasKeluar',

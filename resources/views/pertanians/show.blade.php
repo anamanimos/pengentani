@@ -105,7 +105,7 @@
                     <li class="nav-item" role="presentation">
                         <a class="nav-link btn btn-color-gray-600 btn-active-light-primary btn-active-color-primary d-flex align-items-center text-start px-6 py-4 rounded-3 w-100" data-bs-toggle="tab" href="#kt_tab_pane_withdrawals" role="tab">
                             <i class="ki-duotone ki-wallet fs-3 me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-                            <span class="fs-5 fw-semibold">Penarikan Dana</span>
+                            <span class="fs-5 fw-semibold">Penarikan & Distribusi</span>
                         </a>
                     </li>
                 </ul>
@@ -788,7 +788,7 @@
                                 <div class="mb-5">
                                     <label class="form-label fw-semibold">Penerima:</label>
                                     <select id="withdrawal_user_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-placeholder="Semua Penerima" multiple="multiple">
-                                        @foreach($withdrawals->unique('user_id') as $wd)
+                                        @foreach($withdrawalsBagiHasil->unique('user_id') as $wd)
                                             @if($wd->user)
                                                 <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
                                             @endif
@@ -828,7 +828,7 @@
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
-                            @forelse($withdrawals as $withdrawal)
+                            @forelse($withdrawalsBagiHasil as $withdrawal)
                             <tr data-date="{{ $withdrawal->date }}">
                                 <td class="text-start" data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
                                 <td class="text-start" data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
@@ -856,7 +856,115 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="text-start text-muted py-5">Belum ada data penarikan dana.</td>
+                                <td colspan="7" class="text-start text-muted py-5">Belum ada data penarikan keuntungan.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabel Pengembalian Modal --}}
+        <div class="card shadow-sm mb-5 mb-xl-10">
+            <div class="card-header border-0 pt-6">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold fs-3 mb-1">Riwayat Pengembalian Modal</span>
+                    <span class="text-muted fw-semibold fs-7">Pengembalian uang muka investasi (modal awal) kepada investor</span>
+                </h3>
+            </div>
+            <div class="card-body py-3">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle table-row-dashed fs-7 gy-2">
+                        <thead>
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="text-start">Tanggal</th>
+                                <th class="text-start">Investor</th>
+                                <th class="text-start">Nominal Dikembalikan</th>
+                                <th class="text-start">Bukti</th>
+                                <th class="text-start">Keterangan</th>
+                                <th class="text-start">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-semibold">
+                            @forelse($withdrawalsModal as $withdrawal)
+                            <tr>
+                                <td class="text-start">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
+                                <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
+                                <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
+                                <td class="text-start">
+                                    @if($withdrawal->proof_image)
+                                        <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>{{ $withdrawal->notes ?? '-' }}</td>
+                                <td class="text-start">
+                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-start text-muted py-5">Belum ada pengembalian modal.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabel Penyaluran Zakat --}}
+        <div class="card shadow-sm mb-5 mb-xl-10">
+            <div class="card-header border-0 pt-6">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold fs-3 mb-1">Riwayat Penyaluran Zakat</span>
+                    <span class="text-muted fw-semibold fs-7">Sisa Dana Zakat yang belum disalurkan: <span class="fw-bold text-success">Rp {{ number_format($sisaZakat, 0, ',', '.') }}</span> dari total kewajiban <span class="fw-bold">Rp {{ number_format($realisasiZakat, 0, ',', '.') }}</span></span>
+                </h3>
+            </div>
+            <div class="card-body py-3">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle table-row-dashed fs-7 gy-2">
+                        <thead>
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="text-start">Tanggal</th>
+                                <th class="text-start">Penerima/Lembaga (Opsional)</th>
+                                <th class="text-start">Nominal Disalurkan</th>
+                                <th class="text-start">Bukti</th>
+                                <th class="text-start">Keterangan</th>
+                                <th class="text-start">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-semibold">
+                            @forelse($withdrawalsZakat as $withdrawal)
+                            <tr>
+                                <td class="text-start">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
+                                <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
+                                <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
+                                <td class="text-start">
+                                    @if($withdrawal->proof_image)
+                                        <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>{{ $withdrawal->notes ?? '-' }}</td>
+                                <td class="text-start">
+                                    <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-start text-muted py-5">Belum ada penyaluran zakat.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -883,17 +991,25 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-5">
+                        <label class="required form-label">Jenis Distribusi</label>
+                        <select class="form-select form-select-solid" name="type" id="withdrawal_type" required>
+                            <option value="bagi_hasil">Pembagian Keuntungan (Bagi Hasil)</option>
+                            <option value="pengembalian_modal">Pengembalian Modal Investasi</option>
+                            <option value="zakat">Penyaluran Zakat</option>
+                        </select>
+                    </div>
+                    <div class="mb-5" id="group_role">
                         <label class="required form-label">Peran (Kapasitas)</label>
-                        <select class="form-select form-select-solid" name="role" required>
+                        <select class="form-select form-select-solid" name="role" id="withdrawal_role" required>
                             <option value="">Pilih Peran...</option>
                             <option value="admin">Admin</option>
                             <option value="pengelola">Pengelola</option>
                             <option value="investor">Investor</option>
                         </select>
                     </div>
-                    <div class="mb-5">
+                    <div class="mb-5" id="group_user">
                         <label class="required form-label">Pilih User Penerima</label>
-                        <select class="form-select form-select-solid" name="user_id" data-control="select2" data-dropdown-parent="#kt_modal_add_withdrawal" required>
+                        <select class="form-select form-select-solid" name="user_id" id="withdrawal_user" data-control="select2" data-dropdown-parent="#kt_modal_add_withdrawal" required>
                             <option value="">Pilih...</option>
                             @if($pertanian->admin)
                                 <option value="{{ $pertanian->admin->id }}">[Admin] {{ $pertanian->admin->name }}</option>
@@ -1343,6 +1459,31 @@
                     return true;
                 }
             );
+
+            // Handle Add Withdrawal Modal Logic
+            $('#withdrawal_type').on('change', function() {
+                var val = $(this).val();
+                if (val === 'zakat') {
+                    $('#group_role').hide();
+                    $('#withdrawal_role').removeAttr('required').val('');
+                    
+                    $('#group_user').hide();
+                    $('#withdrawal_user').removeAttr('required').val('').trigger('change.select2');
+                } else if (val === 'pengembalian_modal') {
+                    $('#group_role').hide();
+                    $('#withdrawal_role').removeAttr('required').val('investor');
+                    
+                    $('#group_user').show();
+                    $('#withdrawal_user').attr('required', 'required');
+                } else {
+                    // bagi_hasil
+                    $('#group_role').show();
+                    $('#withdrawal_role').attr('required', 'required');
+                    
+                    $('#group_user').show();
+                    $('#withdrawal_user').attr('required', 'required');
+                }
+            });
 
             // Handle Add Withdrawal
             $('#form_add_withdrawal').on('submit', function(e) {

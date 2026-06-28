@@ -8,6 +8,7 @@ class Withdrawal extends Model
 {
     protected $fillable = [
         'pertanian_id',
+        'type',
         'user_id',
         'role',
         'amount',
