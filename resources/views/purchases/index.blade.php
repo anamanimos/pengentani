@@ -14,10 +14,17 @@
     <button type="button" id="btn-show-alert" class="btn btn-icon btn-light-info btn-sm me-3 d-none" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
+    <form action="{{ route('purchases.index') }}" method="GET" class="m-0 d-flex align-items-center me-3">
+        @if(request('pertanian_id'))
+            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+        @endif
+        <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
+    </form>
     <form action="{{ route('purchases.export') }}" method="GET" class="m-0 d-flex align-items-center me-3">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
+        <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
         <button type="submit" class="btn btn-success btn-sm">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
         </button>
@@ -55,12 +62,19 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('purchases.index') }}" method="GET" class="m-0 d-flex align-items-center">
+                @if(request('pertanian_id'))
+                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+                @endif
+                <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
+            </form>
             <form action="{{ route('purchases.export') }}" method="GET" class="m-0 d-flex align-items-center">
                 @if(request('pertanian_id'))
                     <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
                 @endif
+                <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
                 <button type="submit" class="btn btn-success btn-sm">
-                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
+                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor
                 </button>
             </form>
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">

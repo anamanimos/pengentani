@@ -25,6 +25,12 @@ class PurchaseController extends Controller
             $query->where('pertanian_id', $request->pertanian_id);
         }
 
+        $month = $request->input('month', date('Y-m'));
+        if ($month) {
+            $query->whereYear('date', substr($month, 0, 4))
+                  ->whereMonth('date', substr($month, 5, 2));
+        }
+
         $purchases = $query->orderBy('id', 'asc')->get();
         
         $initialData = [];
