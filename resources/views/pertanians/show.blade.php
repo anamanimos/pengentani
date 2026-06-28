@@ -390,67 +390,120 @@
 
     {{-- Tab 5: Realisasi --}}
     <div class="tab-pane fade" id="kt_tab_pane_realisasi" role="tabpanel">
-        <div class="row g-5 g-xl-8">
-            <div class="col-xl-12">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-gray-900 fs-3">Riwayat Realisasi</span>
-                            <span class="text-muted mt-1 fw-semibold fs-7">Gabungan pengeluaran pembelian material dan upah pekerja</span>
-                        </h3>
+        {{-- Info Statistik --}}
+        <div class="row g-5 mb-8">
+            <div class="col-md-4">
+                <div class="bg-light-danger rounded border-danger border border-dashed p-6 h-100">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="ki-duotone ki-finance-calculator text-danger fs-1 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span></i>
+                        <span class="fs-4 fw-bold text-gray-800">Total Seluruh Realisasi</span>
                     </div>
-                    <div class="card-body py-3">
-                        <div class="table-responsive">
-                            <table class="table align-middle table-row-dashed fs-6 gy-5">
-                                <thead>
-                                    <tr class="fw-bold text-muted bg-light text-start">
-                                        <th class="ps-4 min-w-100px rounded-start">Tanggal</th>
-                                        <th class="min-w-150px">Kategori</th>
-                                        <th class="min-w-200px">Deskripsi/Keterangan</th>
-                                        <th class="min-w-150px text-start rounded-end pe-4">Nominal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($realisasiList as $realisasi)
-                                    <tr>
-                                        <td class="ps-4">{{ \Carbon\Carbon::parse($realisasi->date)->format('d M Y') }}</td>
-                                        <td>
-                                            <span class="badge badge-light-{{ $realisasi->color }} fs-7">
-                                                <i class="ki-duotone {{ $realisasi->icon }} text-{{ $realisasi->color }} fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                                                {{ $realisasi->kategori }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $realisasi->deskripsi }}</td>
-                                        <td class="text-start fw-bold text-gray-800 pe-4">Rp {{ number_format($realisasi->nominal, 0, ',', '.') }}</td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="4" class="text-start text-muted py-5">Belum ada data realisasi.</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="fs-2hx fw-bolder text-gray-900 mb-2">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</div>
+                    <div class="fs-6 fw-semibold text-gray-600">Gabungan material & upah</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-light-info rounded border-info border border-dashed p-6 h-100">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="ki-duotone ki-delivery-3 text-info fs-1 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <span class="fs-4 fw-bold text-gray-800">Total Pembelian Material</span>
                     </div>
+                    <div class="fs-2hx fw-bolder text-gray-900 mb-2">Rp {{ number_format($totalRealisasiPembelian, 0, ',', '.') }}</div>
+                    <div class="fs-6 fw-semibold text-gray-600">Bibit, pupuk, alat, dll.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-light-success rounded border-success border border-dashed p-6 h-100">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="ki-duotone ki-users text-success fs-1 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                        <span class="fs-4 fw-bold text-gray-800">Total Upah Pekerja</span>
+                    </div>
+                    <div class="fs-2hx fw-bolder text-gray-900 mb-2">Rp {{ number_format($totalRealisasiPekerjaan, 0, ',', '.') }}</div>
+                    <div class="fs-6 fw-semibold text-gray-600">Biaya SDM harian/borongan</div>
                 </div>
             </div>
         </div>
 
-        <div class="row mt-5 mb-5">
-            <div class="col-12">
-                <div class="card bg-light-danger shadow-sm border border-danger border-dashed">
-                    <div class="card-body d-flex justify-content-between align-items-center py-5">
-                        <div class="d-flex align-items-center">
-                            <i class="ki-duotone ki-finance-calculator fs-3x text-danger me-5">
-                                <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span>
-                            </i>
-                            <div class="d-flex flex-column">
-                                <span class="text-danger fw-bold fs-5">Total Seluruh Realisasi Biaya</span>
-                                <span class="text-muted fw-semibold fs-7">Gabungan dari pembelian material dan upah pekerja</span>
+        <div class="card shadow-sm mb-5 mb-xl-10">
+            <div class="card-header border-0 pt-6">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bold fs-3 mb-1">Riwayat Realisasi Biaya</span>
+                    <span class="text-muted fw-semibold fs-7">Rincian historis pengeluaran pertanian</span>
+                </h3>
+            </div>
+            <div class="card-body py-3">
+                {{-- Filter & Pencarian (Notion-style) --}}
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                    <div class="position-relative my-1">
+                        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y"><span class="path1"></span><span class="path2"></span></i>
+                        <input type="text" id="realisasi_search" class="form-control form-control-solid form-control-sm w-200px ps-12" placeholder="Cari deskripsi..." />
+                    </div>
+                    
+                    {{-- Filter Dropdown --}}
+                    <div class="my-1">
+                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start">
+                            <i class="ki-duotone ki-filter fs-2"><span class="path1"></span><span class="path2"></span></i> Filter
+                        </button>
+                        <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_filter_realisasi">
+                            <div class="px-7 py-5">
+                                <div class="fs-5 text-dark fw-bold">Filter Data</div>
+                            </div>
+                            <div class="separator border-gray-200"></div>
+                            <div class="px-7 py-5">
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold">Tanggal:</label>
+                                    <input type="text" id="realisasi_daterange" class="form-control form-control-solid form-control-sm" placeholder="Pilih rentang" />
+                                </div>
+                                <div class="mb-5">
+                                    <label class="form-label fw-semibold">Kategori:</label>
+                                    <select id="realisasi_category_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Kategori" multiple="multiple">
+                                        <option value="Pembelian Material">Pembelian Material</option>
+                                        <option value="Upah Pekerja">Upah Pekerja</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true" id="realisasi_filter_reset">Reset</button>
+                                    <button type="button" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Terapkan</button>
+                                </div>
                             </div>
                         </div>
-                        <span class="text-gray-900 fw-bolder fs-1 text-nowrap">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</span>
                     </div>
+                </div>
+
+                {{-- Active Filters Chips Container --}}
+                <div id="realisasi_active_filters" class="d-flex flex-wrap gap-2 mb-4 empty-hidden"></div>
+
+                {{-- Tabel Realisasi --}}
+                <div class="table-responsive">
+                    <table id="kt_table_realisasi" class="table table-sm align-middle table-row-dashed fs-7 gy-2">
+                        <thead>
+                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                <th class="text-start min-w-100px">Tanggal</th>
+                                <th class="text-start min-w-150px">Kategori</th>
+                                <th class="text-start min-w-200px">Deskripsi/Keterangan</th>
+                                <th class="text-start min-w-150px">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-semibold">
+                            @forelse($realisasiList as $realisasi)
+                            <tr data-date="{{ $realisasi->date }}" data-category="{{ $realisasi->kategori }}">
+                                <td class="text-start" data-order="{{ $realisasi->date }}">{{ \Carbon\Carbon::parse($realisasi->date)->format('d M Y') }}</td>
+                                <td class="text-start">
+                                    <span class="badge badge-light-{{ $realisasi->color }} fs-7 text-nowrap">
+                                        <i class="ki-duotone {{ $realisasi->icon }} text-{{ $realisasi->color }} fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                        {{ $realisasi->kategori }}
+                                    </span>
+                                </td>
+                                <td class="text-start">{{ $realisasi->deskripsi }}</td>
+                                <td class="text-start fw-bold text-gray-800">Rp {{ number_format($realisasi->nominal, 0, ',', '.') }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-start text-muted py-5">Belum ada data realisasi.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1045,6 +1098,116 @@
                     // User filter
                     if (searchUsers && searchUsers.length > 0) {
                         if (!searchUsers.includes(rowUser)) {
+                            return false;
+                        }
+                    }
+
+                    // Date range filter
+                    if (searchDate && rawDate) {
+                        var rowD = new Date(rawDate);
+                        rowD.setHours(0,0,0,0);
+
+                        if (searchDate.includes(' to ')) {
+                            var dates = searchDate.split(' to ');
+                            var minDate = new Date(dates[0]); minDate.setHours(0,0,0,0);
+                            var maxDate = new Date(dates[1]); maxDate.setHours(0,0,0,0);
+                            
+                            if (rowD < minDate || rowD > maxDate) {
+                                return false;
+                            }
+                        } else {
+                            var filterDate = new Date(searchDate); filterDate.setHours(0,0,0,0);
+                            if (filterDate.getTime() !== rowD.getTime()) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            );
+
+            // Init DataTable for Realisasi
+            var realisasiTable = $('#kt_table_realisasi').DataTable({
+                "info": false,
+                "order": [],
+                "pageLength": 10
+            });
+
+            // Filter logic for Realisasi
+            $("#realisasi_daterange").flatpickr({
+                mode: "range",
+                dateFormat: "Y-m-d",
+                onChange: function() {
+                    realisasiTable.draw();
+                }
+            });
+
+            $('#realisasi_category_filter').on('change', function() {
+                realisasiTable.draw();
+            });
+
+            $('#realisasi_search').on('keyup', function () {
+                realisasiTable.search(this.value).draw();
+            });
+            
+            function updateRealisasiActiveFilters() {
+                var container = $('#realisasi_active_filters');
+                container.empty();
+                
+                var date = $('#realisasi_daterange').val();
+                if (date) {
+                    container.append(`<span class="badge badge-light-primary">Tanggal: ${date} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearRealisasiFilter('date')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
+                
+                var categories = $('#realisasi_category_filter').val();
+                if (categories && categories.length > 0) {
+                    var catTexts = [];
+                    $('#realisasi_category_filter option:selected').each(function() { catTexts.push($(this).text()); });
+                    container.append(`<span class="badge badge-light-primary">Kategori: ${catTexts.join(', ')} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearRealisasiFilter('category')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                }
+                
+                if (container.children().length > 0) {
+                    container.removeClass('d-none');
+                } else {
+                    container.addClass('d-none');
+                }
+            }
+
+            window.clearRealisasiFilter = function(type) {
+                if (type === 'date') {
+                    document.getElementById('realisasi_daterange')._flatpickr.clear();
+                } else if (type === 'category') {
+                    $('#realisasi_category_filter').val(null).trigger('change.select2');
+                }
+                realisasiTable.draw();
+            };
+            
+            $('#realisasi_filter_reset').on('click', function() {
+                document.getElementById('realisasi_daterange')._flatpickr.clear();
+                $('#realisasi_category_filter').val(null).trigger('change.select2');
+                realisasiTable.draw();
+            });
+            
+            realisasiTable.on('draw', function() {
+                updateRealisasiActiveFilters();
+            });
+
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    if (settings.nTable.id !== 'kt_table_realisasi') {
+                        return true;
+                    }
+
+                    var searchDate = $('#realisasi_daterange').val();
+                    var searchCategories = $('#realisasi_category_filter').val();
+
+                    var rawDate = $(settings.aoData[dataIndex].nTr).data('date');
+                    var rawCategory = $(settings.aoData[dataIndex].nTr).data('category');
+
+                    // Category filter
+                    if (searchCategories && searchCategories.length > 0) {
+                        if (!searchCategories.includes(rawCategory)) {
                             return false;
                         }
                     }
