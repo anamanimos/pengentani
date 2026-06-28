@@ -264,9 +264,15 @@
                             @foreach($pertanian->investors as $index => $investor)
                             @php
                                 $basisHitung = $pertanian->batasan_investasi > 0 ? $pertanian->batasan_investasi : $totalInvestasi;
-                                // Hanya Deal dan Standby yang porsinya dihitung (opsional, tapi karena di controller sum() untuk Deal dan Standby, porsinya juga untuk Deal dan Standby)
+                                // Hanya Deal dan Standby yang porsinya dihitung
                                 $porsi = (in_array($investor->status, ['Deal', 'Standby']) && $basisHitung > 0) ? ($investor->besaran_investasi / $basisHitung) * 100 : 0;
-                                $bagiHasilIndividu = (in_array($investor->status, ['Deal', 'Standby']) && $basisHitung > 0) ? ($investor->besaran_investasi / $basisHitung) * $labaInvestor : 0;
+                                
+                                // Override jika ada porsi_bagi_hasil khusus
+                                if ($investor->porsi_bagi_hasil !== null) {
+                                    $porsi = $investor->porsi_bagi_hasil;
+                                }
+
+                                $bagiHasilIndividu = (in_array($investor->status, ['Deal', 'Standby'])) ? ($porsi / 100) * $labaInvestor : 0;
                                 
                                 $statusColor = 'dark';
                                 if($investor->status == 'Deal') $statusColor = 'success';

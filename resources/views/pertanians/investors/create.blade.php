@@ -28,8 +28,18 @@
 
             <div class="mb-10">
                 <label class="required form-label">Besaran Investasi (Rp)</label>
+                <div class="text-muted fs-7 mb-2">Biarkan 0 jika skema investor membayar pengeluaran secara langsung tanpa penyetoran modal awal.</div>
                 <input type="text" name="besaran_investasi" class="form-control form-control-solid mask-currency" placeholder="0" value="{{ old('besaran_investasi') }}" required />
                 @error('besaran_investasi')
+                    <div class="text-danger mt-2">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-10">
+                <label class="form-label">Porsi Bagi Hasil (%)</label>
+                <div class="text-muted fs-7 mb-2">Opsional: Jika diisi, bagi hasil keuntungan akan ditetapkan secara pasti sebesar persentase ini (0 - 100), mengabaikan nominal Besaran Investasi di atas. Jika dikosongkan, persentase akan dihitung otomatis proporsional dari Modal vs Total Modal.</div>
+                <input type="number" step="0.01" min="0" max="100" name="porsi_bagi_hasil" class="form-control form-control-solid" placeholder="Contoh: 50" value="{{ old('porsi_bagi_hasil') }}" />
+                @error('porsi_bagi_hasil')
                     <div class="text-danger mt-2">{{ $message }}</div>
                 @enderror
             </div>

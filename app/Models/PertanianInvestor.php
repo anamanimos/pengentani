@@ -10,6 +10,7 @@ class PertanianInvestor extends Model
         'pertanian_id',
         'user_id',
         'besaran_investasi',
+        'porsi_bagi_hasil',
         'status',
         'keterangan',
     ];

@@ -51,6 +51,7 @@ class PertanianInvestorController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'besaran_investasi' => 'required',
+            'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
@@ -60,6 +61,7 @@ class PertanianInvestorController extends Controller
         $pertanian->investors()->create([
             'user_id' => $request->user_id,
             'besaran_investasi' => $besaran,
+            'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,
             'keterangan' => $request->keterangan,
         ]);
@@ -90,6 +92,7 @@ class PertanianInvestorController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'besaran_investasi' => 'required',
+            'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
@@ -99,6 +102,7 @@ class PertanianInvestorController extends Controller
         $investor->update([
             'user_id' => $request->user_id,
             'besaran_investasi' => $besaran,
+            'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,
             'keterangan' => $request->keterangan,
         ]);

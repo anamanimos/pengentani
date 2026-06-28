@@ -193,9 +193,15 @@ class PertanianController extends Controller
 
         // Investor Statistics
         $investorStats = collect();
-        if ($totalInvestasiDeal > 0) {
+        $hasDealInvestors = $pertanian->investors->where('status', 'Deal')->count() > 0;
+        if ($hasDealInvestors) {
             foreach ($pertanian->investors->where('status', 'Deal') as $inv) {
-                $porsi = $inv->besaran_investasi / $totalInvestasiDeal;
+                if ($inv->porsi_bagi_hasil !== null) {
+                    $porsi = $inv->porsi_bagi_hasil / 100;
+                } else {
+                    $porsi = $totalInvestasiDeal > 0 ? ($inv->besaran_investasi / $totalInvestasiDeal) : 0;
+                }
+                
                 $alokasiInv = $alokasiInvestorTotal * $porsi;
                 $ditarikInv = $pertanian->withdrawals->where('role', 'investor')->where('user_id', $inv->user_id)->sum('amount');
                 $sisaInv = $alokasiInv - $ditarikInv;
