@@ -742,7 +742,6 @@
                 </div>
             </div>
         </div>
-        </div>
 
         {{-- Sub Navigation untuk Tabel Distribusi --}}
         <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6">
