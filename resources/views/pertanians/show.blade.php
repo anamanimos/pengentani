@@ -430,10 +430,8 @@
                     <span class="card-label fw-bold fs-3 mb-1">Riwayat Realisasi Biaya</span>
                     <span class="text-muted fw-semibold fs-7">Rincian historis pengeluaran pertanian</span>
                 </h3>
-            </div>
-            <div class="card-body py-3">
-                {{-- Filter & Pencarian (Notion-style) --}}
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                <div class="card-toolbar gap-3">
+                    {{-- Filter & Pencarian (Notion-style) --}}
                     <div class="position-relative my-1">
                         <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y"><span class="path1"></span><span class="path2"></span></i>
                         <input type="text" id="realisasi_search" class="form-control form-control-solid form-control-sm w-200px ps-12" placeholder="Cari deskripsi..." />
@@ -441,7 +439,7 @@
                     
                     {{-- Filter Dropdown --}}
                     <div class="my-1">
-                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start">
+                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
                             <i class="ki-duotone ki-filter fs-2"><span class="path1"></span><span class="path2"></span></i> Filter
                         </button>
                         <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_filter_realisasi">
@@ -469,6 +467,8 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="card-body py-3">
 
                 {{-- Active Filters Chips Container --}}
                 <div id="realisasi_active_filters" class="d-flex flex-wrap gap-2 mb-4 empty-hidden"></div>
@@ -645,17 +645,8 @@
                     <span class="card-label fw-bold fs-3 mb-1">Riwayat Penarikan Dana</span>
                     <span class="text-muted fw-semibold fs-7">Seluruh penarikan bagi hasil oleh Admin, Pengelola, maupun Investor</span>
                 </h3>
-                <div class="card-toolbar">
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_withdrawal">
-                        <i class="ki-duotone ki-plus fs-2"></i>Catat Penarikan
-                    </button>
-                </div>
-            </div>
-            <div class="card-body py-3">
-
-
-                {{-- Filter & Pencarian (Notion-style) --}}
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                <div class="card-toolbar gap-3">
+                    {{-- Filter & Pencarian (Notion-style) --}}
                     <div class="position-relative my-1">
                         <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-4 top-50 translate-middle-y"><span class="path1"></span><span class="path2"></span></i>
                         <input type="text" id="withdrawal_search" class="form-control form-control-solid form-control-sm w-200px ps-12" placeholder="Cari penarikan..." />
@@ -663,7 +654,7 @@
                     
                     {{-- Filter Dropdown --}}
                     <div class="my-1">
-                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start">
+                        <button type="button" class="btn btn-sm btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
                             <i class="ki-duotone ki-filter fs-2"><span class="path1"></span><span class="path2"></span></i> Filter
                         </button>
                         <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_filter_withdrawal">
@@ -701,7 +692,13 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <button type="button" class="btn btn-sm btn-primary my-1" data-bs-toggle="modal" data-bs-target="#kt_modal_add_withdrawal">
+                        <i class="ki-duotone ki-plus fs-2"></i>Catat Penarikan
+                    </button>
                 </div>
+            </div>
+            <div class="card-body py-3">
 
                 {{-- Active Filters Chips Container --}}
                 <div id="withdrawal_active_filters" class="d-flex flex-wrap gap-2 mb-4 empty-hidden"></div>
