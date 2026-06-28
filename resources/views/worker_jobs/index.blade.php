@@ -521,6 +521,7 @@
 
             const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
             const proofs = proofsData;
+            proofs.unshift({ id: 'NEW_PROOF', name: '+ Tambah Bukti Baru...' });
             const proofUrls = {};
             proofs.forEach(function(p) {
                 proofUrls[p.id] = p.url;
@@ -684,7 +685,61 @@
                                     spreadsheet.options.columns[4].source = categories;
                                     spreadsheet.setValueFromCoords(x, y, res.id, true);
                                     updateTotal();
-                                    autoSave();
+                        });
+                    } else if (x == 10 && value === 'NEW_PROOF') {
+                        spreadsheet.setValueFromCoords(x, y, '', true);
+                        Swal.fire({
+                            title: 'Upload Bukti Baru',
+                            html: '<input type="file" id="new_proof_file" class="form-control mb-3" accept="image/*">' +
+                                  '<input type="text" id="new_proof_name" class="form-control" placeholder="Nama Bukti (Opsional)">',
+                            showCancelButton: true,
+                            confirmButtonText: 'Upload',
+                            cancelButtonText: 'Batal',
+                            preConfirm: () => {
+                                const file = document.getElementById('new_proof_file').files[0];
+                                const name = document.getElementById('new_proof_name').value;
+                                if (!file) {
+                                    Swal.showValidationMessage('File bukti harus dipilih!');
+                                    return false;
+                                }
+                                return { file: file, name: name };
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                let formData = new FormData();
+                                formData.append('file_path', result.value.file);
+                                formData.append('name', result.value.name);
+                                formData.append('_token', '{{ csrf_token() }}');
+                                
+                                Swal.fire({
+                                    title: 'Mengunggah...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => { Swal.showLoading(); }
+                                });
+
+                                $.ajax({
+                                    url: '{{ route("transaction-proofs.store") }}',
+                                    type: 'POST',
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    },
+                                    success: function(res) {
+                                        if(res.success) {
+                                            Swal.close();
+                                            proofs.push({ id: res.proof.id, name: res.proof.name });
+                                            // Use native laragon storage path structure
+                                            proofUrls[res.proof.id] = '/storage/' + res.proof.file_path;
+                                            spreadsheet.options.columns[10].source = proofs;
+                                            spreadsheet.setValueFromCoords(x, y, res.proof.id, true);
+                                            autoSave();
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        Swal.fire('Error', 'Gagal mengunggah bukti', 'error');
+                                    }
                                 });
                             }
                         });
