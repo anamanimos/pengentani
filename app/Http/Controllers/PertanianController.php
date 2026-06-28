@@ -184,6 +184,11 @@ class PertanianController extends Controller
         $sisaPengelola = $alokasiPengelola - $ditarikPengelola;
         $sisaInvestorTotal = $alokasiInvestorTotal - $ditarikInvestorTotal;
 
+        $totalPenarikan = $ditarikAdmin + $ditarikPengelola + $ditarikInvestorTotal;
+        $totalKasMasuk = $totalInvestasiDeal + $totalRealisasiPendapatan;
+        $totalKasKeluar = $totalRealisasi + $totalPenarikan;
+        $sisaUangCash = $totalKasMasuk - $totalKasKeluar;
+
         $withdrawals = $pertanian->withdrawals()->latest('date')->get();
 
         // Investor Statistics
@@ -267,7 +272,11 @@ class PertanianController extends Controller
             'sisaCashDeal',
             'realisasiList',
             'withdrawals',
-            'investorStats'
+            'investorStats',
+            'totalPenarikan',
+            'totalKasMasuk',
+            'totalKasKeluar',
+            'sisaUangCash'
         ));
     }
 

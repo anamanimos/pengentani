@@ -118,6 +118,40 @@
         <div class="tab-content" id="myTabContent">
     {{-- Tab 1: Ringkasan & Bagi Hasil --}}
     <div class="tab-pane fade show active" id="kt_tab_pane_financial" role="tabpanel">
+        
+        {{-- Sisa Uang Cash (Cash Flow) --}}
+        <div class="card bg-light-primary shadow-sm border border-primary border-dashed mb-8">
+            <div class="card-body py-5">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <div class="d-flex align-items-center mb-4 mb-md-0">
+                        <i class="ki-duotone ki-wallet fs-3x text-primary me-5">
+                            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
+                        </i>
+                        <div class="d-flex flex-column">
+                            <span class="text-primary fw-bold fs-3">Sisa Uang Cash Pertanian</span>
+                            <span class="text-muted fw-semibold fs-7">Uang yang saat ini tersedia (Kas Masuk - Kas Keluar)</span>
+                        </div>
+                    </div>
+                    <span class="text-gray-900 fw-bolder fs-2tx text-nowrap {{ $sisaUangCash < 0 ? 'text-danger' : 'text-success' }}">
+                        Rp {{ number_format($sisaUangCash, 0, ',', '.') }}
+                    </span>
+                </div>
+                
+                <div class="separator separator-dashed border-primary opacity-25 my-4"></div>
+                
+                <div class="row g-0">
+                    <div class="col-6 text-start">
+                        <span class="text-muted fw-semibold d-block">Total Kas Masuk (Modal & Pendapatan)</span>
+                        <span class="text-gray-800 fw-bold fs-5">Rp {{ number_format($totalKasMasuk, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <span class="text-muted fw-semibold d-block">Total Kas Keluar (Pengeluaran & Penarikan)</span>
+                        <span class="text-danger fw-bold fs-5">- Rp {{ number_format($totalKasKeluar, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-5 mb-5">
             {{-- Kolom Kiri: Target Pembagian --}}
             <div class="col-md-6">
