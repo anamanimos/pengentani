@@ -670,7 +670,7 @@
                         <tbody class="text-gray-600 fw-semibold">
                             @forelse($withdrawals as $withdrawal)
                             <tr data-date="{{ $withdrawal->date }}">
-                                <td>{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
+                                <td data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
                                 <td>{{ $withdrawal->user->name ?? '-' }}</td>
                                 <td>
                                     <span class="badge badge-light-{{ $withdrawal->role == 'admin' ? 'primary' : ($withdrawal->role == 'pengelola' ? 'info' : 'success') }} fs-7 text-capitalize">
