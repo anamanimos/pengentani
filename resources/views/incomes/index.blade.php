@@ -629,6 +629,7 @@
                 },
                 minDimensions: [8, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
+                lazyLoading: true,
                 allowInsertRow: true,
                 allowManualInsertRow: true,
                 allowInsertColumn: false,

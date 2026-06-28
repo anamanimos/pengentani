@@ -690,6 +690,7 @@
                 },
                 minDimensions: [10, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
+                lazyLoading: true,
                 allowInsertRow: true,
                 allowManualInsertRow: true,
                 allowInsertColumn: false,

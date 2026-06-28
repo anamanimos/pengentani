@@ -660,6 +660,7 @@
                 },
                 minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
                 defaultColAlign: 'left',
+                lazyLoading: true,
                 allowInsertRow: true,
                 allowManualInsertRow: true,
                 allowInsertColumn: false,
