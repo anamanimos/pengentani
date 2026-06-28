@@ -772,6 +772,7 @@
 @push('styles')
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
     <style>
         .leaflet-container {
             font-family: inherit;
@@ -780,6 +781,7 @@
 @endpush
 
 @push('scripts')
+    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
