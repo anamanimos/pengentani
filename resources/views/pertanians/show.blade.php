@@ -659,35 +659,35 @@
                     <table id="kt_table_withdrawals" class="table align-middle table-row-dashed fs-6 gy-5">
                         <thead>
                             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                <th>Tanggal</th>
-                                <th>Tanggal Input</th>
-                                <th>Penerima</th>
-                                <th>Peran</th>
-                                <th>Nominal</th>
-                                <th>Bukti</th>
-                                <th>Aksi</th>
+                                <th class="text-start">Tanggal</th>
+                                <th class="text-start">Tanggal Input</th>
+                                <th class="text-start">Penerima</th>
+                                <th class="text-start">Peran</th>
+                                <th class="text-start">Nominal</th>
+                                <th class="text-start">Bukti</th>
+                                <th class="text-start">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
                             @forelse($withdrawals as $withdrawal)
                             <tr data-date="{{ $withdrawal->date }}">
-                                <td data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
-                                <td data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
-                                <td>{{ $withdrawal->user->name ?? '-' }}</td>
-                                <td>
+                                <td class="text-start" data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
+                                <td class="text-start" data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
+                                <td class="text-start">{{ $withdrawal->user->name ?? '-' }}</td>
+                                <td class="text-start">
                                     <span class="badge badge-light-{{ $withdrawal->role == 'admin' ? 'primary' : ($withdrawal->role == 'pengelola' ? 'info' : 'success') }} fs-7 text-capitalize">
                                         {{ $withdrawal->role }}
                                     </span>
                                 </td>
-                                <td class="fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
-                                <td>
+                                <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
+                                <td class="text-start">
                                     @if($withdrawal->proof_image)
                                         <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td>
+                                <td class="text-start">
                                     <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
                                         @csrf
                                         @method('DELETE')
