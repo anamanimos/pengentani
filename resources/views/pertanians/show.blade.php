@@ -543,6 +543,73 @@
 
     {{-- Penarikan Dana Tab --}}
     <div class="tab-pane fade" id="kt_tab_pane_withdrawals" role="tabpanel">
+        {{-- Info Saldo --}}
+        <div class="row g-5 mb-8">
+            <div class="col-md-4">
+                <div class="bg-light-primary rounded border-primary border border-dashed p-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-user text-primary fs-1 me-2"><span class="path1"></span><span class="path2"></span></i>
+                        <span class="fs-5 fw-bold text-gray-800">Saldo Admin</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Alokasi</span>
+                        <span class="fw-bold">Rp {{ number_format($alokasiAdmin, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Ditarik</span>
+                        <span class="text-danger fw-bold">- Rp {{ number_format($ditarikAdmin, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="separator separator-dashed my-2"></div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-gray-800 fw-bold">Sisa</span>
+                        <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaAdmin, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-light-info rounded border-info border border-dashed p-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-user-edit text-info fs-1 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <span class="fs-5 fw-bold text-gray-800">Saldo Pengelola</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Alokasi</span>
+                        <span class="fw-bold">Rp {{ number_format($alokasiPengelola, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Ditarik</span>
+                        <span class="text-danger fw-bold">- Rp {{ number_format($ditarikPengelola, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="separator separator-dashed my-2"></div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-gray-800 fw-bold">Sisa</span>
+                        <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaPengelola, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-light-success rounded border-success border border-dashed p-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-profile-user text-success fs-1 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                        <span class="fs-5 fw-bold text-gray-800">Saldo Total Investor</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Alokasi Total</span>
+                        <span class="fw-bold">Rp {{ number_format($alokasiInvestorTotal, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-gray-600">Ditarik Total</span>
+                        <span class="text-danger fw-bold">- Rp {{ number_format($ditarikInvestorTotal, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="separator separator-dashed my-2"></div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-gray-800 fw-bold">Sisa Total</span>
+                        <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaInvestorTotal, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow-sm mb-5 mb-xl-10">
             <div class="card-header border-0 pt-6">
                 <h3 class="card-title align-items-start flex-column">
@@ -556,72 +623,7 @@
                 </div>
             </div>
             <div class="card-body py-3">
-                {{-- Info Saldo --}}
-                <div class="row g-5 mb-8">
-                    <div class="col-md-4">
-                        <div class="bg-light-primary rounded border-primary border border-dashed p-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="ki-duotone ki-user text-primary fs-1 me-2"><span class="path1"></span><span class="path2"></span></i>
-                                <span class="fs-5 fw-bold text-gray-800">Saldo Admin</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Alokasi</span>
-                                <span class="fw-bold">Rp {{ number_format($alokasiAdmin, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Ditarik</span>
-                                <span class="text-danger fw-bold">- Rp {{ number_format($ditarikAdmin, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="separator separator-dashed my-2"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-gray-800 fw-bold">Sisa</span>
-                                <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaAdmin, 0, ',', '.') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="bg-light-info rounded border-info border border-dashed p-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="ki-duotone ki-user-edit text-info fs-1 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                                <span class="fs-5 fw-bold text-gray-800">Saldo Pengelola</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Alokasi</span>
-                                <span class="fw-bold">Rp {{ number_format($alokasiPengelola, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Ditarik</span>
-                                <span class="text-danger fw-bold">- Rp {{ number_format($ditarikPengelola, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="separator separator-dashed my-2"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-gray-800 fw-bold">Sisa</span>
-                                <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaPengelola, 0, ',', '.') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="bg-light-success rounded border-success border border-dashed p-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="ki-duotone ki-profile-user text-success fs-1 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-                                <span class="fs-5 fw-bold text-gray-800">Saldo Total Investor</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Alokasi Total</span>
-                                <span class="fw-bold">Rp {{ number_format($alokasiInvestorTotal, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="text-gray-600">Ditarik Total</span>
-                                <span class="text-danger fw-bold">- Rp {{ number_format($ditarikInvestorTotal, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="separator separator-dashed my-2"></div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-gray-800 fw-bold">Sisa Total</span>
-                                <span class="text-success fs-3 fw-bold">Rp {{ number_format($sisaInvestorTotal, 0, ',', '.') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 {{-- Filter & Pencarian (Notion-style) --}}
                 <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
