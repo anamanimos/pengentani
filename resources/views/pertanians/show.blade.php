@@ -647,9 +647,7 @@
                                 </div>
                                 <div class="mb-5">
                                     <label class="form-label fw-semibold">Peran:</label>
-                                    <select id="withdrawal_role_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Peran">
-                                        <option value=""></option>
-                                        <option value="all">Semua Peran</option>
+                                    <select id="withdrawal_role_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-hide-search="true" data-placeholder="Semua Peran" multiple="multiple">
                                         <option value="admin">Admin</option>
                                         <option value="pengelola">Pengelola</option>
                                         <option value="investor">Investor</option>
@@ -657,9 +655,7 @@
                                 </div>
                                 <div class="mb-5">
                                     <label class="form-label fw-semibold">Penerima:</label>
-                                    <select id="withdrawal_user_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-placeholder="Semua Penerima">
-                                        <option value=""></option>
-                                        <option value="all">Semua Penerima</option>
+                                    <select id="withdrawal_user_filter" class="form-select form-select-solid form-select-sm" data-control="select2" data-placeholder="Semua Penerima" multiple="multiple">
                                         @foreach($withdrawals->unique('user_id') as $wd)
                                             @if($wd->user)
                                                 <option value="{{ $wd->user->name }}">{{ $wd->user->name }}</option>
@@ -997,14 +993,18 @@
                     container.append(`<span class="badge badge-light-primary">Tanggal: ${date} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('date')"><span class="path1"></span><span class="path2"></span></i></span>`);
                 }
                 
-                var role = $('#withdrawal_role_filter').val();
-                if (role && role !== 'all') {
-                    container.append(`<span class="badge badge-light-primary">Peran: ${$('#withdrawal_role_filter option:selected').text()} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('role')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                var roles = $('#withdrawal_role_filter').val();
+                if (roles && roles.length > 0) {
+                    var roleTexts = [];
+                    $('#withdrawal_role_filter option:selected').each(function() { roleTexts.push($(this).text()); });
+                    container.append(`<span class="badge badge-light-primary">Peran: ${roleTexts.join(', ')} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('role')"><span class="path1"></span><span class="path2"></span></i></span>`);
                 }
                 
-                var user = $('#withdrawal_user_filter').val();
-                if (user && user !== 'all') {
-                    container.append(`<span class="badge badge-light-primary">Penerima: ${$('#withdrawal_user_filter option:selected').text()} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('user')"><span class="path1"></span><span class="path2"></span></i></span>`);
+                var users = $('#withdrawal_user_filter').val();
+                if (users && users.length > 0) {
+                    var userTexts = [];
+                    $('#withdrawal_user_filter option:selected').each(function() { userTexts.push($(this).text()); });
+                    container.append(`<span class="badge badge-light-primary">Penerima: ${userTexts.join(', ')} <i class="ki-duotone ki-cross ms-1 fs-6 cursor-pointer" onclick="clearWithdrawalFilter('user')"><span class="path1"></span><span class="path2"></span></i></span>`);
                 }
                 
                 if (container.children().length > 0) {
@@ -1018,17 +1018,17 @@
                 if (type === 'date') {
                     document.getElementById('withdrawal_daterange')._flatpickr.clear();
                 } else if (type === 'role') {
-                    $('#withdrawal_role_filter').val('all').trigger('change.select2');
+                    $('#withdrawal_role_filter').val(null).trigger('change.select2');
                 } else if (type === 'user') {
-                    $('#withdrawal_user_filter').val('all').trigger('change.select2');
+                    $('#withdrawal_user_filter').val(null).trigger('change.select2');
                 }
                 withdrawalTable.draw();
             };
             
             $('#withdrawal_filter_reset').on('click', function() {
                 document.getElementById('withdrawal_daterange')._flatpickr.clear();
-                $('#withdrawal_role_filter').val('all').trigger('change.select2');
-                $('#withdrawal_user_filter').val('all').trigger('change.select2');
+                $('#withdrawal_role_filter').val(null).trigger('change.select2');
+                $('#withdrawal_user_filter').val(null).trigger('change.select2');
                 withdrawalTable.draw();
             });
             
@@ -1043,23 +1043,28 @@
                     }
 
                     var searchDate = $('#withdrawal_daterange').val();
-                    var searchRole = $('#withdrawal_role_filter').val();
-                    var searchUser = $('#withdrawal_user_filter').val();
+                    var searchRoles = $('#withdrawal_role_filter').val();
+                    var searchUsers = $('#withdrawal_user_filter').val();
 
                     var rawDate = $(settings.aoData[dataIndex].nTr).data('date');
                     var rowUser = data[2];
                     var rowRole = data[3].toLowerCase();
 
                     // Role filter
-                    if (searchRole && searchRole !== 'all') {
-                        if (!rowRole.includes(searchRole.toLowerCase())) {
-                            return false;
+                    if (searchRoles && searchRoles.length > 0) {
+                        var roleMatch = false;
+                        for (var i = 0; i < searchRoles.length; i++) {
+                            if (rowRole.includes(searchRoles[i].toLowerCase())) {
+                                roleMatch = true;
+                                break;
+                            }
                         }
+                        if (!roleMatch) return false;
                     }
 
                     // User filter
-                    if (searchUser && searchUser !== 'all') {
-                        if (rowUser !== searchUser) {
+                    if (searchUsers && searchUsers.length > 0) {
+                        if (!searchUsers.includes(rowUser)) {
                             return false;
                         }
                     }
