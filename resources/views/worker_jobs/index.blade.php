@@ -694,18 +694,22 @@
                         Swal.fire({
                             title: 'Upload Bukti Baru',
                             html: `
-                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-3 d-flex align-items-center justify-content-center bg-light" style="height: 300px; overflow: hidden; cursor: pointer; position: relative;">
+                                <style>.no-scroll-html-container { overflow: visible !important; }</style>
+                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-4 d-flex align-items-center justify-content-center bg-light" style="height: 400px; overflow: hidden; cursor: pointer; position: relative;">
                                     <div id="proof_placeholder" class="text-muted text-center">
-                                        <i class="fas fa-cloud-upload-alt fs-2 mb-2"></i><br>
-                                        Klik untuk pilih file<br>atau paste gambar (Ctrl+V)
+                                        <i class="fas fa-cloud-upload-alt fs-3x mb-3"></i><br>
+                                        <span class="fs-4">Klik untuk pilih file<br>atau paste gambar (Ctrl+V)</span>
                                     </div>
                                     <img id="proof_preview_img" src="" class="d-none" style="max-width: 100%; max-height: 100%; object-fit: contain; position: absolute; z-index: 1;">
-                                    <button type="button" id="proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 5px; right: 5px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
+                                    <button type="button" id="proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
                                 </div>
                                 <input type="file" id="new_proof_file" class="d-none" accept="image/*">
-                                <input type="text" id="new_proof_name" class="form-control form-control-lg" placeholder="Nama Bukti (Opsional)">
+                                <input type="text" id="new_proof_name" class="form-control form-control-lg form-control-solid" placeholder="Ketik Nama Bukti (Opsional)">
                             `,
-                            width: '600px',
+                            width: '800px',
+                            customClass: {
+                                htmlContainer: 'no-scroll-html-container'
+                            },
                             showCancelButton: true,
                             confirmButtonText: 'Upload',
                             cancelButtonText: 'Batal',
