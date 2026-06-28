@@ -13,6 +13,25 @@
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
     <!--end::Global Stylesheets Bundle-->
+    <style>
+        .table-responsive { overflow-x: auto; }
+        .table-responsive .table th:first-child,
+        .table-responsive .table td:first-child {
+            position: sticky;
+            left: 0;
+            background-color: var(--bs-body-bg);
+            z-index: 1;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        .table-responsive .table th:first-child {
+            z-index: 2;
+            background-color: var(--bs-light);
+        }
+        [data-bs-theme="dark"] .table-responsive .table th:first-child,
+        [data-bs-theme="dark"] .table-responsive .table td:first-child {
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        }
+    </style>
     @stack('styles')
 </head>
 <!--end::Head-->
