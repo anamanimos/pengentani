@@ -86,7 +86,7 @@
                     </li>
                     <li class="nav-item mb-1" role="presentation">
                         <a class="nav-link btn btn-color-gray-600 btn-active-light-primary btn-active-color-primary d-flex align-items-center text-start px-6 py-4 rounded-3 w-100" data-bs-toggle="tab" href="#kt_tab_pane_biaya" role="tab">
-                            <i class="ki-duotone ki-coin fs-3 me-4"><span class="path1"></span><span class="path2"></span></i>
+                            <i class="ki-duotone ki-calculator fs-3 me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
                             <span class="fs-5 fw-semibold">Estimasi Biaya</span>
                         </a>
                     </li>
