@@ -52,13 +52,20 @@ class PertanianInvestorController extends Controller
             'besaran_investasi' => str_replace(',', '', $request->besaran_investasi)
         ]);
 
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'besaran_investasi' => 'required|numeric|min:1',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Silakan periksa kembali form Anda.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $pertanian->investors()->create([
             'user_id' => $request->user_id,
@@ -95,13 +102,20 @@ class PertanianInvestorController extends Controller
             'besaran_investasi' => str_replace(',', '', $request->besaran_investasi)
         ]);
 
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'besaran_investasi' => 'required|numeric|min:1',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Silakan periksa kembali form Anda.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         $investor->update([
             'user_id' => $request->user_id,
