@@ -138,7 +138,7 @@
             left: 0;
             width: 100vw !important;
             height: 100vh !important;
-            z-index: 1060;
+            z-index: 1040;
             background-color: var(--bs-body-bg, #fff);
             display: flex;
             flex-direction: column;
