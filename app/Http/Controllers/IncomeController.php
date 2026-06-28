@@ -143,6 +143,8 @@ class IncomeController extends Controller
             'name' => $request->name
         ]);
         return response()->json(['id' => $category->id, 'name' => $category->name]);
+    }
+
     public function export(Request $request)
     {
         $query = \App\Models\Income::with(['pertanian.kebun', 'tengkulak', 'category']);

@@ -246,6 +246,8 @@ class PurchaseController extends Controller
         $request->validate(['name' => 'required|string|max:255']);
         $cat = \App\Models\PurchaseCategory::firstOrCreate(['name' => trim($request->name)]);
         return response()->json(['id' => $cat->id, 'name' => $cat->name]);
+    }
+
     public function export(Request $request)
     {
         $query = Purchase::whereHas('pertanian', function ($q) {
