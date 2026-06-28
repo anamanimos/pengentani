@@ -4,7 +4,7 @@
 @section('page_title')
     <div class="d-flex align-items-center flex-row">
         Pencatatan Pendapatan
-        <span id="auto-save-status" class="badge badge-light-success fw-bold fs-7 ms-3 d-none">
+        <span id="auto-save-status" class="badge badge-light-success fw-bold fs-7 ms-3">
             <i class="fas fa-check-circle text-success me-1"></i> <span class="status-text">Tersimpan Otomatis</span>
         </span>
     </div>
@@ -41,11 +41,12 @@
     <!-- Fullscreen Header -->
     <div class="spreadsheet-fs-header d-none">
         <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pendapatan</h5>
-            <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3 d-none"></span>
+            <h5 class="m-0 fw-bold text-gray-800">Pencatatan Pendapatan (Incomes)</h5>
+            <span id="auto-save-status-fs" class="badge badge-light-success fw-bold fs-8 ms-3">
+                <i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>
+            </span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <h6 class="m-0 text-gray-700">Total: <span class="total-amount-fs text-success fw-bolder">Rp 0</span></h6>
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
             </button>
@@ -915,12 +916,6 @@
                                     }
                                 }
                             }
-                            setTimeout(() => {
-                                if (!hasIncompleteRow) {
-                                    $('#auto-save-status').addClass('d-none');
-                                    $('#auto-save-status-fs').addClass('d-none');
-                                }
-                            }, 3000);
                         },
                         error: function(xhr) {
                             var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan';
@@ -1260,22 +1255,28 @@
             });
             // Fullscreen toggle
             var savedTableHeight = null;
+            var wrapperPlaceholder = $('<div id="spreadsheet-placeholder" style="display:none;"></div>');
 
             function enterFullscreen() {
                 var wrapper = $('#spreadsheet-wrapper');
+                wrapper.before(wrapperPlaceholder);
+                wrapper.appendTo('body');
                 wrapper.addClass('fullscreen-mode');
+                // Save current table height and resize to fill
                 var el = document.getElementById('spreadsheet');
                 if (el && el.jexcel) {
                     savedTableHeight = el.jexcel.options.tableHeight;
                 }
                 resizeSpreadsheetForFullscreen();
-                $('.total-amount-fs').text($('#total-amount').text());
                 $('body').css('overflow', 'hidden');
             }
 
             function exitFullscreen() {
                 var wrapper = $('#spreadsheet-wrapper');
+                wrapperPlaceholder.after(wrapper);
+                wrapperPlaceholder.hide();
                 wrapper.removeClass('fullscreen-mode');
+                // Restore original table height
                 var el = document.getElementById('spreadsheet');
                 if (el && el.jexcel && savedTableHeight) {
                     el.jexcel.options.tableHeight = savedTableHeight;
