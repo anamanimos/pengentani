@@ -65,40 +65,47 @@
     <div class="col-lg-3">
         <div class="card shadow-sm mb-5 sticky-lg-top" style="top: 100px;">
             <div class="card-body p-0">
-                <ul class="nav nav-pills nav-pills-custom flex-column border-transparent fs-5 fw-bold" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 active rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_financial" role="tab">
-                            <i class="ki-duotone ki-graph-up fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>Ringkasan & Bagi Hasil
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_kebun" role="tab">
-                            <i class="ki-duotone ki-map fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Kebun & Peta Lokasi
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_tanaman" role="tab">
-                            <i class="ki-duotone ki-design-2 fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>Rencana Tanaman
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_biaya" role="tab">
-                            <i class="ki-duotone ki-coin fs-4 me-2"><span class="path1"></span><span class="path2"></span></i>Estimasi Biaya
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_realisasi" role="tab">
-                            <i class="ki-duotone ki-bill fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>Realisasi
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_investors" role="tab">
-                            <i class="ki-duotone ki-user-edit fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>Daftar Investor
+                <ul class="nav nav-pills nav-pills-custom flex-column fs-5 fw-bold" role="tablist">
+                    <li class="nav-item mb-2" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4 active" data-bs-toggle="tab" href="#kt_tab_pane_financial" role="tab">
+                            <i class="ki-duotone ki-graph-up fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
+                            <span class="fs-5 fw-bold">Ringkasan & Bagi Hasil</span>
                         </a>
                     </li>
                     <li class="nav-item mb-2" role="presentation">
-                        <a class="nav-link text-muted text-active-primary px-6 py-4 rounded-0 border-start border-3 border-transparent border-active-primary" data-bs-toggle="tab" href="#kt_tab_pane_withdrawals" role="tab">
-                            <i class="ki-duotone ki-wallet fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>Penarikan Dana
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_kebun" role="tab">
+                            <i class="ki-duotone ki-map fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <span class="fs-5 fw-bold">Kebun & Peta Lokasi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_tanaman" role="tab">
+                            <i class="ki-duotone ki-design-2 fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
+                            <span class="fs-5 fw-bold">Rencana Tanaman</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_biaya" role="tab">
+                            <i class="ki-duotone ki-coin fs-4 me-3"><span class="path1"></span><span class="path2"></span></i>
+                            <span class="fs-5 fw-bold">Estimasi Biaya</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_realisasi" role="tab">
+                            <i class="ki-duotone ki-bill fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
+                            <span class="fs-5 fw-bold">Realisasi</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_investors" role="tab">
+                            <i class="ki-duotone ki-user-edit fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <span class="fs-5 fw-bold">Daftar Investor</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link btn btn-outline btn-flex btn-active-light-primary flex-row text-start px-6 py-4" data-bs-toggle="tab" href="#kt_tab_pane_withdrawals" role="tab">
+                            <i class="ki-duotone ki-wallet fs-4 me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                            <span class="fs-5 fw-bold">Penarikan Dana</span>
                         </a>
                     </li>
                 </ul>
