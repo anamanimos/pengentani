@@ -693,11 +693,84 @@
                         spreadsheet.setValueFromCoords(x, y, '', true);
                         Swal.fire({
                             title: 'Upload Bukti Baru',
-                            html: '<input type="file" id="new_proof_file" class="form-control mb-3" accept="image/*">' +
-                                  '<input type="text" id="new_proof_name" class="form-control" placeholder="Nama Bukti (Opsional)">',
+                            html: `
+                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-3 d-flex align-items-center justify-content-center bg-light" style="height: 200px; overflow: hidden; cursor: pointer; position: relative;">
+                                    <div id="proof_placeholder" class="text-muted text-center">
+                                        <i class="fas fa-cloud-upload-alt fs-2 mb-2"></i><br>
+                                        Klik untuk pilih file<br>atau paste gambar (Ctrl+V)
+                                    </div>
+                                    <img id="proof_preview_img" src="" class="d-none" style="max-width: 100%; max-height: 100%; object-fit: contain; position: absolute; z-index: 1;">
+                                    <button type="button" id="proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 5px; right: 5px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
+                                </div>
+                                <input type="file" id="new_proof_file" class="d-none" accept="image/*">
+                                <input type="text" id="new_proof_name" class="form-control" placeholder="Nama Bukti (Opsional)">
+                            `,
                             showCancelButton: true,
                             confirmButtonText: 'Upload',
                             cancelButtonText: 'Batal',
+                            didOpen: () => {
+                                const container = document.getElementById('proof_preview_container');
+                                const fileInput = document.getElementById('new_proof_file');
+                                const imgPreview = document.getElementById('proof_preview_img');
+                                const placeholder = document.getElementById('proof_placeholder');
+                                const removeBtn = document.getElementById('proof_remove_btn');
+
+                                // Handle click on container
+                                container.addEventListener('click', (e) => {
+                                    if(e.target !== removeBtn && !removeBtn.contains(e.target)) {
+                                        fileInput.click();
+                                    }
+                                });
+
+                                // Handle file selection
+                                fileInput.addEventListener('change', function() {
+                                    if(this.files && this.files[0]) {
+                                        showPreview(this.files[0]);
+                                    }
+                                });
+
+                                // Handle paste globally while swal is open
+                                const pasteHandler = (e) => {
+                                    if(e.clipboardData && e.clipboardData.files.length > 0) {
+                                        const file = e.clipboardData.files[0];
+                                        if(file.type.startsWith('image/')) {
+                                            // Assign file to input
+                                            const dataTransfer = new DataTransfer();
+                                            dataTransfer.items.add(file);
+                                            fileInput.files = dataTransfer.files;
+                                            showPreview(file);
+                                        }
+                                    }
+                                };
+                                document.addEventListener('paste', pasteHandler);
+
+                                // Handle remove button
+                                removeBtn.addEventListener('click', () => {
+                                    fileInput.value = '';
+                                    imgPreview.src = '';
+                                    imgPreview.classList.add('d-none');
+                                    removeBtn.classList.add('d-none');
+                                    placeholder.classList.remove('d-none');
+                                });
+
+                                function showPreview(file) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        imgPreview.src = e.target.result;
+                                        imgPreview.classList.remove('d-none');
+                                        removeBtn.classList.remove('d-none');
+                                        placeholder.classList.add('d-none');
+                                    }
+                                    reader.readAsDataURL(file);
+                                }
+
+                                // Store the pasteHandler to remove it later
+                                Swal.getPopup()._pasteHandler = pasteHandler;
+                            },
+                            willClose: () => {
+                                const handler = Swal.getPopup()._pasteHandler;
+                                if(handler) document.removeEventListener('paste', handler);
+                            },
                             preConfirm: () => {
                                 const file = document.getElementById('new_proof_file').files[0];
                                 const name = document.getElementById('new_proof_name').value;
