@@ -1439,6 +1439,11 @@
                     return;
                 }
 
+                if (file.size > 5 * 1024 * 1024) {
+                    toastr.warning('Ukuran file maksimal adalah 5MB! Gambar yang di-paste terlalu besar.');
+                    return;
+                }
+
                 let formData = new FormData();
                 formData.append('file', file);
                 formData.append('name', name || ('Bukti ' + new Date().toLocaleString()));
