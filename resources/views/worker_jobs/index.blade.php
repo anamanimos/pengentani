@@ -694,7 +694,7 @@
                         Swal.fire({
                             title: 'Upload Bukti Baru',
                             html: `
-                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-3 d-flex align-items-center justify-content-center bg-light" style="height: 200px; overflow: hidden; cursor: pointer; position: relative;">
+                                <div id="proof_preview_container" class="border border-dashed border-gray-300 rounded mb-3 d-flex align-items-center justify-content-center bg-light" style="height: 300px; overflow: hidden; cursor: pointer; position: relative;">
                                     <div id="proof_placeholder" class="text-muted text-center">
                                         <i class="fas fa-cloud-upload-alt fs-2 mb-2"></i><br>
                                         Klik untuk pilih file<br>atau paste gambar (Ctrl+V)
@@ -703,8 +703,9 @@
                                     <button type="button" id="proof_remove_btn" class="btn btn-icon btn-sm btn-active-color-danger d-none" style="position: absolute; top: 5px; right: 5px; z-index: 2; background: rgba(255,255,255,0.8);"><i class="fas fa-times"></i></button>
                                 </div>
                                 <input type="file" id="new_proof_file" class="d-none" accept="image/*">
-                                <input type="text" id="new_proof_name" class="form-control" placeholder="Nama Bukti (Opsional)">
+                                <input type="text" id="new_proof_name" class="form-control form-control-lg" placeholder="Nama Bukti (Opsional)">
                             `,
+                            width: '600px',
                             showCancelButton: true,
                             confirmButtonText: 'Upload',
                             cancelButtonText: 'Batal',
@@ -729,9 +730,12 @@
                                     }
                                 });
 
-                                // Handle paste globally while swal is open
+                                // Handle paste globally while swal is open (using capture phase to intercept before JExcel)
                                 const pasteHandler = (e) => {
                                     if(e.clipboardData && e.clipboardData.files.length > 0) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        e.stopImmediatePropagation();
                                         const file = e.clipboardData.files[0];
                                         if(file.type.startsWith('image/')) {
                                             // Assign file to input
@@ -742,7 +746,7 @@
                                         }
                                     }
                                 };
-                                document.addEventListener('paste', pasteHandler);
+                                window.addEventListener('paste', pasteHandler, true);
 
                                 // Handle remove button
                                 removeBtn.addEventListener('click', () => {
@@ -769,7 +773,7 @@
                             },
                             willClose: () => {
                                 const handler = Swal.getPopup()._pasteHandler;
-                                if(handler) document.removeEventListener('paste', handler);
+                                if(handler) window.removeEventListener('paste', handler, true);
                             },
                             preConfirm: () => {
                                 const file = document.getElementById('new_proof_file').files[0];
