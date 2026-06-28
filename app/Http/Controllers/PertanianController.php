@@ -38,7 +38,7 @@ class PertanianController extends Controller
         $kebuns = Kebun::where('user_id', Auth::id())->where('status', 'published')->get();
         $tanamans = Tanaman::all();
         $admins = \App\Models\User::where('role', 'admin')->get();
-        $pengelolas = \App\Models\User::where('role', 'pengelola')->get();
+        $pengelolas = \App\Models\Entity::where('type', 'pengelola')->with('users')->get();
         return view('pertanians.create', compact('kebuns', 'tanamans', 'admins', 'pengelolas'));
     }
 
@@ -56,7 +56,7 @@ class PertanianController extends Controller
             'persentase_admin' => 'nullable|integer|min:0|max:100',
             'batasan_investasi' => 'nullable|numeric|min:0',
             'admin_id' => 'required|exists:users,id',
-            'pengelola_id' => 'required|exists:users,id',
+            'pengelola_entity_id' => 'required|exists:entities,id',
             'tanamans' => 'nullable|array',
             'biayas' => 'nullable|array',
         ]);
@@ -68,7 +68,7 @@ class PertanianController extends Controller
                 'user_id' => Auth::id(),
                 'kebun_id' => $request->kebun_id,
                 'admin_id' => $request->admin_id,
-                'pengelola_id' => $request->pengelola_id,
+                'pengelola_entity_id' => $request->pengelola_entity_id,
                 'name' => $request->name,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
@@ -134,7 +134,7 @@ class PertanianController extends Controller
     {
         if ($pertanian->user_id !== Auth::id()) abort(403);
 
-        $pertanian->load(['kebun', 'admin', 'pengelola', 'tanamans.tanaman', 'biayas', 'investors.user', 'purchases.store', 'workerJobs.worker', 'workerJobs.category', 'incomes', 'withdrawals.user']);
+        $pertanian->load(['kebun', 'admin', 'pengelolaEntity.users', 'tanamans.tanaman', 'biayas', 'investors.entity.users', 'purchases.store', 'workerJobs.worker', 'workerJobs.category', 'incomes', 'withdrawals.user']);
 
         $totalBiaya = $pertanian->biayas->sum('total');
         
@@ -213,14 +213,15 @@ class PertanianController extends Controller
                 }
                 
                 $alokasiInv = $alokasiInvestorTotal * $porsi;
-                $ditarikInv = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'investor')->where('user_id', $inv->user_id)->sum('amount');
+                $entityUserIds = $inv->entity ? $inv->entity->users->pluck('id')->toArray() : [];
+                $ditarikInv = $pertanian->withdrawals->where('type', 'bagi_hasil')->where('role', 'investor')->whereIn('user_id', $entityUserIds)->sum('amount');
                 $sisaInv = $alokasiInv - $ditarikInv;
                 
-                $ditarikModalInv = $pertanian->withdrawals->where('type', 'pengembalian_modal')->where('user_id', $inv->user_id)->sum('amount');
+                $ditarikModalInv = $pertanian->withdrawals->where('type', 'pengembalian_modal')->whereIn('user_id', $entityUserIds)->sum('amount');
                 $sisaModalInv = $inv->besaran_investasi - $ditarikModalInv;
                 
                 $investorStats->push((object)[
-                    'name' => $inv->user->name ?? 'Investor',
+                    'name' => $inv->entity->name ?? 'Investor',
                     'investasi' => $inv->besaran_investasi,
                     'porsi' => $porsi * 100,
                     'alokasi' => $alokasiInv,
@@ -326,7 +327,7 @@ class PertanianController extends Controller
             })->get();
         $tanamans = Tanaman::all();
         $admins = \App\Models\User::where('role', 'admin')->get();
-        $pengelolas = \App\Models\User::where('role', 'pengelola')->get();
+        $pengelolas = \App\Models\Entity::where('type', 'pengelola')->with('users')->get();
         
         return view('pertanians.edit', compact('pertanian', 'kebuns', 'tanamans', 'admins', 'pengelolas'));
     }
@@ -347,7 +348,7 @@ class PertanianController extends Controller
             'persentase_admin' => 'nullable|integer|min:0|max:100',
             'batasan_investasi' => 'nullable|numeric|min:0',
             'admin_id' => 'required|exists:users,id',
-            'pengelola_id' => 'required|exists:users,id',
+            'pengelola_entity_id' => 'required|exists:entities,id',
             'tanamans' => 'nullable|array',
             'biayas' => 'nullable|array',
         ]);
@@ -357,7 +358,7 @@ class PertanianController extends Controller
             $pertanian->update([
                 'kebun_id' => $request->kebun_id,
                 'admin_id' => $request->admin_id,
-                'pengelola_id' => $request->pengelola_id,
+                'pengelola_entity_id' => $request->pengelola_entity_id,
                 'name' => $request->name,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,

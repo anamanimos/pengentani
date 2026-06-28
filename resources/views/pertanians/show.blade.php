@@ -39,7 +39,7 @@
                         </div>
                         <div class="d-flex align-items-center text-gray-600 me-5 mb-2">
                             <i class="ki-duotone ki-user-edit text-info fs-5 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                            Pengelola: <strong class="ms-1">{{ $pertanian->pengelola->name ?? '-' }}</strong>
+                            Pengelola: <strong class="ms-1">{{ $pertanian->pengelolaEntity->name ?? '-' }}</strong>
                         </div>
                         <div class="d-flex align-items-center text-gray-600 me-5 mb-2">
                             <i class="ki-duotone ki-calendar-8 text-primary fs-5 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
@@ -603,11 +603,11 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="symbol symbol-circle symbol-35px me-3">
-                                            <span class="symbol-label bg-light-primary text-primary fw-bold">{{ strtoupper(substr($investor->user->name ?? 'U', 0, 1)) }}</span>
+                                            <span class="symbol-label bg-light-primary text-primary fw-bold">{{ strtoupper(substr($investor->entity->name ?? 'E', 0, 1)) }}</span>
                                         </div>
                                         <div>
-                                            <span class="fw-bold">{{ $investor->user->name ?? '-' }}</span>
-                                            <span class="text-muted d-block fs-7">{{ $investor->user->email ?? '-' }}</span>
+                                            <span class="fw-bold">{{ $investor->entity->name ?? '-' }}</span>
+                                            <span class="text-muted d-block fs-7">{{ $investor->entity->phone ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -987,11 +987,11 @@
                             @if($pertanian->admin)
                                 <option value="{{ $pertanian->admin->id }}">[Admin] {{ $pertanian->admin->name }}</option>
                             @endif
-                            @if($pertanian->pengelola)
-                                <option value="{{ $pertanian->pengelola->id }}">[Pengelola] {{ $pertanian->pengelola->name }}</option>
+                            @if($pertanian->pengelolaEntity)
+                                <option value="{{ $pertanian->pengelolaEntity->users->first()->id ?? '' }}">[Pengelola] {{ $pertanian->pengelolaEntity->name }}</option>
                             @endif
                             @foreach($pertanian->investors as $inv)
-                                <option value="{{ $inv->user->id }}">[Investor] {{ $inv->user->name }}</option>
+                                <option value="{{ $inv->entity->users->first()->id ?? '' }}">[Investor] {{ $inv->entity->name }}</option>
                             @endforeach
                         </select>
                     </div>

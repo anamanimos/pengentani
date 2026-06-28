@@ -183,7 +183,7 @@
                 </div>
                 <div class="data-group">
                     <div class="label">Pengelola</div>
-                    <div class="value" style="font-size: 0.95rem;">{{ $pertanian->pengelola->name ?? '-' }}</div>
+                    <div class="value" style="font-size: 0.95rem;">{{ $pertanian->pengelolaEntity->name ?? '-' }}</div>
                 </div>
 
                 @if($pertanian->kebun && $pertanian->kebun->polygon)

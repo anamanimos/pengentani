@@ -43,10 +43,10 @@
                         </div>
                         <div class="col-md-6">
                             <label class="required form-label">Pengelola Lahan</label>
-                            <select name="pengelola_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Pilih Pengelola" required>
+                            <select name="pengelola_entity_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Pilih Pengelola" required>
                                 <option></option>
-                                @foreach($pengelolas as $u)
-                                    <option value="{{ $u->id }}" {{ old('pengelola_id', $pertanian->pengelola_id) == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                                @foreach($pengelolas as $entity)
+                                    <option value="{{ $entity->id }}" {{ old('pengelola_entity_id', $pertanian->pengelola_entity_id) == $entity->id ? 'selected' : '' }}>{{ $entity->name }} ({{ $entity->users->count() }} Anggota)</option>
                                 @endforeach
                             </select>
                         </div>

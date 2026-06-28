@@ -26,10 +26,11 @@ class InvestorDashboardController extends Controller
     public function home()
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
         // === DATA INVESTOR ===
         $investorData = null;
-        $investments = PertanianInvestor::where('user_id', $user->id)
+        $investments = PertanianInvestor::whereIn('entity_id', $entityIds)
             ->with(['pertanian.incomes', 'pertanian.purchases', 'pertanian.workerJobs'])
             ->get();
 
@@ -52,8 +53,17 @@ class InvestorDashboardController extends Controller
                 $totalReturnInvestor += $userProfit;
             }
 
-            $totalDitarikInvestor = \App\Models\Withdrawal::where('user_id', $user->id)
-                ->where('role', 'investor')->sum('amount');
+            // Consider withdrawals for any of the user's entities in role investor
+            $totalDitarikInvestor = 0;
+            foreach ($investments as $inv) {
+                if ($inv->pertanian) {
+                    $entityUserIds = $inv->entity ? $inv->entity->users->pluck('id')->toArray() : [];
+                    $totalDitarikInvestor += \App\Models\Withdrawal::where('pertanian_id', $inv->pertanian->id)
+                        ->whereIn('user_id', $entityUserIds)
+                        ->where('role', 'investor')
+                        ->sum('amount');
+                }
+            }
 
             $investorData = (object)[
                 'totalInvestment' => $totalInvestment,
@@ -90,7 +100,7 @@ class InvestorDashboardController extends Controller
 
         // === DATA PENGELOLA ===
         $pengelolaData = null;
-        $pengelolaProjects = \App\Models\Pertanian::where('pengelola_id', $user->id)
+        $pengelolaProjects = \App\Models\Pertanian::whereIn('pengelola_entity_id', $entityIds)
             ->with(['kebun', 'incomes', 'purchases', 'workerJobs'])
             ->get();
 
@@ -101,8 +111,14 @@ class InvestorDashboardController extends Controller
                 $totalReturnPengelola += $labaSetelahZakat > 0 ? $labaSetelahZakat * (($p->persentase_pengelola ?? 0) / 100) : 0;
             }
 
-            $totalDitarikPengelola = \App\Models\Withdrawal::where('user_id', $user->id)
-                ->where('role', 'pengelola')->sum('amount');
+            $totalDitarikPengelola = 0;
+            foreach ($pengelolaProjects as $p) {
+                $entityUserIds = $p->pengelolaEntity ? $p->pengelolaEntity->users->pluck('id')->toArray() : [];
+                $totalDitarikPengelola += \App\Models\Withdrawal::where('pertanian_id', $p->id)
+                    ->whereIn('user_id', $entityUserIds)
+                    ->where('role', 'pengelola')
+                    ->sum('amount');
+            }
 
             $pengelolaData = (object)[
                 'totalReturn' => $totalReturnPengelola,
@@ -118,8 +134,9 @@ class InvestorDashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
-        $investments = PertanianInvestor::where('user_id', $user->id)
+        $investments = PertanianInvestor::whereIn('entity_id', $entityIds)
             ->with(['pertanian.kebun', 'pertanian.incomes', 'pertanian.purchases.items', 'pertanian.workerJobs', 'pertanian.tanamans', 'pertanian.biayas'])
             ->latest()
             ->get();
@@ -173,14 +190,15 @@ class InvestorDashboardController extends Controller
     public function show($uuid)
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
         $pertanian = \App\Models\Pertanian::where('uuid', $uuid)
             ->with(['kebun', 'tanamans.tanaman', 'biayas', 'incomes', 'purchases.items', 'workerJobs', 'updates.user'])
             ->firstOrFail();
 
-        // Ensure user is an investor in this farm
+        // Ensure user is an investor in this farm (through any entity)
         $inv = PertanianInvestor::where('pertanian_id', $pertanian->id)
-            ->where('user_id', $user->id)
+            ->whereIn('entity_id', $entityIds)
             ->firstOrFail();
 
         $totalIncome = $pertanian->incomes->sum('nominal');
@@ -211,9 +229,10 @@ class InvestorDashboardController extends Controller
         $inv->roi = $inv->besaran_investasi > 0 ? ($userProfit / $inv->besaran_investasi) * 100 : 0;
         $inv->estimasi_roi = $inv->besaran_investasi > 0 ? ($estimasiUserProfit / $inv->besaran_investasi) * 100 : 0;
 
-        // Withdrawals specifically for this investor
+        // Withdrawals specifically for this investor entity
+        $entityUserIds = $inv->entity ? $inv->entity->users->pluck('id')->toArray() : [];
         $withdrawals = \App\Models\Withdrawal::where('pertanian_id', $pertanian->id)
-            ->where('user_id', $user->id)
+            ->whereIn('user_id', $entityUserIds)
             ->where('role', 'investor')
             ->latest('date')
             ->get();
@@ -242,9 +261,10 @@ class InvestorDashboardController extends Controller
     public function profile()
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
         // Calculate simple stats
-        $investments = PertanianInvestor::where('user_id', $user->id)->get();
+        $investments = PertanianInvestor::whereIn('entity_id', $entityIds)->get();
         $totalInvestment = $investments->sum('besaran_investasi');
         $activeProjects = $investments->count();
 
@@ -284,8 +304,19 @@ class InvestorDashboardController extends Controller
     public function withdrawalHistory()
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
+        
+        // Find all member user IDs for all entities this user belongs to
+        $memberUserIds = \Illuminate\Support\Facades\DB::table('entity_user')
+            ->whereIn('entity_id', $entityIds)
+            ->pluck('user_id')
+            ->toArray();
+            
+        // Include the user themselves
+        $memberUserIds[] = $user->id;
+        $memberUserIds = array_unique($memberUserIds);
 
-        $withdrawals = \App\Models\Withdrawal::where('user_id', $user->id)
+        $withdrawals = \App\Models\Withdrawal::whereIn('user_id', $memberUserIds)
             ->with(['pertanian.kebun'])
             ->latest('date')
             ->get();
@@ -298,9 +329,10 @@ class InvestorDashboardController extends Controller
     public function projectDetail($uuid)
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
         $pertanian = \App\Models\Pertanian::where('uuid', $uuid)
-            ->with(['kebun', 'admin', 'pengelola', 'tanamans.tanaman', 'biayas', 'incomes', 'purchases', 'workerJobs', 'updates.user'])
+            ->with(['kebun', 'admin', 'pengelolaEntity', 'tanamans.tanaman', 'biayas', 'incomes', 'purchases', 'workerJobs', 'updates.user'])
             ->firstOrFail();
 
         // Determine user's role in this project
@@ -310,7 +342,7 @@ class InvestorDashboardController extends Controller
         if ($pertanian->admin_id == $user->id) {
             $userRole = 'admin';
             $persentase = $pertanian->persentase_admin ?? 0;
-        } elseif ($pertanian->pengelola_id == $user->id) {
+        } elseif (in_array($pertanian->pengelola_entity_id, $entityIds)) {
             $userRole = 'pengelola';
             $persentase = $pertanian->persentase_pengelola ?? 0;
         }
@@ -342,11 +374,21 @@ class InvestorDashboardController extends Controller
         $estimasiAlokasiUser = $estimasiSetelahZakat > 0 ? $estimasiSetelahZakat * ($persentase / 100) : 0;
 
         // Withdrawals
-        $withdrawals = \App\Models\Withdrawal::where('pertanian_id', $pertanian->id)
-            ->where('user_id', $user->id)
-            ->where('role', $userRole)
-            ->latest('date')
-            ->get();
+        if ($userRole === 'admin') {
+            $withdrawals = \App\Models\Withdrawal::where('pertanian_id', $pertanian->id)
+                ->where('user_id', $user->id)
+                ->where('role', 'admin')
+                ->latest('date')
+                ->get();
+        } else {
+            // For pengelola entity
+            $entityUserIds = $pertanian->pengelolaEntity ? $pertanian->pengelolaEntity->users->pluck('id')->toArray() : [];
+            $withdrawals = \App\Models\Withdrawal::where('pertanian_id', $pertanian->id)
+                ->whereIn('user_id', $entityUserIds)
+                ->where('role', 'pengelola')
+                ->latest('date')
+                ->get();
+        }
 
         $ditarikTotal = $withdrawals->sum('amount');
         $sisaBisaDitarik = $alokasiUser - $ditarikTotal;
@@ -363,6 +405,7 @@ class InvestorDashboardController extends Controller
     public function laporan($uuid)
     {
         $user = Auth::user();
+        $entityIds = $user->entities()->pluck('entities.id')->toArray();
 
         // Ambil data pertanian dan relasinya
         $pertanian = \App\Models\Pertanian::where('uuid', $uuid)
@@ -370,9 +413,9 @@ class InvestorDashboardController extends Controller
             ->firstOrFail();
 
         // Pastikan user berhak melihat (sebagai admin, pengelola, atau investor)
-        $isInvestor = PertanianInvestor::where('pertanian_id', $pertanian->id)->where('user_id', $user->id)->exists();
+        $isInvestor = PertanianInvestor::where('pertanian_id', $pertanian->id)->whereIn('entity_id', $entityIds)->exists();
         $isAdmin = $pertanian->admin_id == $user->id;
-        $isPengelola = $pertanian->pengelola_id == $user->id;
+        $isPengelola = in_array($pertanian->pengelola_entity_id, $entityIds);
 
         if (!$isInvestor && !$isAdmin && !$isPengelola) {
             abort(403, 'Anda tidak memiliki akses ke laporan proyek ini.');

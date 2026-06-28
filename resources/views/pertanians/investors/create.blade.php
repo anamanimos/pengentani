@@ -14,14 +14,14 @@
             @csrf
             
             <div class="mb-10">
-                <label class="required form-label">Pilih User / Investor</label>
-                <select name="user_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Cari dan pilih user..." required>
+                <label class="required form-label">Pilih Entitas Investor</label>
+                <select name="entity_id" class="form-select form-select-solid" data-control="select2" data-placeholder="Cari dan pilih entitas..." required>
                     <option></option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
+                    @foreach($entities as $entity)
+                        <option value="{{ $entity->id }}" {{ old('entity_id') == $entity->id ? 'selected' : '' }}>{{ $entity->name }} ({{ $entity->users->count() }} Anggota)</option>
                     @endforeach
                 </select>
-                @error('user_id')
+                @error('entity_id')
                     <div class="text-danger mt-2">{{ $message }}</div>
                 @enderror
             </div>

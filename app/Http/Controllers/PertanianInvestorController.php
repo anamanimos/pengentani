@@ -14,7 +14,7 @@ class PertanianInvestorController extends Controller
     {
         if ($pertanian->user_id !== Auth::id()) abort(403);
 
-        $pertanian->load('investors.user', 'biayas', 'tanamans.tanaman');
+        $pertanian->load('investors.entity', 'biayas', 'tanamans.tanaman');
 
         $totalBiaya = $pertanian->biayas->sum('total');
         $totalInvestasi = $pertanian->investors->whereIn('status', ['Deal', 'Standby'])->sum('besaran_investasi');
@@ -40,8 +40,8 @@ class PertanianInvestorController extends Controller
     {
         if ($pertanian->user_id !== Auth::id()) abort(403);
 
-        $users = User::all();
-        return view('pertanians.investors.create', compact('pertanian', 'users'));
+        $entities = \App\Models\Entity::where('type', 'investor')->with('users')->get();
+        return view('pertanians.investors.create', compact('pertanian', 'entities'));
     }
 
     public function store(Request $request, Pertanian $pertanian)
@@ -53,7 +53,7 @@ class PertanianInvestorController extends Controller
         ]);
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
+            'entity_id' => 'required|exists:entities,id',
             'besaran_investasi' => 'required|numeric|min:0',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
@@ -68,7 +68,7 @@ class PertanianInvestorController extends Controller
         }
 
         $pertanian->investors()->create([
-            'user_id' => $request->user_id,
+            'entity_id' => $request->entity_id,
             'besaran_investasi' => $request->besaran_investasi,
             'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,
@@ -89,8 +89,8 @@ class PertanianInvestorController extends Controller
         if ($pertanian->user_id !== Auth::id()) abort(403);
         if ($investor->pertanian_id !== $pertanian->id) abort(404);
 
-        $users = User::all();
-        return view('pertanians.investors.edit', compact('pertanian', 'investor', 'users'));
+        $entities = \App\Models\Entity::where('type', 'investor')->with('users')->get();
+        return view('pertanians.investors.edit', compact('pertanian', 'investor', 'entities'));
     }
 
     public function update(Request $request, Pertanian $pertanian, PertanianInvestor $investor)
@@ -103,7 +103,7 @@ class PertanianInvestorController extends Controller
         ]);
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
+            'entity_id' => 'required|exists:entities,id',
             'besaran_investasi' => 'required|numeric|min:0',
             'porsi_bagi_hasil' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|string',
@@ -118,7 +118,7 @@ class PertanianInvestorController extends Controller
         }
 
         $investor->update([
-            'user_id' => $request->user_id,
+            'entity_id' => $request->entity_id,
             'besaran_investasi' => $request->besaran_investasi,
             'porsi_bagi_hasil' => $request->porsi_bagi_hasil,
             'status' => $request->status,

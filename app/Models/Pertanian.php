@@ -15,7 +15,7 @@ class Pertanian extends Model
         'user_id',
         'kebun_id',
         'admin_id',
-        'pengelola_id',
+        'pengelola_entity_id',
         'name',
         'start_date',
         'end_date',
@@ -51,9 +51,9 @@ class Pertanian extends Model
         return $this->belongsTo(User::class, 'admin_id');
     }
 
-    public function pengelola()
+    public function pengelolaEntity()
     {
-        return $this->belongsTo(User::class, 'pengelola_id');
+        return $this->belongsTo(Entity::class, 'pengelola_entity_id');
     }
 
     public function kebun()

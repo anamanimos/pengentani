@@ -8,7 +8,7 @@ class PertanianInvestor extends Model
 {
     protected $fillable = [
         'pertanian_id',
-        'user_id',
+        'entity_id',
         'besaran_investasi',
         'porsi_bagi_hasil',
         'status',
@@ -20,8 +20,8 @@ class PertanianInvestor extends Model
         return $this->belongsTo(Pertanian::class);
     }
 
-    public function user()
+    public function entity()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Entity::class);
     }
 }

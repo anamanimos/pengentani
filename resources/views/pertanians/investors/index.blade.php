@@ -94,12 +94,12 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="symbol symbol-circle symbol-35px me-3">
-                                            <span class="symbol-label bg-light-primary text-primary fw-bold">{{ strtoupper(substr($investor->user->name ?? 'U', 0, 1)) }}</span>
+                                        <div class="symbol symbol-40px symbol-circle me-3">
+                                            <span class="symbol-label bg-light-primary text-primary fw-bold">{{ strtoupper(substr($investor->entity->name ?? 'E', 0, 1)) }}</span>
                                         </div>
                                         <div>
-                                            <span class="fw-bold">{{ $investor->user->name ?? '-' }}</span>
-                                            <span class="text-muted d-block fs-7">{{ $investor->user->email ?? '-' }}</span>
+                                            <span class="fw-bold">{{ $investor->entity->name ?? '-' }}</span>
+                                            <span class="text-muted d-block fs-7">{{ $investor->entity->address ?? '-' }}</span>
                                         </div>
                                     </div>
                                 </td>

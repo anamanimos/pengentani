@@ -59,4 +59,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ActivityLog::class);
     }
+
+    public function entities()
+    {
+        return $this->belongsToMany(Entity::class)->withPivot('role')->withTimestamps();
+    }
 }

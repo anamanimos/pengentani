@@ -187,6 +187,17 @@
 
                             <!--begin:Menu item-->
                             <div class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('entities.*') ? 'active' : '' }}" href="{{ route('entities.index') }}">
+                                    <span class="menu-bullet">
+                                        <span class="bullet bullet-dot"></span>
+                                    </span>
+                                    <span class="menu-title">Entitas</span>
+                                </a>
+                            </div>
+                            <!--end:Menu item-->
+
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('kebuns.*') ? 'active' : '' }}" href="{{ route('kebuns.index') }}">
                                     <span class="menu-bullet">
                                         <span class="bullet bullet-dot"></span>
