@@ -111,6 +111,9 @@
                 type: 'POST',
                 data: form.serialize(),
                 dataType: 'json',
+                headers: {
+                    'Accept': 'application/json'
+                },
                 success: function (response) {
                     Swal.fire({
                         text: response.message || "Investor berhasil ditambahkan!",
