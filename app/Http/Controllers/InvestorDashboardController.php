@@ -76,7 +76,7 @@ class InvestorDashboardController extends Controller
                 'totalInvestment' => $totalInvestment,
                 'totalReturn' => $totalReturnInvestor,
                 'totalDitarik' => $totalDitarikInvestor,
-                'sisa' => $totalReturnInvestor - $totalDitarikInvestor,
+                'sisa' => ($totalInvestment + $totalReturnInvestor) - $totalDitarikInvestor,
                 'projectCount' => $investments->count(),
             ];
         }

@@ -16,14 +16,14 @@
     @php
         $grandTotal = 0;
         $grandDitarik = 0;
-        if ($investorData) { $grandTotal += $investorData->totalReturn; $grandDitarik += $investorData->totalDitarik; }
+        if ($investorData) { $grandTotal += $investorData->totalReturn + $investorData->totalInvestment; $grandDitarik += $investorData->totalDitarik; }
         if ($adminData) { $grandTotal += $adminData->totalReturn; $grandDitarik += $adminData->totalDitarik; }
         if ($pengelolaData) { $grandTotal += $pengelolaData->totalReturn; $grandDitarik += $pengelolaData->totalDitarik; }
     @endphp
 
     <div class="portfolio-balance" style="margin-top: 20px;">
-        <h3 style="color: white; font-weight: 500; font-size: 1.1rem; margin-bottom: 10px;">Total Keuntungan Anda</h3>
-        <div class="label">Dari Semua Peran</div>
+        <h3 style="color: white; font-weight: 500; font-size: 1.1rem; margin-bottom: 10px;">Total Saldo Anda</h3>
+        <div class="label">Dari Semua Peran (Termasuk Modal)</div>
         <div class="amount">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
         <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.85rem;">
             <div>
@@ -57,6 +57,10 @@
                 <span style="font-weight: 700; color: {{ $investorData->totalReturn >= 0 ? 'var(--success)' : 'var(--danger)' }};">
                     {{ $investorData->totalReturn >= 0 ? '+' : '' }}Rp {{ number_format($investorData->totalReturn, 0, ',', '.') }}
                 </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px;">
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Total Saldo (Modal + Hasil)</span>
+                <span style="font-weight: 700;">Rp {{ number_format($investorData->totalInvestment + $investorData->totalReturn, 0, ',', '.') }}</span>
             </div>
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 10px;">
                 <span style="color: var(--text-muted); font-size: 0.9rem;">Sudah Ditarik</span>
