@@ -193,7 +193,7 @@
                 <td>{{ \Carbon\Carbon::parse($income->date)->format('d M Y') }}</td>
                 <td>{{ $income->type ?? 'Panen' }}</td>
                 <td>{{ $income->description ?? '-' }}</td>
-                <td class="text-right text-success fw-bold">+ {{ number_format($income->nominal, 0, ',', '.') }}</td>
+                <td class="text-right text-success fw-bold">+ {{ number_format($income->amount, 0, ',', '.') }}</td>
             </tr>
             @empty
             <tr>
@@ -227,8 +227,8 @@
                         <span style="font-size: 11px; color: #6b7280;">Nota: {{ $purchase->invoice_number ?? '-' }}</span>
                     </td>
                     <td>
-                        {{ $item->name }}<br>
-                        <span style="font-size: 11px; color: #6b7280;">{{ $item->qty }} x Rp {{ number_format($item->price, 0, ',', '.') }}</span>
+                        {{ $item->description }}<br>
+                        <span style="font-size: 11px; color: #6b7280;">{{ $item->qty }} x Rp {{ number_format($item->unit_price, 0, ',', '.') }}</span>
                     </td>
                     <td class="text-right text-danger">- {{ number_format($item->total_price, 0, ',', '.') }}</td>
                 </tr>
@@ -286,9 +286,9 @@
                 <span class="text-danger">- Rp {{ number_format($totalWorker, 0, ',', '.') }}</span>
             </div>
             <div class="summary-row total">
-                <span>Laba Sementara</span>
-                <span class="{{ $laba_sementara >= 0 ? 'text-success' : 'text-danger' }}">
-                    Rp {{ number_format($laba_sementara, 0, ',', '.') }}
+                <span>Bagi Hasil Anda ({{ $roleName }})</span>
+                <span class="{{ $userProfit >= 0 ? 'text-success' : 'text-danger' }}">
+                    Rp {{ number_format($userProfit, 0, ',', '.') }}
                 </span>
             </div>
         </div>

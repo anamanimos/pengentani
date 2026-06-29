@@ -449,10 +449,39 @@ class InvestorDashboardController extends Controller
         $totalIncome = $pertanian->incomes->sum('amount');
         $totalPurchase = $pertanian->purchases->sum('total_amount');
         $totalWorker = $pertanian->workerJobs->sum('wage');
-        $laba_sementara = $totalIncome - $totalPurchase - $totalWorker;
+        $labaBersih = $totalIncome - $totalPurchase - $totalWorker;
+
+        $zakatPersen = $pertanian->persentase_zakat ?? 5;
+        $zakat = $labaBersih > 0 ? $labaBersih * ($zakatPersen / 100) : 0;
+        $labaSetelahZakat = $labaBersih - $zakat;
+
+        $userProfit = 0;
+        $roleName = '';
+
+        if ($isInvestor) {
+            $inv = PertanianInvestor::where('pertanian_id', $pertanian->id)->whereIn('entity_id', $entityIds)->first();
+            if (!is_null($inv->porsi_bagi_hasil)) {
+                $userProfit = $labaSetelahZakat * ($inv->porsi_bagi_hasil / 100);
+            } else {
+                $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
+                $batasanInvestasi = $pertanian->batasan_investasi;
+                if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                    $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+                }
+                $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
+                $userProfit = $labaSetelahZakat * ($persentaseInvestorTotal / 100) * $proportion;
+            }
+            $roleName = 'Investor';
+        } elseif ($isAdmin) {
+            $userProfit = $labaSetelahZakat > 0 ? $labaSetelahZakat * (($pertanian->persentase_admin ?? 0) / 100) : 0;
+            $roleName = 'Admin';
+        } elseif ($isPengelola) {
+            $userProfit = $labaSetelahZakat > 0 ? $labaSetelahZakat * (($pertanian->persentase_pengelola ?? 0) / 100) : 0;
+            $roleName = 'Pengelola';
+        }
 
         return view('investor.laporan-print', compact(
-            'user', 'pertanian', 'totalIncome', 'totalPurchase', 'totalWorker', 'laba_sementara'
+            'user', 'pertanian', 'totalIncome', 'totalPurchase', 'totalWorker', 'labaBersih', 'userProfit', 'roleName'
         ));
     }
 }
