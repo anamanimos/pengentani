@@ -156,8 +156,8 @@ class InvestorDashboardController extends Controller
             $pertanian = $inv->pertanian;
             if (!$pertanian) continue;
 
-            $totalIncome = $pertanian->incomes->sum('nominal');
-            $totalPurchase = $pertanian->purchases->sum(function($p) { return $p->items->sum('total_price'); });
+            $totalIncome = $pertanian->incomes->sum('amount');
+            $totalPurchase = $pertanian->purchases->sum('total_amount');
             $totalWorker = $pertanian->workerJobs->sum('wage');
             
             $laba_sementara = $totalIncome - $totalPurchase - $totalWorker;
@@ -446,8 +446,8 @@ class InvestorDashboardController extends Controller
         }
 
         // Hitung total
-        $totalIncome = $pertanian->incomes->sum('nominal');
-        $totalPurchase = $pertanian->purchases->sum(function($p) { return $p->items->sum('total_price'); });
+        $totalIncome = $pertanian->incomes->sum('amount');
+        $totalPurchase = $pertanian->purchases->sum('total_amount');
         $totalWorker = $pertanian->workerJobs->sum('wage');
         $laba_sementara = $totalIncome - $totalPurchase - $totalWorker;
 
