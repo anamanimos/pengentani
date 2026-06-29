@@ -45,8 +45,11 @@ class InvestorDashboardController extends Controller
                 $labaSetelahZakat = $this->hitungLabaSetelahZakat($pertanian);
 
                 $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-                $batasanInvestasi = $pertanian->batasan_investasi > 0 ? $pertanian->batasan_investasi : 1;
-                $proportion = $inv->besaran_investasi / $batasanInvestasi;
+                $batasanInvestasi = $pertanian->batasan_investasi;
+                if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                    $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+                }
+                $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
                 $userProfit = $labaSetelahZakat * ($persentaseInvestorTotal / 100) * $proportion;
 
                 $totalInvestment += $inv->besaran_investasi;
@@ -164,10 +167,13 @@ class InvestorDashboardController extends Controller
 
             // Investor's share of the profit
             $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-            $batasanInvestasi = $pertanian->batasan_investasi > 0 ? $pertanian->batasan_investasi : 1; 
+            $batasanInvestasi = $pertanian->batasan_investasi;
+            if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+            }
             
             // Proportion of this user's investment compared to max allowed investment
-            $proportion = $inv->besaran_investasi / $batasanInvestasi;
+            $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
             
             // Expected profit = Total Profit * (Total Investor %) * Proportion
             $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
@@ -216,8 +222,11 @@ class InvestorDashboardController extends Controller
 
         // Investor's share of the profit
         $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-        $batasanInvestasi = $pertanian->batasan_investasi > 0 ? $pertanian->batasan_investasi : 1; 
-        $proportion = $inv->besaran_investasi / $batasanInvestasi;
+        $batasanInvestasi = $pertanian->batasan_investasi;
+        if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+            $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+        }
+        $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
         $invPercentage = $proportion * 100;
         
         $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
