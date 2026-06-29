@@ -44,13 +44,17 @@ class InvestorDashboardController extends Controller
 
                 $labaSetelahZakat = $this->hitungLabaSetelahZakat($pertanian);
 
-                $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-                $batasanInvestasi = $pertanian->batasan_investasi;
-                if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
-                    $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+                if (!is_null($inv->porsi_bagi_hasil)) {
+                    $userProfit = $labaSetelahZakat * ($inv->porsi_bagi_hasil / 100);
+                } else {
+                    $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
+                    $batasanInvestasi = $pertanian->batasan_investasi;
+                    if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                        $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+                    }
+                    $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
+                    $userProfit = $labaSetelahZakat * ($persentaseInvestorTotal / 100) * $proportion;
                 }
-                $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
-                $userProfit = $labaSetelahZakat * ($persentaseInvestorTotal / 100) * $proportion;
 
                 $totalInvestment += $inv->besaran_investasi;
                 $totalReturnInvestor += $userProfit;
@@ -165,19 +169,24 @@ class InvestorDashboardController extends Controller
             $estimasiBiaya = $pertanian->biayas->sum('total');
             $estimasiLaba = $estimasiPendapatan - $estimasiBiaya;
 
-            // Investor's share of the profit
-            $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-            $batasanInvestasi = $pertanian->batasan_investasi;
-            if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
-                $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+            if (!is_null($inv->porsi_bagi_hasil)) {
+                $userProfit = $laba_sementara * ($inv->porsi_bagi_hasil / 100);
+                $estimasiUserProfit = $estimasiLaba * ($inv->porsi_bagi_hasil / 100);
+            } else {
+                // Investor's share of the profit
+                $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
+                $batasanInvestasi = $pertanian->batasan_investasi;
+                if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                    $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+                }
+                
+                // Proportion of this user's investment compared to max allowed investment
+                $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
+                
+                // Expected profit = Total Profit * (Total Investor %) * Proportion
+                $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
+                $estimasiUserProfit = $estimasiLaba * ($persentaseInvestorTotal / 100) * $proportion;
             }
-            
-            // Proportion of this user's investment compared to max allowed investment
-            $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
-            
-            // Expected profit = Total Profit * (Total Investor %) * Proportion
-            $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
-            $estimasiUserProfit = $estimasiLaba * ($persentaseInvestorTotal / 100) * $proportion;
 
             $inv->laba_sementara = $laba_sementara;
             $inv->user_profit = $userProfit;
@@ -220,17 +229,23 @@ class InvestorDashboardController extends Controller
         $estimasiBiaya = $pertanian->biayas->sum('total');
         $estimasiLaba = $estimasiPendapatan - $estimasiBiaya;
 
-        // Investor's share of the profit
-        $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
-        $batasanInvestasi = $pertanian->batasan_investasi;
-        if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
-            $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+        if (!is_null($inv->porsi_bagi_hasil)) {
+            $invPercentage = $inv->porsi_bagi_hasil;
+            $userProfit = $laba_sementara * ($invPercentage / 100);
+            $estimasiUserProfit = $estimasiLaba * ($invPercentage / 100);
+        } else {
+            // Investor's share of the profit
+            $persentaseInvestorTotal = $pertanian->persentase_investor ?? 0;
+            $batasanInvestasi = $pertanian->batasan_investasi;
+            if (empty($batasanInvestasi) || $batasanInvestasi <= 0) {
+                $batasanInvestasi = \App\Models\PertanianInvestor::where('pertanian_id', $pertanian->id)->sum('besaran_investasi');
+            }
+            $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
+            $invPercentage = $proportion * 100;
+            
+            $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
+            $estimasiUserProfit = $estimasiLaba * ($persentaseInvestorTotal / 100) * $proportion;
         }
-        $proportion = $batasanInvestasi > 0 ? ($inv->besaran_investasi / $batasanInvestasi) : 0;
-        $invPercentage = $proportion * 100;
-        
-        $userProfit = $laba_sementara * ($persentaseInvestorTotal / 100) * $proportion;
-        $estimasiUserProfit = $estimasiLaba * ($persentaseInvestorTotal / 100) * $proportion;
 
         $inv->laba_sementara = $laba_sementara;
         $inv->user_profit = $userProfit;
