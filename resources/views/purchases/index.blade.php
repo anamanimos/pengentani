@@ -687,7 +687,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [10, {{ count($purchases) > 20 ? count($purchases) + 10 : 30 }}],
+                minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
                 allowInsertRow: true,
