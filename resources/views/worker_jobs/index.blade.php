@@ -588,7 +588,8 @@
 
             const initialData = @json($initialData);
 
-            if (initialData.length === 0) {
+            // Always add 10 empty rows at the bottom for easy data entry
+            for (let i = 0; i < 10; i++) {
                 initialData.push(['', '', '', '', '', '', '', '', '', 'unpaid', '']);
             }
 
@@ -1167,7 +1168,7 @@
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {
-                        rows.eq(i).show();
+                        spreadsheet.showRow(i);
                         continue;
                     }
 
@@ -1208,8 +1209,8 @@
                         }
                     }
 
-                    if(match) rows.eq(i).show();
-                    else rows.eq(i).hide();
+                    if(match) spreadsheet.showRow(i);
+                    else spreadsheet.hideRow(i);
                 }
             }
             function updateTotal() {
