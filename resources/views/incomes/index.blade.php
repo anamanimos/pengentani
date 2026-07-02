@@ -11,34 +11,33 @@
 @endsection
 
 @section('page_actions')
-    <a href="{{ route('income-categories.index') }}" class="btn btn-light-info btn-sm me-3 fw-bold">
-        <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Kelola Kategori
-    </a>
-    <a href="{{ route('tengkulaks.index') }}" class="btn btn-light-success btn-sm me-3 fw-bold">
-        <i class="ki-duotone ki-address-book fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kelola Tengkulak
-    </a>
-    <form action="{{ route('incomes.index') }}" method="GET" class="m-0 d-flex align-items-center me-3">
-        @if(request('pertanian_id'))
-            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-        @endif
-    </form>
-    <form action="{{ route('incomes.export') }}" method="GET" class="m-0 d-flex align-items-center me-3">
-        @if(request('pertanian_id'))
-            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-        @endif
-        <button type="submit" class="btn btn-success btn-sm">
-            <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
-        </button>
-    </form>
-    <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
-        <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
-    </button>
-    <button type="button" class="btn btn-light-info btn-sm me-3" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
-        <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
-    </button>
-    <button type="button" id="btn-show-alert" class="btn btn-icon btn-light-info btn-sm me-3 d-none" title="Cara Penggunaan">
+    <button type="button" id="btn-show-alert" class="btn btn-icon btn-secondary btn-sm me-3 d-none" data-bs-toggle="tooltip" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
+    <div class="btn-group">
+        <button type="button" class="btn btn-icon btn-secondary btn-sm" onclick="document.getElementById('export-form').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
+            <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
+        </button>
+        <button type="button" class="btn btn-icon btn-secondary btn-sm" id="btn-toggle-fullscreen" data-bs-toggle="tooltip" title="Mode Layar Penuh">
+            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i>
+        </button>
+        <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" data-bs-toggle="tooltip" title="Tampilkan/Sembunyikan Kolom">
+            <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        </button>
+        <a href="{{ route('tengkulaks.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Tengkulak">
+            <i class="ki-duotone ki-address-book fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        </a>
+        <a href="{{ route('income-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
+            <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+        </a>
+    </div>
+
+    <!-- Hidden form for export -->
+    <form id="export-form" action="{{ route('incomes.export') }}" method="GET" class="d-none">
+        @if(request('pertanian_id'))
+            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+        @endif
+    </form>
 @endsection
 
 @section('content')
@@ -63,28 +62,26 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <form action="{{ route('incomes.index') }}" method="GET" class="m-0 d-flex align-items-center">
-                @if(request('pertanian_id'))
-                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-                @endif
-            </form>
-            <form action="{{ route('incomes.export') }}" method="GET" class="m-0 d-flex align-items-center">
-                @if(request('pertanian_id'))
-                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-                @endif
-                <button type="submit" class="btn btn-success btn-sm">
-                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" onclick="document.getElementById('export-form-fs').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
+                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
                 </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary d-none" id="btn-global-reset-filter-fs" data-bs-toggle="tooltip" title="Reset Filter">
+                    <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" data-bs-toggle="tooltip" title="Tampilkan/Sembunyikan Kolom">
+                    <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" id="btn-exit-fullscreen" data-bs-toggle="tooltip" title="Keluar Fullscreen">
+                    <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <!-- Hidden form for export fs -->
+            <form id="export-form-fs" action="{{ route('incomes.export') }}" method="GET" class="d-none">
+                @if(request('pertanian_id'))
+                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+                @endif
             </form>
-            <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
-                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
-            </button>
-            <button type="button" class="btn btn-sm btn-light-info" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
-                <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
-            </button>
-            <button type="button" class="btn btn-sm btn-light-primary" id="btn-exit-fullscreen" title="Keluar Fullscreen">
-                <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i> Keluar Fullscreen
-            </button>
         </div>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-2">
