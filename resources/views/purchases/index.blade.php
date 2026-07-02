@@ -670,6 +670,7 @@
                                     var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+index+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+index+')"><span class="path1"></span><span class="path2"></span></i>';
                                     $(this).html(originalTitle + iconHtml);
                                 }
+                            }
                         });
                         applyAllFilters();
                         applyHiddenColumns();
