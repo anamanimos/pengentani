@@ -84,10 +84,15 @@
             </button>
         </div>
     </div>
-    <div class="d-flex justify-content-end mb-2 gap-2">
-        <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
-            <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="active-filters-display" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Filter badges will be injected here -->
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
+                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
+            </button>
+        </div>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
     <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
@@ -1149,15 +1154,45 @@
                     $('#btn-global-reset-filter').addClass('d-none');
                 }
 
-                // Update icon colors based on active filters
+                // Update icon colors and collect active filters text
+                let activeFilterHtml = '';
                 $('#spreadsheet .custom-filter-icon').each(function() {
                     var cIdx = $(this).attr('data-col');
                     if(activeFilters[cIdx]) {
                         $(this).removeClass('text-gray-500').addClass('text-success');
+                        
+                        // Build badge text
+                        let colTitle = spreadsheet.options.columns[cIdx].title.replace(/<[^>]*>?/gm, '').trim();
+                        let filterVal = activeFilters[cIdx];
+                        let filterText = '';
+                        if (spreadsheet.options.columns[cIdx].type === 'calendar') {
+                            let start = new Date(filterVal[0]);
+                            let end = new Date(filterVal[1]);
+                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
+                            let names = [];
+                            let source = spreadsheet.options.columns[cIdx].source;
+                            for (let k = 0; k < filterVal.length; k++) {
+                                let match = source.find(s => (s.id || s) == filterVal[k]);
+                                if (match) names.push(match.name || match);
+                                else names.push(filterVal[k]);
+                            }
+                            filterText = names.join(', ');
+                        } else {
+                            filterText = filterVal;
+                        }
+                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary"><span class="text-gray-600 me-2">' + colTitle + ':</span> ' + filterText + '</span>';
                     } else {
                         $(this).removeClass('text-success').addClass('text-gray-500');
                     }
                 });
+
+                if (activeFilterHtml !== '') {
+                    $('#active-filters-display').html('<span class="text-muted fw-semibold fs-7 me-1">Filter Aktif:</span>' + activeFilterHtml);
+                    $('#active-filters-display').removeClass('d-none');
+                } else {
+                    $('#active-filters-display').addClass('d-none');
+                }
 
                 for(let i = 0; i < data.length; i++) {
                     let rowData = data[i];
