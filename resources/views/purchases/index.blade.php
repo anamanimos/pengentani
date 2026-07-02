@@ -15,21 +15,21 @@
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
     <div class="btn-group">
+        <a href="{{ route('purchase-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
+            <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+        </a>
+        <a href="{{ route('stores.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Toko / Vendor">
+            <i class="ki-duotone ki-shop fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+        </a>
         <button type="button" class="btn btn-icon btn-secondary btn-sm" onclick="document.getElementById('export-form').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
-        </button>
-        <button type="button" class="btn btn-icon btn-secondary btn-sm" id="btn-toggle-fullscreen" data-bs-toggle="tooltip" title="Mode Layar Penuh">
-            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
         <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
             <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
         </button>
-        <a href="{{ route('stores.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Toko / Vendor">
-            <i class="ki-duotone ki-shop fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
-        </a>
-        <a href="{{ route('purchase-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
-            <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-        </a>
+        <button type="button" class="btn btn-icon btn-secondary btn-sm" id="btn-toggle-fullscreen" data-bs-toggle="tooltip" title="Mode Layar Penuh">
+            <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i>
+        </button>
     </div>
 
     <!-- Hidden form for export -->
