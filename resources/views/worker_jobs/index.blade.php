@@ -33,6 +33,9 @@
     <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
         <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
     </button>
+    <button type="button" class="btn btn-light-info btn-sm me-3" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
+        <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
+    </button>
     <a href="{{ route('job-categories.index') }}" class="btn btn-primary btn-sm">
         <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Kategori
     </a>
@@ -78,6 +81,9 @@
             </form>
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
+            </button>
+            <button type="button" class="btn btn-sm btn-light-info" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
+                <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
             </button>
             <button type="button" class="btn btn-sm btn-light-primary" id="btn-exit-fullscreen" title="Keluar Fullscreen">
                 <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i> Keluar Fullscreen
@@ -138,6 +144,23 @@
                     <button type="button" class="btn btn-sm btn-light me-3" id="btn-reset-filter">Reset Filter</button>
                     <button type="button" class="btn btn-sm btn-primary" id="btn-apply-filter">Terapkan</button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Column Visibility -->
+<div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered mw-400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Atur Tampilan Kolom</h5>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body scroll-y pt-5 pb-5 px-5 px-xl-10" id="column-visibility-list">
+                <!-- Checkboxes will be injected here dynamically -->
             </div>
         </div>
     </div>
@@ -695,6 +718,7 @@
                             }
                         });
                         applyAllFilters();
+                        applyHiddenColumns();
                         updateTotal();
                         
                         // Scroll to bottom (WhatsApp style) robustly for lazy loading
@@ -1031,6 +1055,51 @@
                     }
                 });
             }, 5000);
+            // Column Visibility Logic
+            let hiddenColumns = [];
+            try {
+                const storedCols = localStorage.getItem('worker_jobs_hidden_cols');
+                if (storedCols) hiddenColumns = JSON.parse(storedCols);
+            } catch(e) {}
+
+            function applyHiddenColumns() {
+                let html = '';
+                for (let i = 1; i < spreadsheet.options.columns.length; i++) {
+                    let col = spreadsheet.options.columns[i];
+                    let cleanTitle = col.title.replace(/<[^>]*>?/gm, '').trim();
+                    let isChecked = !hiddenColumns.includes(i) ? 'checked' : '';
+                    
+                    if (hiddenColumns.includes(i)) {
+                        spreadsheet.hideColumn(i);
+                    }
+
+                    html += `
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="form-check form-check-custom form-check-solid">
+                            <input class="form-check-input col-vis-toggle" type="checkbox" value="${i}" id="col_vis_${i}" ${isChecked} />
+                            <label class="form-check-label fw-semibold text-gray-700 cursor-pointer" for="col_vis_${i}">
+                                ${cleanTitle}
+                            </label>
+                        </div>
+                    </div>`;
+                }
+                $('#column-visibility-list').html(html);
+
+                $('.col-vis-toggle').change(function() {
+                    let cIdx = parseInt($(this).val());
+                    if ($(this).is(':checked')) {
+                        spreadsheet.showColumn(cIdx);
+                        hiddenColumns = hiddenColumns.filter(c => c !== cIdx);
+                    } else {
+                        spreadsheet.hideColumn(cIdx);
+                        if (!hiddenColumns.includes(cIdx)) hiddenColumns.push(cIdx);
+                    }
+                    try {
+                        localStorage.setItem('worker_jobs_hidden_cols', JSON.stringify(hiddenColumns));
+                    } catch(e) {}
+                });
+            }
+
             // Universal Column Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
             let activeFilters = {}; // Stores active filters by column index
