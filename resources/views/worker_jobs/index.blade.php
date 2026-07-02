@@ -1134,9 +1134,17 @@
 
             $('#btn-global-reset-filter').click(function() {
                 activeFilters = {};
-                datePicker.clear();
+                if(datePicker) datePicker.clear();
                 applyAllFilters();
             });
+            
+            window.removeFilter = function(colIndex) {
+                delete activeFilters[colIndex];
+                if(colIndex == 1 && datePicker) {
+                    datePicker.clear();
+                }
+                applyAllFilters();
+            };
 
             function applyAllFilters() {
                 try {
@@ -1181,7 +1189,7 @@
                         } else {
                             filterText = filterVal;
                         }
-                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary"><span class="text-gray-600 me-2">' + colTitle + ':</span> ' + filterText + '</span>';
+                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary d-inline-flex align-items-center"><span class="text-gray-600 me-2">' + colTitle + ':</span> <span>' + filterText + '</span><i class="ki-duotone ki-cross fs-2 ms-2 cursor-pointer text-hover-danger" onclick="removeFilter(' + cIdx + ')" title="Hapus Filter"><span class="path1"></span><span class="path2"></span></i></span>';
                     } else {
                         $(this).removeClass('text-success').addClass('text-gray-500');
                     }
