@@ -25,13 +25,9 @@ class PurchaseController extends Controller
             $query->where('pertanian_id', $request->pertanian_id);
         }
 
-        $month = $request->input('month', date('Y-m'));
-        if ($month) {
-            $query->whereYear('date', substr($month, 0, 4))
-                  ->whereMonth('date', substr($month, 5, 2));
-        }
-
-        $purchases = $query->orderBy('id', 'asc')->get();
+        // Removed backend month filter to allow frontend date filtering
+        // Add take(500) limit to prevent browser crash
+        $purchases = $query->orderBy('id', 'asc')->take(500)->get();
         
         $initialData = [];
         $totalPengeluaran = 0;

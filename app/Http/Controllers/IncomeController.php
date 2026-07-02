@@ -18,11 +18,7 @@ class IncomeController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        $month = $request->input('month', date('Y-m'));
-        if ($month) {
-            $query->whereYear('date', substr($month, 0, 4))
-                  ->whereMonth('date', substr($month, 5, 2));
-        }
+        // Removed backend month filter to allow frontend date filtering
 
         $incomes = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = \App\Models\Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();

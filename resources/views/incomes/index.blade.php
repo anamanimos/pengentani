@@ -21,19 +21,20 @@
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
-        <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
     </form>
     <form action="{{ route('incomes.export') }}" method="GET" class="m-0 d-flex align-items-center me-3">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
-        <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
         <button type="submit" class="btn btn-success btn-sm">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
         </button>
     </form>
     <button type="button" class="btn btn-light-primary btn-sm me-3" id="btn-toggle-fullscreen" title="Mode Layar Penuh">
         <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i> Layar Penuh
+    </button>
+    <button type="button" class="btn btn-light-info btn-sm me-3" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
+        <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
     </button>
     <button type="button" id="btn-show-alert" class="btn btn-icon btn-light-info btn-sm me-3 d-none" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
@@ -66,13 +67,11 @@
                 @if(request('pertanian_id'))
                     <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
                 @endif
-                <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
             </form>
             <form action="{{ route('incomes.export') }}" method="GET" class="m-0 d-flex align-items-center">
                 @if(request('pertanian_id'))
                     <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
                 @endif
-                <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
                 <button type="submit" class="btn btn-success btn-sm">
                     <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
                 </button>
@@ -80,15 +79,23 @@
             <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter-fs">
                 <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Filter
             </button>
+            <button type="button" class="btn btn-sm btn-light-info" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
+                <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Kolom
+            </button>
             <button type="button" class="btn btn-sm btn-light-primary" id="btn-exit-fullscreen" title="Keluar Fullscreen">
                 <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i> Keluar Fullscreen
             </button>
         </div>
     </div>
-    <div class="d-flex justify-content-end mb-2 gap-2">
-        <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
-            <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="active-filters-display" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Filter badges will be injected here -->
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
+                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
+            </button>
+        </div>
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
     <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
@@ -542,7 +549,8 @@
 
             const initialData = @json($initialData);
 
-            if (initialData.length === 0) {
+            // Always add 10 empty rows at the bottom for easy data entry
+            for (let i = 0; i < 10; i++) {
                 initialData.push(['', '', '', '', '', '', '', '', '', '']);
             }
 
@@ -641,9 +649,9 @@
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
-                minDimensions: [8, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
+                minDimensions: [10, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
-                lazyLoading: true,
+                lazyLoading: false,
                 allowInsertRow: true,
                 allowManualInsertRow: true,
                 allowInsertColumn: false,
@@ -811,17 +819,18 @@
             setTimeout(function() {
                 var headers = $('#spreadsheet > div > table > thead > tr:first-child > td');
                 headers.each(function(index) {
-                    if (index >= 0 && index <= spreadsheet.options.columns.length) {
+                    if (index >= 0 && index < spreadsheet.options.columns.length) {
                         var colIndex = index;
-                        var colType = spreadsheet.options.columns[colIndex - 1]?.type;
-                        if (colIndex > 0 && colType !== 'hidden') { 
-                            var originalTitle = spreadsheet.options.columns[colIndex - 1].title;
-                            var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+(colIndex-1)+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+(colIndex-1)+')"><span class="path1"></span><span class="path2"></span></i>';
+                        if(index > 0) { 
+                            var originalTitle = spreadsheet.options.columns[index].title;
+                            var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+index+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+index+')"><span class="path1"></span><span class="path2"></span></i>';
                             $(this).html(originalTitle + iconHtml);
                         }
                     }
                 });
                 applyAllFilters();
+                applyHiddenColumns();
+                updateTotal();
                 
                 // Scroll to bottom (WhatsApp style) robustly for lazy loading
                 var contentDiv = document.querySelector('.jexcel_content');
@@ -993,16 +1002,69 @@
                 localStorage.removeItem('hideUsageAlert');
             });
 
+            // Column Visibility Logic
+            let hiddenColumns = [];
+            try {
+                const storedCols = localStorage.getItem('incomes_hidden_cols');
+                if (storedCols) hiddenColumns = JSON.parse(storedCols);
+            } catch(e) {}
+
+            function applyHiddenColumns() {
+                let html = '';
+                for (let i = 1; i < spreadsheet.options.columns.length; i++) {
+                    let col = spreadsheet.options.columns[i];
+                    let cleanTitle = col.title.replace(/<[^>]*>?/gm, '').trim();
+                    let isChecked = !hiddenColumns.includes(i) ? 'checked' : '';
+                    
+                    if (hiddenColumns.includes(i)) {
+                        spreadsheet.hideColumn(i);
+                    }
+
+                    html += `
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="form-check form-check-custom form-check-solid">
+                            <input class="form-check-input col-vis-toggle" type="checkbox" value="${i}" id="col_vis_${i}" ${isChecked} />
+                            <label class="form-check-label fw-semibold text-gray-700 cursor-pointer" for="col_vis_${i}">
+                                ${cleanTitle}
+                            </label>
+                        </div>
+                    </div>`;
+                }
+                $('#column-visibility-list').html(html);
+
+                $('.col-vis-toggle').change(function() {
+                    let cIdx = parseInt($(this).val());
+                    if ($(this).is(':checked')) {
+                        spreadsheet.showColumn(cIdx);
+                        hiddenColumns = hiddenColumns.filter(c => c !== cIdx);
+                    } else {
+                        spreadsheet.hideColumn(cIdx);
+                        if (!hiddenColumns.includes(cIdx)) hiddenColumns.push(cIdx);
+                    }
+                    try {
+                        localStorage.setItem('incomes_hidden_cols', JSON.stringify(hiddenColumns));
+                    } catch(e) {}
+                });
+            }
+
             // Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
              let activeFilters = {};
+             let stored = null;
              try {
-                 const stored = localStorage.getItem('incomes_filters');
+                 stored = localStorage.getItem('incomes_filters');
                  if (stored) {
                      activeFilters = JSON.parse(stored);
                  }
              } catch (e) {
                  console.error('Failed to load activeFilters:', e);
+             }
+
+             if (!stored) {
+                 let now = new Date();
+                 let y = now.getFullYear();
+                 let m = now.getMonth();
+                 activeFilters['1'] = [new Date(y, m, 1), new Date(y, m + 1, 0)];
              }
             let datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
@@ -1077,9 +1139,17 @@
 
             $('#btn-global-reset-filter').click(function() {
                 activeFilters = {};
-                datePicker.clear();
+                if(datePicker) datePicker.clear();
                 applyAllFilters();
             });
+            
+            window.removeFilter = function(colIndex) {
+                delete activeFilters[colIndex];
+                if(colIndex == 1 && datePicker) {
+                    datePicker.clear();
+                }
+                applyAllFilters();
+            };
 
             function applyAllFilters() {
                 try {
@@ -1096,14 +1166,43 @@
                     $('#btn-global-reset-filter').addClass('d-none');
                 }
 
+                let activeFilterHtml = '';
                 $('#spreadsheet .custom-filter-icon').each(function() {
                     var cIdx = $(this).attr('data-col');
                     if(activeFilters[cIdx]) {
                         $(this).removeClass('text-gray-500').addClass('text-success');
+                        
+                        let colTitle = spreadsheet.options.columns[cIdx].title.replace(/<[^>]*>?/gm, '').trim();
+                        let filterVal = activeFilters[cIdx];
+                        let filterText = '';
+                        if (spreadsheet.options.columns[cIdx].type === 'calendar') {
+                            let start = new Date(filterVal[0]);
+                            let end = new Date(filterVal[1]);
+                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
+                            let names = [];
+                            let source = spreadsheet.options.columns[cIdx].source;
+                            for (let k = 0; k < filterVal.length; k++) {
+                                let match = source.find(s => (s.id || s) == filterVal[k]);
+                                if (match) names.push(match.name || match);
+                                else names.push(filterVal[k]);
+                            }
+                            filterText = names.join(', ');
+                        } else {
+                            filterText = filterVal;
+                        }
+                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary d-inline-flex align-items-center"><span class="text-gray-600 me-2">' + colTitle + ':</span> <span>' + filterText + '</span><i class="ki-duotone ki-cross fs-2 ms-2 cursor-pointer text-hover-danger" onclick="removeFilter(' + cIdx + ')" title="Hapus Filter"><span class="path1"></span><span class="path2"></span></i></span>';
                     } else {
                         $(this).removeClass('text-success').addClass('text-gray-500');
                     }
                 });
+
+                if (activeFilterHtml !== '') {
+                    $('#active-filters-display').html('<span class="text-muted fw-semibold fs-7 me-1">Filter Aktif:</span>' + activeFilterHtml);
+                    $('#active-filters-display').removeClass('d-none');
+                } else {
+                    $('#active-filters-display').addClass('d-none');
+                }
 
                 for(let i = 0; i < data.length; i++) {
                     let rowData = data[i];
