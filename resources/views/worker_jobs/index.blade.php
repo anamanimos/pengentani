@@ -618,7 +618,7 @@
 
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', 'unpaid', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
@@ -798,6 +798,15 @@
                     } else {
                         updateTotal();
                         autoSave();
+                    }
+
+                    // Auto-fill status to 'unpaid' if left empty and other fields are edited
+                    if (x != 9) {
+                        var currentStatus = spreadsheet.getValueFromCoords(9, y);
+                        if (!currentStatus) {
+                            // The 4th argument 'true' prevents triggering onchange again
+                            spreadsheet.setValueFromCoords(9, y, 'unpaid', true);
+                        }
                     }
 
                     // Auto insert row if last row is filled
