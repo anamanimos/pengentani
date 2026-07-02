@@ -1044,7 +1044,7 @@
                     }
                 } 
 
-                if (Object.keys(activeFilters).length === 0) {
+                if (!stored) {
                     let now = new Date();
                     let y = now.getFullYear();
                     let m = now.getMonth();
