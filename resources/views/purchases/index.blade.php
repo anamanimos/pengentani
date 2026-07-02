@@ -528,6 +528,8 @@
 
     <script>
         $(document).ready(function() {
+            // Initialize tooltips manually for buttons that toggle modals to avoid conflict
+            $('[data-bs-target="#columnVisibilityModal"]').tooltip();
             $('[data-control="select2"]').select2();
 
             @php
