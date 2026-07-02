@@ -1032,12 +1032,17 @@
                 const stored = localStorage.getItem('worker_jobs_filters');
                 if (stored) {
                     activeFilters = JSON.parse(stored);
-                } else {
+                    if (typeof activeFilters['1'] === 'string') {
+                        // Fix for old string format
+                        delete activeFilters['1'];
+                    }
+                } 
+
+                if (Object.keys(activeFilters).length === 0) {
                     let now = new Date();
                     let y = now.getFullYear();
-                    let m = String(now.getMonth() + 1).padStart(2, '0');
-                    let lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
-                    activeFilters['1'] = `${y}-${m}-01 to ${y}-${m}-${lastDay}`;
+                    let m = now.getMonth();
+                    activeFilters['1'] = [new Date(y, m, 1), new Date(y, m + 1, 0)];
                 }
             } catch (e) {
                 console.error('Failed to load activeFilters:', e);
