@@ -142,6 +142,23 @@
     </div>
 </div>
 
+<!-- Modal Column Visibility -->
+<div class="modal fade" id="columnVisibilityModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered mw-400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Atur Tampilan Kolom</h5>
+                <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="ki-duotone ki-cross fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body scroll-y pt-5 pb-5 px-5 px-xl-10" id="column-visibility-list">
+                <!-- Checkboxes will be injected here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
