@@ -21,7 +21,7 @@
         <button type="button" class="btn btn-icon btn-secondary btn-sm" id="btn-toggle-fullscreen" data-bs-toggle="tooltip" title="Mode Layar Penuh">
             <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
-        <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" data-bs-toggle="tooltip" title="Tampilkan/Sembunyikan Kolom">
+        <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
             <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
         </button>
         <a href="{{ route('job-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
@@ -69,7 +69,7 @@
                 <button type="button" class="btn btn-sm btn-icon btn-secondary d-none" id="btn-global-reset-filter-fs" data-bs-toggle="tooltip" title="Reset Filter">
                     <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" data-bs-toggle="tooltip" title="Tampilkan/Sembunyikan Kolom">
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
                     <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-icon btn-secondary" id="btn-exit-fullscreen" data-bs-toggle="tooltip" title="Keluar Fullscreen">
