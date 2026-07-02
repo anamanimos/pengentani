@@ -21,12 +21,8 @@ class WorkerJobController extends Controller
             $query->whereDate('date', $request->date);
         }
 
-        $month = $request->input('month', date('Y-m'));
-        if ($month) {
-            $query->whereYear('date', substr($month, 0, 4))
-                  ->whereMonth('date', substr($month, 5, 2));
-        }
-
+        // Removed month filter block as requested to rely on frontend date filter
+        
         // Limit to 500 rows to prevent browser crash if data grows
         $jobs = $query->orderBy('id', 'asc')->take(500)->get();
         $pertanians = Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();

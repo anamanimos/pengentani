@@ -18,7 +18,6 @@
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
-        <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
     </form>
     <form action="{{ route('worker-jobs.export') }}" method="GET" class="m-0 d-flex align-items-center me-3">
         @if(request('pertanian_id'))
@@ -27,7 +26,6 @@
         @if(request('date'))
             <input type="hidden" name="date" value="{{ request('date') }}">
         @endif
-        <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
         <button type="submit" class="btn btn-success btn-sm">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
         </button>
@@ -66,7 +64,6 @@
                 @if(request('pertanian_id'))
                     <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
                 @endif
-                <input type="month" name="month" class="form-control form-control-sm form-control-solid fw-bold w-auto" value="{{ request('month', date('Y-m')) }}" onchange="this.form.submit()" title="Filter Bulan">
             </form>
             <form action="{{ route('worker-jobs.export') }}" method="GET" class="m-0 d-flex align-items-center">
                 @if(request('pertanian_id'))
@@ -75,7 +72,6 @@
                 @if(request('date'))
                     <input type="hidden" name="date" value="{{ request('date') }}">
                 @endif
-                <input type="hidden" name="month" value="{{ request('month', date('Y-m')) }}">
                 <button type="submit" class="btn btn-success btn-sm">
                     <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel
                 </button>
@@ -1036,6 +1032,12 @@
                 const stored = localStorage.getItem('worker_jobs_filters');
                 if (stored) {
                     activeFilters = JSON.parse(stored);
+                } else {
+                    let now = new Date();
+                    let y = now.getFullYear();
+                    let m = String(now.getMonth() + 1).padStart(2, '0');
+                    let lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+                    activeFilters['1'] = `${y}-${m}-01 to ${y}-${m}-${lastDay}`;
                 }
             } catch (e) {
                 console.error('Failed to load activeFilters:', e);
