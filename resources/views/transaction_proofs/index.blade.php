@@ -83,6 +83,15 @@
                             <span class="card-label fw-bold text-gray-800">Galeri Bukti Transaksi</span>
                             <span class="text-gray-500 mt-1 fw-semibold fs-7">{{ $proofs->count() }} bukti tersimpan</span>
                         </h3>
+                        <div class="card-toolbar">
+                            <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
+                                <select name="status" class="form-select form-select-sm form-select-solid fw-bold" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
+                                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                                    <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
+                                    <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
+                                </select>
+                            </form>
+                        </div>
                     </div>
                     <div class="card-body pt-5">
                         <div class="row g-5">
@@ -104,11 +113,20 @@
                                          style="background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);">
                                         
                                         <!-- Top Action (Delete) -->
-                                        <div class="text-end pe-auto" style="z-index: 2; position: relative;">
+                                        <div class="d-flex justify-content-between pe-auto" style="z-index: 2; position: relative;">
+                                            <div>
+                                                @if($proof->is_used)
+                                                    <span class="badge badge-success fw-bold" title="Terikat dengan data">Sudah Digunakan</span>
+                                                @else
+                                                    <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75" title="Belum terikat data">Belum Digunakan</span>
+                                                @endif
+                                            </div>
                                             <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus bukti ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-icon btn-sm btn-light-danger shadow-sm"><i class="ki-duotone ki-trash fs-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
+                                                <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-75" title="Hapus Bukti">
+                                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                                </button>
                                             </form>
                                         </div>
                                         

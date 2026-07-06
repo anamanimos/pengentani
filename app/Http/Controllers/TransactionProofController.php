@@ -9,9 +9,31 @@ use Illuminate\Support\Facades\Storage;
 
 class TransactionProofController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $proofs = TransactionProof::where('user_id', Auth::id())->latest()->get();
+        $query = TransactionProof::withCount(['purchaseItems', 'incomes', 'workerJobs'])
+            ->where('user_id', Auth::id());
+            
+        if ($request->has('status') && $request->status !== 'all' && $request->status !== '') {
+            if ($request->status === 'used') {
+                $query->where(function($q) {
+                    $q->has('purchaseItems')
+                      ->orHas('incomes')
+                      ->orHas('workerJobs');
+                });
+            } elseif ($request->status === 'unused') {
+                $query->whereDoesntHave('purchaseItems')
+                      ->whereDoesntHave('incomes')
+                      ->whereDoesntHave('workerJobs');
+            }
+        }
+
+        $proofs = $query->latest()->get();
+
+        $proofs->each(function($proof) {
+            $proof->is_used = ($proof->purchase_items_count + $proof->incomes_count + $proof->worker_jobs_count) > 0;
+        });
+
         return view('transaction_proofs.index', compact('proofs'));
     }
 
