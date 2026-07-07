@@ -1129,7 +1129,6 @@
                     btn.prop('disabled', false);
                 });
             });
-            }
 
             // Cek local storage saat load
             if (localStorage.getItem('hideUsageAlert') === 'true') {
