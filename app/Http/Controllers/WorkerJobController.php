@@ -54,6 +54,7 @@ class WorkerJobController extends Controller
             'data.*.start_time' => 'nullable',
             'data.*.end_time' => 'nullable',
             'data.*.wage' => 'nullable|numeric',
+            'data.*.konsumsi' => 'nullable|numeric',
             'data.*.status' => 'nullable|in:paid,unpaid',
         ]);
 
@@ -105,6 +106,7 @@ class WorkerJobController extends Controller
                             'start_time' => $row['start_time'] ?? null,
                             'end_time' => $row['end_time'] ?? null,
                             'wage' => $row['wage'] ?? 0,
+                            'konsumsi' => $row['konsumsi'] ?? 0,
                             'status' => $row['status'] ?? 'unpaid',
                             'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                         ]);
@@ -120,6 +122,7 @@ class WorkerJobController extends Controller
                         'start_time' => $row['start_time'] ?? null,
                         'end_time' => $row['end_time'] ?? null,
                         'wage' => $row['wage'] ?? 0,
+                        'konsumsi' => $row['konsumsi'] ?? 0,
                         'status' => $row['status'] ?? 'unpaid',
                         'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
                     ]);
@@ -202,7 +205,8 @@ class WorkerJobController extends Controller
         $sheet->setCellValue('F1', 'Jam Mulai');
         $sheet->setCellValue('G1', 'Jam Selesai');
         $sheet->setCellValue('H1', 'Upah (Rp)');
-        $sheet->setCellValue('I1', 'Status');
+        $sheet->setCellValue('I1', 'Konsumsi (Rp)');
+        $sheet->setCellValue('J1', 'Status');
 
         $rowNum = 2;
         foreach ($jobs as $index => $job) {
@@ -215,7 +219,9 @@ class WorkerJobController extends Controller
             $sheet->setCellValue('G' . $rowNum, $job->end_time);
             $wageStr = str_replace(',', '', $job->wage);
             $sheet->setCellValue('H' . $rowNum, (float) $wageStr);
-            $sheet->setCellValue('I' . $rowNum, ucfirst($job->status));
+            $konsumsiStr = str_replace(',', '', $job->konsumsi);
+            $sheet->setCellValue('I' . $rowNum, (float) $konsumsiStr);
+            $sheet->setCellValue('J' . $rowNum, ucfirst($job->status));
             $rowNum++;
         }
 

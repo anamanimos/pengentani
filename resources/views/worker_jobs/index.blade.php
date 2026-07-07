@@ -99,7 +99,7 @@
     </div>
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
     <div class="d-flex justify-content-end align-items-center p-4 bg-light border-top sticky-bottom z-index-1" id="spreadsheet-footer" style="bottom: 0;">
-        <h4 class="m-0 text-gray-800">Total Upah: <span id="total-amount" class="text-success fw-bolder ms-2">Rp 0</span></h4>
+        <h4 class="m-0 text-gray-800">Total Upah: <span id="total-amount" class="text-success fw-bolder ms-2 me-4">Rp 0</span> | Total Konsumsi: <span id="total-konsumsi-amount" class="text-success fw-bolder ms-2">Rp 0</span></h4>
     </div>
 </div>
 
@@ -586,6 +586,7 @@
                         $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format("H:i") : null,
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
                         $job->wage,
+                        $job->konsumsi,
                         $job->status,
                         $job->transaction_proof_id
                     ];
@@ -617,7 +618,7 @@
 
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '', '']);
             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
@@ -688,6 +689,7 @@
                     { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 130, mask: '#,##0' },
+                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: '#,##0' },
                     { type: 'dropdown', title: 'Status', width: 120, source: statuses },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
                 ],
@@ -696,7 +698,7 @@
                     handleSelection(sheetInstance, x1, y1, x2, y2);
                 },
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 10 && val && proofUrls[val]) {
+                    if (col == 11 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
@@ -732,7 +734,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [10, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [12, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
                 allowInsertRow: true,
@@ -778,7 +780,7 @@
                                 });
                             }
                         });
-                    } else if (x == 10 && value === 'NEW_PROOF') {
+                    } else if (x == 11 && value === 'NEW_PROOF') {
                         spreadsheet.setValueFromCoords(x, y, '', true);
                         
                         // Set cell coord
@@ -800,11 +802,11 @@
                     }
 
                     // Auto-fill status to 'unpaid' if left empty and other fields are edited
-                    if (x != 9) {
-                        var currentStatus = spreadsheet.getValueFromCoords(9, y);
+                    if (x != 10) {
+                        var currentStatus = spreadsheet.getValueFromCoords(10, y);
                         if (!currentStatus) {
                             // The 4th argument 'true' prevents triggering onchange again
-                            spreadsheet.setValueFromCoords(9, y, 'unpaid', true);
+                            spreadsheet.setValueFromCoords(10, y, 'unpaid', true);
                         }
                     }
 
@@ -952,6 +954,7 @@
                                 });
 
                                 let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                                let cleanKonsumsi = row[9] !== null && row[9] !== '' ? String(row[9]).replace(/[^0-9.-]+/g, '') : 0;
                                 
                                 validData.push({
                                     index: i,
@@ -964,8 +967,9 @@
                                     start_time: row[6] || null,
                                     end_time: row[7] || null,
                                     wage: cleanWage,
-                                    status: row[9] || 'unpaid',
-                                    transaction_proof_id: row[10] || null
+                                    konsumsi: cleanKonsumsi,
+                                    status: row[10] || 'unpaid',
+                                    transaction_proof_id: row[11] || null
                                 });
                             }
                         } else if (hasAnyData) {
@@ -1284,7 +1288,7 @@
                     
                     // Always show completely empty rows (for new entries)
                     let isEmpty = true;
-                    for(let j=1; j<=8; j++) { // Columns 1 to 8 contain data
+                    for(let j=1; j<=9; j++) { // Columns 1 to 9 contain data
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {
@@ -1337,21 +1341,30 @@
                 if (!spreadsheet) return;
                 var data = spreadsheet.getData();
                 let rows = $('#spreadsheet > div > table > tbody > tr');
-                var sum = 0;
+                var sumUpah = 0;
+                var sumKonsumsi = 0;
                 for(var i = 0; i < data.length; i++) {
                     if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                        var valStr = data[i][8];
-                        if (valStr !== null && valStr !== undefined && valStr !== '') {
-                            var cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
-                            var val = parseFloat(cleanValStr);
-                            if (!isNaN(val)) sum += val;
+                        var wageVal = data[i][8];
+                        if (wageVal !== null && wageVal !== undefined && wageVal !== '') {
+                            var cleanWage = String(wageVal).replace(/Rp|[\s,]/g, '');
+                            var valWage = parseFloat(cleanWage);
+                            if (!isNaN(valWage)) sumUpah += valWage;
+                        }
+                        var konsumsiVal = data[i][9];
+                        if (konsumsiVal !== null && konsumsiVal !== undefined && konsumsiVal !== '') {
+                            var cleanKonsumsi = String(konsumsiVal).replace(/Rp|[\s,]/g, '');
+                            var valKonsumsi = parseFloat(cleanKonsumsi);
+                            if (!isNaN(valKonsumsi)) sumKonsumsi += valKonsumsi;
                         }
                     }
                 }
-                var formatted = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sum));
-                $('#total-amount').text(formatted);
+                var formattedUpah = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sumUpah));
+                var formattedKonsumsi = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sumKonsumsi));
+                $('#total-amount').text(formattedUpah);
+                $('#total-konsumsi-amount').text(formattedKonsumsi);
                 if ($('#spreadsheet-wrapper').hasClass('fullscreen-mode')) {
-                    $('.total-amount-fs').text(formatted);
+                    $('.total-amount-fs').text(formattedUpah);
                 }
             }
 
@@ -1591,11 +1604,11 @@
                     e.stopImmediatePropagation();
 
                     if (!$(modalEl).is(':visible')) {
-                        // Check if focused on column 10 (Bukti Transaksi)
+                        // Check if focused on column 11 (Bukti Transaksi)
                         if (typeof spreadsheet !== 'undefined' && spreadsheet.selectedCell) {
                             let x = parseInt(spreadsheet.selectedCell[0]);
                             let y = parseInt(spreadsheet.selectedCell[1]);
-                            if (x === 10) {
+                            if (x === 11) {
                                 window._activeProofCell = { x: x, y: y };
                             } else {
                                 window._activeProofCell = null;
