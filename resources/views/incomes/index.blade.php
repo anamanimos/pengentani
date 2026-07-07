@@ -14,6 +14,19 @@
     <button type="button" id="btn-show-alert" class="btn btn-icon btn-secondary btn-sm me-3 d-none" data-bs-toggle="tooltip" title="Cara Penggunaan">
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
+    
+    <!-- Auto-save Toggle -->
+    <div class="d-flex align-items-center me-3">
+        <div class="form-check form-switch form-check-custom form-check-solid">
+            <input class="form-check-input h-20px w-35px" type="checkbox" id="auto-save-toggle" checked />
+            <label class="form-check-label fw-bold text-gray-700 fs-7 ms-2" for="auto-save-toggle">Auto Simpan</label>
+        </div>
+    </div>
+    
+    <button type="button" class="btn btn-primary btn-sm me-3 d-none" id="btn-manual-save">
+        <i class="fas fa-save me-1"></i> Simpan
+    </button>
+
     <div class="btn-group">
         <a href="{{ route('income-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
             <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
@@ -62,6 +75,18 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
+            <!-- Fullscreen Auto-save Toggle -->
+            <div class="d-flex align-items-center me-2">
+                <div class="form-check form-switch form-check-custom form-check-solid">
+                    <input class="form-check-input h-20px w-35px" type="checkbox" id="auto-save-toggle-fs" checked />
+                    <label class="form-check-label fw-bold text-gray-700 fs-7 ms-2" for="auto-save-toggle-fs">Auto Simpan</label>
+                </div>
+            </div>
+            
+            <button type="button" class="btn btn-primary btn-sm me-2 d-none" id="btn-manual-save-fs">
+                <i class="fas fa-save me-1"></i> Simpan
+            </button>
+
             <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-icon btn-secondary" onclick="document.getElementById('export-form-fs').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
                     <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
@@ -532,6 +557,8 @@
             $('[data-bs-target="#columnVisibilityModal"]').tooltip();
             $('[data-control="select2"]').select2();
 
+            let dirtyRows = new Set();
+
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
                 $tengkulakData = $tengkulaks->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->toArray();
@@ -741,6 +768,7 @@
                         sheetInstance.setValueFromCoords(8, y, qVal * pVal, true);
                     }
                     updateTotal();
+                    dirtyRows.add(parseInt(y));
                     autoSave();
 
                     // Auto insert row if last row is filled
@@ -865,79 +893,93 @@
 
             let debounceTimer;
 
+            function updateSaveStatus(status, errorMsg) {
+                let statusHtml = '';
+                let badgeClass = '';
+                
+                if (status === 'saving') {
+                    statusHtml = '<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...';
+                    badgeClass = 'badge-light-warning';
+                } else if (status === 'saved') {
+                    statusHtml = '<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>';
+                    badgeClass = 'badge-light-success';
+                } else if (status === 'saved_manual') {
+                    statusHtml = '<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan</span>';
+                    badgeClass = 'badge-light-success';
+                } else if (status === 'incomplete') {
+                    statusHtml = '<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>';
+                    badgeClass = 'badge-light-warning';
+                } else if (status === 'unsaved') {
+                    statusHtml = '<i class="fas fa-exclamation-circle text-primary me-1"></i> <span class="status-text text-primary">Belum Disimpan (Manual)</span>';
+                    badgeClass = 'badge-light-primary';
+                } else if (status === 'error') {
+                    statusHtml = '<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">' + (errorMsg || 'Gagal menyimpan') + '</span>';
+                    badgeClass = 'badge-light-danger';
+                }
+
+                $('#auto-save-status').html(statusHtml).removeClass('badge-light-success badge-light-danger badge-light-warning badge-light-primary d-none').addClass(badgeClass);
+                $('#auto-save-status-fs').html(statusHtml).removeClass('badge-light-success badge-light-danger badge-light-warning badge-light-primary d-none').addClass(badgeClass);
+            }
+
             function autoSave() {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(function() {
                     if (!spreadsheet) return;
-                    var data = spreadsheet.getData();
-                    var validData = [];
-                    var rowMapping = []; // Tracks which spreadsheet row corresponds to which validData item
-                    var hasIncompleteRow = false;
-                    var styles = {};
                     
-                    for(var i = 0; i < data.length; i++) {
-                        var row = data[i];
-                        
-                        var pertanianVal = row[2];
-                        if (!pertanianVal) {
-                            var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
-                            if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                    if (!$('#auto-save-toggle').is(':checked')) {
+                        updateSaveStatus('unsaved');
+                        return;
+                    }
+                    
+                    performSave();
+                }, 1500);
+            }
+
+            function performSave(callback) {
+                if (dirtyRows.size === 0) {
+                    if (callback) callback(true);
+                    return;
+                }
+
+                var data = spreadsheet.getData();
+                var validData = [];
+                var hasIncompleteRow = false;
+                var styles = {};
+
+                for (let i of dirtyRows) {
+                    if (i >= data.length) continue;
+                    var row = data[i];
+
+                    var pertanianVal = row[2];
+                    if (!pertanianVal) {
+                        var cellEl = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(2, i));
+                        if (cellEl && cellEl.innerText.trim() !== '') pertanianVal = cellEl.innerText.trim();
+                    }
+
+                    var tengkulakVal = row[3];
+                    if (!tengkulakVal) {
+                        var cellTengkulak = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
+                        if (cellTengkulak && cellTengkulak.innerText.trim() !== '') tengkulakVal = cellTengkulak.innerText.trim();
+                    }
+
+                    var typeVal = row[4];
+                    if (!typeVal) {
+                        var cellType = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
+                        if (cellType && cellType.innerText.trim() !== '') typeVal = cellType.innerText.trim();
+                    }
+
+                    var hasAnyData = false;
+                    for (var j = 1; j < row.length; j++) {
+                        if (row[j] !== null && row[j] !== '') {
+                            hasAnyData = true;
+                            break;
                         }
+                    }
 
-                        var tengkulakVal = row[3];
-                        if (!tengkulakVal) {
-                            var cellTengkulak = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
-                            if (cellTengkulak && cellTengkulak.innerText.trim() !== '') tengkulakVal = cellTengkulak.innerText.trim();
-                        }
+                    var requiredCols = [1, 2]; // Tanggal and Pertanian are required
 
-                        var typeVal = row[4];
-                        if (!typeVal) {
-                            var cellType = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
-                            if (cellType && cellType.innerText.trim() !== '') typeVal = cellType.innerText.trim();
-                        }
-
-                        var hasAnyData = false;
-                        for(var j=1; j<row.length; j++) {
-                            if (row[j] !== null && row[j] !== '') {
-                                hasAnyData = true;
-                                break;
-                            }
-                        }
-
-                        var requiredCols = [1, 2]; // Tanggal and Pertanian are required
-
-                        if (row[0] || (row[1] && pertanianVal)) {
-                            if (!row[1] || !pertanianVal) {
-                                hasIncompleteRow = true;
-                                requiredCols.forEach(function(colIdx) {
-                                    if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
-                                    else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
-                                });
-                            } else {
-                                requiredCols.forEach(function(colIdx) {
-                                    styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
-                                });
-
-                                let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
-                                let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
-                                let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
-                                
-                                validData.push({
-                                    index: i,
-                                    id: row[0] || null,
-                                    date: row[1] || null,
-                                    pertanian_id: pertanianVal || null,
-                                    tengkulak_id: tengkulakVal || null,
-                                    income_category_id: typeVal || null,
-                                    description: row[5] || null,
-                                    qty: cleanQty,
-                                    unit_price: cleanUnitPrice,
-                                    amount: cleanAmount,
-                                    transaction_proof_id: row[9] || null
-                                });
-                                rowMapping.push(i);
-                            }
-                        } else if (hasAnyData) {
+                    if (row[0] || (row[1] && pertanianVal)) {
+                        if (!row[1] || !pertanianVal) {
                             hasIncompleteRow = true;
                             requiredCols.forEach(function(colIdx) {
                                 if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
@@ -947,58 +989,108 @@
                             requiredCols.forEach(function(colIdx) {
                                 styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
+
+                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+
+                            validData.push({
+                                index: i,
+                                id: row[0] || null,
+                                date: row[1] || null,
+                                pertanian_id: pertanianVal || null,
+                                tengkulak_id: tengkulakVal || null,
+                                income_category_id: typeVal || null,
+                                description: row[5] || null,
+                                qty: cleanQty,
+                                unit_price: cleanUnitPrice,
+                                amount: cleanAmount,
+                                transaction_proof_id: row[9] || null
+                            });
                         }
+                    } else if (hasAnyData) {
+                        hasIncompleteRow = true;
+                        requiredCols.forEach(function(colIdx) {
+                            if (!row[colIdx]) styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = 'background-color: #f1416c !important; color: white !important;';
+                            else styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
+                        });
                     }
+                }
 
-                    spreadsheet.setStyle(styles);
+                spreadsheet.setStyle(styles);
 
-                    if (validData.length === 0) {
-                        if (hasIncompleteRow) {
-                            $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
-                            $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
-                        }
-                        return;
+                if (validData.length === 0) {
+                    if (hasIncompleteRow) {
+                        updateSaveStatus('incomplete');
                     }
+                    if (callback) callback(false);
+                    return;
+                }
 
-                    $('#auto-save-status').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
-                    $('#auto-save-status-fs').html('<i class="fas fa-spinner fa-spin text-warning me-1"></i> Menyimpan...').removeClass('d-none badge-light-success badge-light-danger').addClass('badge-light-warning');
+                updateSaveStatus('saving');
 
-                    $.ajax({
-                        url: '{{ route("incomes.store") }}',
-                        type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            _token: '{{ csrf_token() }}',
-                            data: validData
-                        }),
-                        success: function(response) {
-                            if (hasIncompleteRow) {
-                                $('#auto-save-status').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
-                                $('#auto-save-status-fs').html('<i class="fas fa-info-circle text-warning me-1"></i> <span class="status-text text-warning">Menunggu Data Lengkap</span>').removeClass('badge-light-success badge-light-danger d-none').addClass('badge-light-warning');
-                            } else {
-                                $('#auto-save-status').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
-                                $('#auto-save-status-fs').html('<i class="fas fa-check-circle text-success me-1"></i> <span class="status-text text-success">Tersimpan Otomatis</span>').removeClass('badge-light-warning badge-light-danger d-none').addClass('badge-light-success');
-                            }
-
-                            if (response.savedData) {
-                                for(var j=0; j<response.savedData.length; j++) {
-                                    var gridRowIndex = rowMapping[response.savedData[j].index];
-                                    var newId = response.savedData[j].id;
-                                    var currentId = spreadsheet.getValueFromCoords(0, gridRowIndex);
-                                    if (!currentId) {
-                                        spreadsheet.setValueFromCoords(0, gridRowIndex, newId, true);
-                                    }
+                $.ajax({
+                    url: '{{ route("incomes.store") }}',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        _token: '{{ csrf_token() }}',
+                        data: validData
+                    }),
+                    success: function(response) {
+                        if (response.savedData) {
+                            for (var j = 0; j < response.savedData.length; j++) {
+                                var gridRowIndex = response.savedData[j].index;
+                                var newId = response.savedData[j].id;
+                                var currentId = spreadsheet.getValueFromCoords(0, gridRowIndex);
+                                if (!currentId) {
+                                    spreadsheet.setValueFromCoords(0, gridRowIndex, newId, true);
                                 }
+                                dirtyRows.delete(gridRowIndex);
                             }
-                        },
-                        error: function(xhr) {
-                            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan';
-                            $('#auto-save-status').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">' + msg + '</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
-                            $('#auto-save-status-fs').html('<i class="fas fa-exclamation-circle text-danger me-1"></i> <span class="status-text text-danger">' + msg + '</span>').removeClass('badge-light-warning badge-light-success d-none').addClass('badge-light-danger');
                         }
-                    });
-                }, 1500);
+
+                        if (hasIncompleteRow) {
+                            updateSaveStatus('incomplete');
+                        } else {
+                            if ($('#auto-save-toggle').is(':checked')) {
+                                updateSaveStatus('saved');
+                            } else {
+                                updateSaveStatus('saved_manual');
+                            }
+                        }
+                        if (callback) callback(true);
+                    },
+                    error: function(xhr) {
+                        var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal menyimpan';
+                        updateSaveStatus('error', msg);
+                        if (callback) callback(false);
+                    }
+                });
             }
+
+            // Sync Auto-save Toggle
+            $('#auto-save-toggle, #auto-save-toggle-fs').change(function() {
+                let isChecked = $(this).is(':checked');
+                $('#auto-save-toggle, #auto-save-toggle-fs').prop('checked', isChecked);
+                
+                if (isChecked) {
+                    $('#btn-manual-save, #btn-manual-save-fs').addClass('d-none');
+                    performSave();
+                } else {
+                    $('#btn-manual-save, #btn-manual-save-fs').removeClass('d-none');
+                    updateSaveStatus('unsaved');
+                }
+            });
+
+            // Manual Save Button Click
+            $('#btn-manual-save, #btn-manual-save-fs').click(function() {
+                let btn = $(this);
+                btn.prop('disabled', true);
+                performSave(function(success) {
+                    btn.prop('disabled', false);
+                });
+            });
 
             // Cek local storage saat load
             if (localStorage.getItem('hideUsageAlert') === 'true') {
