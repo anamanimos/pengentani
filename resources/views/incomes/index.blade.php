@@ -1074,6 +1074,10 @@
                 let isChecked = $(this).is(':checked');
                 $('#auto-save-toggle, #auto-save-toggle-fs').prop('checked', isChecked);
                 
+                try {
+                    localStorage.setItem('incomes_auto_save', isChecked ? 'true' : 'false');
+                } catch(e) {}
+
                 if (isChecked) {
                     $('#btn-manual-save, #btn-manual-save-fs').addClass('d-none');
                     performSave();
@@ -1093,6 +1097,18 @@
             });
 
             // Cek local storage saat load
+            try {
+                let autoSaveStored = localStorage.getItem('incomes_auto_save');
+                if (autoSaveStored === 'false') {
+                    $('#auto-save-toggle, #auto-save-toggle-fs').prop('checked', false);
+                    $('#btn-manual-save, #btn-manual-save-fs').removeClass('d-none');
+                    setTimeout(function() { updateSaveStatus('unsaved'); }, 200);
+                } else {
+                    $('#auto-save-toggle, #auto-save-toggle-fs').prop('checked', true);
+                    $('#btn-manual-save, #btn-manual-save-fs').addClass('d-none');
+                }
+            } catch(e) {}
+
             if (localStorage.getItem('hideUsageAlert') === 'true') {
                 $('#usage-alert').removeClass('d-flex').addClass('d-none');
                 $('#btn-show-alert').removeClass('d-none');
