@@ -13,22 +13,22 @@
     </div>
 
     <div class="portfolio-balance">
-        <div class="label">Total Nilai Investasi</div>
-        <div class="amount">Rp {{ number_format($totalInvestment + $totalReturn, 0, ',', '.') }}</div>
+        <div class="label" style="color: var(--text-muted);">Total Nilai Investasi</div>
+        <div class="amount" style="color: var(--text-main);">Rp {{ number_format($totalInvestment + $totalReturn, 0, ',', '.') }}</div>
         
         @if($totalInvestment > 0)
             @php $totalRoi = ($totalReturn / $totalInvestment) * 100; @endphp
             <div class="roi">
-                <span style="font-weight: 600; color: {{ $totalRoi >= 0 ? '#d1fae5' : '#fecaca' }}">
+                <span style="font-weight: 600; color: {{ $totalRoi >= 0 ? 'var(--primary)' : 'var(--danger)' }};">
                     {{ $totalRoi >= 0 ? '+' : '' }}{{ number_format($totalRoi, 2, ',', '.') }}% (Rp {{ number_format($totalReturn, 0, ',', '.') }})
                 </span>
             </div>
-            <div style="margin-top: 15px; font-size: 0.85rem; opacity: 0.9;">
-                Estimasi Akhir: <strong>Rp {{ number_format($totalInvestment + $totalEstimatedFinalReturn, 0, ',', '.') }}</strong>
+            <div style="margin-top: 15px; font-size: 0.85rem; color: var(--text-main);">
+                Estimasi Akhir: <strong style="color: var(--primary);">Rp {{ number_format($totalInvestment + $totalEstimatedFinalReturn, 0, ',', '.') }}</strong>
             </div>
         @else
             <div class="roi">
-                <span style="font-weight: 600;">0.00% (Rp 0)</span>
+                <span style="font-weight: 600; color: var(--text-muted);">0.00% (Rp 0)</span>
             </div>
         @endif
     </div>

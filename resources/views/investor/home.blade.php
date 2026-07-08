@@ -22,17 +22,17 @@
     @endphp
 
     <div class="portfolio-balance" style="margin-top: 20px;">
-        <h3 style="color: white; font-weight: 500; font-size: 1.1rem; margin-bottom: 10px;">Total Saldo Anda</h3>
-        <div class="label">Dari Semua Peran (Termasuk Modal)</div>
-        <div class="amount">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
-        <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.85rem;">
+        <h3 style="color: var(--text-main); font-weight: 600; font-size: 1.1rem; margin-bottom: 10px;">Total Saldo Anda</h3>
+        <div class="label" style="color: var(--text-muted);">Dari Semua Peran (Termasuk Modal)</div>
+        <div class="amount" style="color: var(--text-main);">Rp {{ number_format($grandTotal, 0, ',', '.') }}</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.85rem; color: var(--text-main);">
             <div>
-                <div style="opacity: 0.8;">Sudah Ditarik</div>
-                <div style="font-weight: 700; font-size: 1rem;">Rp {{ number_format($grandDitarik, 0, ',', '.') }}</div>
+                <div style="color: var(--text-muted);">Sudah Ditarik</div>
+                <div style="font-weight: 700; font-size: 1rem; color: var(--danger);">Rp {{ number_format($grandDitarik, 0, ',', '.') }}</div>
             </div>
             <div style="text-align: right;">
-                <div style="opacity: 0.8;">Sisa Saldo</div>
-                <div style="font-weight: 700; font-size: 1rem;">Rp {{ number_format($grandTotal - $grandDitarik, 0, ',', '.') }}</div>
+                <div style="color: var(--text-muted);">Sisa Saldo</div>
+                <div style="font-weight: 700; font-size: 1rem; color: var(--primary);">Rp {{ number_format($grandTotal - $grandDitarik, 0, ',', '.') }}</div>
             </div>
         </div>
     </div>

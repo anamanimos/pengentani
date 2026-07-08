@@ -2,11 +2,11 @@
 
 <style>
     details {
-        background: rgba(255, 255, 255, 0.4);
+        background: #ffffff;
         border-radius: 12px;
         padding: 10px 15px;
         margin-bottom: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border: 1px solid #f1f5f9;
     }
     details[open] {
         padding-bottom: 15px;
@@ -40,8 +40,7 @@
     .tab-nav {
         display: flex;
         justify-content: space-between;
-        background: rgba(255, 255, 255, 0.4);
-        backdrop-filter: blur(10px);
+        background: #f1f5f9;
         border-radius: 30px;
         padding: 5px;
         margin: 20px;
@@ -62,7 +61,7 @@
     .tab-btn.active {
         background: var(--primary);
         color: white;
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
     }
     .tab-content {
         display: none;
@@ -120,22 +119,22 @@
 @section('content')
 <div class="hero-card" style="padding-bottom: 20px;">
     <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <a href="{{ route('dashboard') }}" style="color: white; text-decoration: none; display: flex; align-items: center; font-size: 0.9rem; font-weight: 500;">
-            <i class="ki-duotone ki-arrow-left fs-3 me-2 text-white"><span class="path1"></span><span class="path2"></span></i>
+        <a href="{{ route('dashboard') }}" style="color: var(--text-main); text-decoration: none; display: flex; align-items: center; font-size: 0.9rem; font-weight: 500;">
+            <i class="ki-duotone ki-arrow-left fs-3 me-2" style="color: var(--text-main);"><span class="path1"></span><span class="path2"></span></i>
             Kembali
         </a>
         
         @if(auth()->user()->isAdmin() || auth()->user()->isPengelola())
-        <a href="{{ route('pertanians.show', $pertanian->id) }}" style="color: white; text-decoration: none; display: flex; align-items: center; font-size: 0.8rem; font-weight: 600; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; backdrop-filter: blur(5px);">
-            Panel Admin <i class="ki-duotone ki-arrow-right fs-4 ms-2 text-white"><span class="path1"></span><span class="path2"></span></i>
+        <a href="{{ route('pertanians.show', $pertanian->id) }}" style="color: var(--primary); text-decoration: none; display: flex; align-items: center; font-size: 0.8rem; font-weight: 600; background: var(--primary-light); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(22, 163, 74, 0.15);">
+            Panel Admin <i class="ki-duotone ki-arrow-right fs-4 ms-2" style="color: var(--primary);"><span class="path1"></span><span class="path2"></span></i>
         </a>
         @endif
     </div>
 
     <div style="text-align: center; position: relative; z-index: 2;">
-        <div style="font-size: 0.85rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Detail Proyek</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Detail Proyek</div>
         <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2;">{{ $pertanian->name }}</h1>
-        <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.2); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; backdrop-filter: blur(5px);">
+        <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: var(--primary-light); color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(22, 163, 74, 0.15);">
             Status: {{ $pertanian->status }}
         </div>
     </div>

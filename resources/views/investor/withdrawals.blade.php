@@ -3,16 +3,16 @@
 @section('content')
 <div class="hero-card" style="padding-bottom: 20px;">
     <div style="margin-bottom: 20px;">
-        <a href="{{ route('dashboard') }}" style="color: white; text-decoration: none; display: flex; align-items: center; font-size: 0.9rem; font-weight: 500;">
-            <i class="ki-duotone ki-arrow-left fs-3 me-2 text-white"><span class="path1"></span><span class="path2"></span></i>
+        <a href="{{ route('dashboard') }}" style="color: var(--text-main); text-decoration: none; display: flex; align-items: center; font-size: 0.9rem; font-weight: 500;">
+            <i class="ki-duotone ki-arrow-left fs-3 me-2" style="color: var(--text-main);"><span class="path1"></span><span class="path2"></span></i>
             Kembali
         </a>
     </div>
     <div style="text-align: center; position: relative; z-index: 2;">
-        <div style="font-size: 0.85rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Riwayat</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Riwayat</div>
         <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2;">Penarikan Dana</h1>
-        <div style="font-size: 1.4rem; font-weight: 700; margin-top: 10px;">Rp {{ number_format($totalDitarik, 0, ',', '.') }}</div>
-        <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 3px;">Total sudah ditarik</div>
+        <div style="font-size: 1.4rem; font-weight: 700; margin-top: 10px; color: var(--primary);">Rp {{ number_format($totalDitarik, 0, ',', '.') }}</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 3px;">Total sudah ditarik</div>
     </div>
 </div>
 

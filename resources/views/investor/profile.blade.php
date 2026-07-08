@@ -2,16 +2,16 @@
 
 @section('content')
 <div class="hero-card" style="padding-bottom: 30px; text-align: center;">
-    <h2 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 600;">Profil Akun</h2>
+    <h2 style="margin-bottom: 20px; font-size: 1.2rem; font-weight: 600; color: var(--text-main);">Profil Akun</h2>
     
-    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: white; margin: 0 auto 15px auto; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <div class="avatar" style="width: 80px; height: 80px; font-size: 2.5rem; font-weight: 700; margin: 0 auto 15px auto; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.08);">
         {{ strtoupper(substr($user->name, 0, 1)) }}
     </div>
     
-    <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px;">{{ $user->name }}</h1>
-    <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0;">{{ $user->email }}</p>
+    <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; color: var(--text-main);">{{ $user->name }}</h1>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;">{{ $user->email }}</p>
     @if($user->whatsapp)
-        <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;"><i class="ki-duotone ki-whatsapp fs-6 me-1"></i> {{ $user->whatsapp }}</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;"><i class="ki-duotone ki-whatsapp fs-6 me-1" style="color: var(--primary);"></i> {{ $user->whatsapp }}</p>
     @endif
 </div>
 
