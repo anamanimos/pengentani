@@ -31,7 +31,7 @@ class WaGatewayService
                 ->withHeaders([
                     'X-Device-Id' => 'tanisync',
                     'Content-Type' => 'application/json',
-                ])->post('https://wag.anam.ch/send/message', [
+                ])->post('https://wag.nams.my.id/send/message', [
                     'phone' => $phone,
                     'message' => $message,
                     'isGroup' => false,

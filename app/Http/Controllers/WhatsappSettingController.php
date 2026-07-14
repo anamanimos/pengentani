@@ -27,7 +27,7 @@ class WhatsappSettingController extends Controller
             $response = Http::withBasicAuth($username, $password)
                 ->withHeaders([
                     'X-Device-Id' => 'tanisync',
-                ])->get('https://wag.anam.ch/app/status');
+                ])->get('https://wag.nams.my.id/app/status');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -48,7 +48,7 @@ class WhatsappSettingController extends Controller
                 $loginResponse = Http::withBasicAuth($username, $password)
                     ->withHeaders([
                         'X-Device-Id' => 'tanisync',
-                    ])->get('https://wag.anam.ch/app/login');
+                    ])->get('https://wag.nams.my.id/app/login');
 
                 if ($loginResponse->successful()) {
                     $loginData = $loginResponse->json();

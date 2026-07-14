@@ -72,7 +72,7 @@ class WhatsappLoginController extends Controller
                     $proofName = !empty($caption) ? trim($caption) : now()->format('Y-m-d H:i:s');
                     
                     // Download image
-                    $imageUrl = "https://wag.anam.ch/" . ltrim($imagePathUrl, '/');
+                    $imageUrl = "https://wag.nams.my.id/" . ltrim($imagePathUrl, '/');
                     try {
                         $response = Http::timeout(30)->get($imageUrl);
                         
