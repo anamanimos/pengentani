@@ -130,6 +130,15 @@ class TransactionProofController extends Controller
             'workerJobs.category'
         ]);
 
+        // Sort relations by date
+        $transactionProof->setRelation('purchaseItems', $transactionProof->purchaseItems->sortBy(function($item) {
+            return $item->purchase->date ?? '';
+        })->values());
+
+        $transactionProof->setRelation('incomes', $transactionProof->incomes->sortBy('date')->values());
+
+        $transactionProof->setRelation('workerJobs', $transactionProof->workerJobs->sortBy('date')->values());
+
         $totalPurchases = $transactionProof->purchaseItems->sum('total_price');
         $totalIncomes = $transactionProof->incomes->sum('amount');
         $totalWages = $transactionProof->workerJobs->sum('wage');
