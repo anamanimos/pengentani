@@ -2,6 +2,68 @@
 
 @section('title', 'Kelola Bukti Transaksi')
 
+<style>
+    .proof-card-item {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 180px;
+        background-color: #000;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .proof-card-item .proof-img {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.4s ease;
+    }
+    
+    .proof-card-item .proof-pdf-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #1e1e2d;
+        color: #f1416c;
+        transition: transform 0.4s ease;
+    }
+    
+    .proof-card-item:hover .proof-img,
+    .proof-card-item:hover .proof-pdf-placeholder {
+        transform: scale(1.1);
+    }
+    
+    .proof-card-item .proof-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.85) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 12px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 2;
+        pointer-events: none;
+    }
+    
+    .proof-card-item:hover .proof-overlay {
+        opacity: 1;
+    }
+    
+    .proof-overlay-btn,
+    .proof-overlay-badge {
+        pointer-events: auto;
+    }
+</style>
+
 @section('page_title', 'Bukti Transaksi')
 
 @section('page_actions')
@@ -93,70 +155,69 @@
                             </form>
                         </div>
                     </div>
-                    <div class="card-body pt-5">
-                        <div class="row g-5">
+                    <div class="card-body p-0">
+                        <div class="row g-0">
                             @forelse($proofs as $proof)
-                            <div class="col-md-3 col-sm-6 proof-card" data-id="{{ $proof->id }}">
-                                <div class="card shadow-sm border-0 position-relative overflow-hidden" style="border-radius: 0.475rem;">
+                            <div class="col-xl-3 col-md-4 col-sm-6 proof-card" data-id="{{ $proof->id }}">
+                                <div class="proof-card-item">
                                     <a href="{{ Storage::url($proof->file_path) }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
                                     
-                                    <div class="h-150px d-flex justify-content-center align-items-center bg-light">
-                                        @if(in_array(pathinfo($proof->file_path, PATHINFO_EXTENSION), ['pdf']))
-                                            <i class="fas fa-file-pdf fs-3x text-danger"></i>
-                                        @else
-                                            <div class="w-100 h-100" style="background-image:url('{{ Storage::url($proof->file_path) }}'); background-size: cover; background-position: center;"></div>
-                                        @endif
-                                    </div>
+                                    @if(in_array(strtolower(pathinfo($proof->file_path, PATHINFO_EXTENSION)), ['pdf']))
+                                        <div class="proof-pdf-placeholder">
+                                            <i class="fas fa-file-pdf fs-2x mb-1 text-danger"></i>
+                                            <span class="fs-9 fw-bold text-gray-400 text-uppercase">PDF</span>
+                                        </div>
+                                    @else
+                                        <div class="proof-img" style="background-image:url('{{ Storage::url($proof->file_path) }}');"></div>
+                                    @endif
                                     
                                     <!-- Overlay -->
-                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-between p-3 pe-none" 
-                                         style="background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);">
-                                        
+                                    <div class="proof-overlay">
                                         <!-- Top Action (Delete) -->
-                                        <div class="d-flex justify-content-between pe-auto" style="z-index: 2; position: relative;">
-                                            <div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="proof-overlay-badge" style="z-index: 3;">
                                                 @if($proof->is_used)
-                                                    <span class="badge badge-success fw-bold" title="Terikat dengan data">Sudah Digunakan</span>
+                                                    <span class="badge badge-success fw-bold fs-9 py-1" title="Terikat dengan data">Sudah Digunakan</span>
                                                 @else
-                                                    <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75" title="Belum terikat data">Belum Digunakan</span>
+                                                    <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75 fs-9 py-1" title="Belum terikat data">Belum Digunakan</span>
                                                 @endif
                                             </div>
-                                            <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus bukti ini?');">
+                                            <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline proof-overlay-btn" style="z-index: 3;" onsubmit="return confirm('Hapus bukti ini?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-75" title="Hapus Bukti">
-                                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                                <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-90 w-25px h-25px" title="Hapus Bukti">
+                                                    <i class="ki-duotone ki-trash fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                                                 </button>
                                             </form>
                                         </div>
                                         
                                         <!-- Bottom Info -->
-                                        <div class="d-flex justify-content-between align-items-end pe-auto" style="z-index: 2; position: relative;">
+                                        <div class="d-flex justify-content-between align-items-end">
                                             <div class="text-white text-truncate pe-2 w-100">
-                                                <span class="fw-bold d-block text-truncate proof-name-display" title="{{ $proof->name }}">{{ $proof->name }}</span>
-                                                <span class="fs-8 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
+                                                <span class="fw-bold d-block text-truncate proof-name-display fs-7" title="{{ $proof->name }}">{{ $proof->name }}</span>
+                                                <span class="fs-9 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
                                             </div>
                                             <!-- Rename and History Buttons -->
-                                            <div class="d-flex gap-1">
+                                            <div class="d-flex gap-1 proof-overlay-btn" style="z-index: 3;">
                                                 @if(!empty($proof->rename_history))
-                                                    <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-history" 
+                                                    <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-view-history" 
                                                             title="Lihat Riwayat Nama" 
                                                             data-name="{{ $proof->name }}"
                                                             data-history="{{ json_encode($proof->rename_history) }}">
-                                                        <i class="fa fa-history text-gray-700"></i>
+                                                        <i class="fa fa-history text-gray-700 fs-9"></i>
                                                     </button>
                                                 @endif
-                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-detail" 
+                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-view-detail" 
                                                         title="Detail Transaksi" 
                                                         data-id="{{ $proof->id }}">
-                                                    <i class="ki-duotone ki-eye fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                                    <i class="ki-duotone ki-eye fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                                 </button>
-                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-rename" 
+                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-rename" 
                                                         title="Ganti Nama" 
                                                         data-id="{{ $proof->id }}" 
                                                         data-name="{{ $proof->name }}"
                                                         data-url="{{ route('transaction-proofs.rename', $proof->id) }}">
-                                                    <i class="ki-duotone ki-pencil fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span></i>
+                                                    <i class="ki-duotone ki-pencil fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span></i>
                                                 </button>
                                             </div>
                                         </div>
