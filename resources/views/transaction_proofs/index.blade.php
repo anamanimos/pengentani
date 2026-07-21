@@ -96,7 +96,7 @@
                     <div class="card-body pt-5">
                         <div class="row g-5">
                             @forelse($proofs as $proof)
-                            <div class="col-md-3 col-sm-6">
+                            <div class="col-md-3 col-sm-6 proof-card" data-id="{{ $proof->id }}">
                                 <div class="card shadow-sm border-0 position-relative overflow-hidden" style="border-radius: 0.475rem;">
                                     <a href="{{ Storage::url($proof->file_path) }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
                                     
@@ -146,9 +146,11 @@
                                                         <i class="fa fa-history text-gray-700"></i>
                                                     </button>
                                                 @endif
-                                                <a href="{{ route('transaction-proofs.show', $proof->id) }}" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75" title="Detail Transaksi">
+                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-detail" 
+                                                        title="Detail Transaksi" 
+                                                        data-id="{{ $proof->id }}">
                                                     <i class="ki-duotone ki-eye fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                                                </a>
+                                                </button>
                                                 <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-rename" 
                                                         title="Ganti Nama" 
                                                         data-id="{{ $proof->id }}" 
@@ -201,6 +203,31 @@
                     <button type="submit" class="btn btn-primary">Upload</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Bukti Transaksi -->
+<div class="modal fade" id="kt_modal_proof_detail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-prev" title="Bukti Sebelumnya">
+                        <i class="fa-solid fa-chevron-left fs-4 text-gray-700"></i>
+                    </button>
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-next" title="Bukti Selanjutnya">
+                        <i class="fa-solid fa-chevron-right fs-4 text-gray-700"></i>
+                    </button>
+                    <h3 class="modal-title ms-3 fw-bold text-gray-800" id="modal_proof_title">Detail Bukti Transaksi</h3>
+                </div>
+                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body p-6 bg-light" id="modal_proof_body">
+                <!-- AJAX loaded content will be placed here -->
+            </div>
         </div>
     </div>
 </div>
@@ -398,6 +425,110 @@
                 },
                 width: '600px'
             });
+        });
+
+        // Modal navigation variables
+        let activeProofIds = [];
+        let currentProofIndex = -1;
+
+        // Function to populate activeProofIds array
+        function updateActiveProofIds() {
+            activeProofIds = [];
+            $('.proof-card').each(function() {
+                let id = parseInt($(this).data('id'));
+                if (id) {
+                    activeProofIds.push(id);
+                }
+            });
+        }
+
+        // Initialize active proof IDs
+        updateActiveProofIds();
+
+        // Re-evaluate whenever elements change or on page ready
+        $(document).ajaxComplete(function() {
+            updateActiveProofIds();
+        });
+
+        // Function to load proof details into modal
+        function loadProofDetail(proofId) {
+            let container = $('#modal_proof_body');
+            
+            // Show loading spinner
+            container.html(`
+                <div class="d-flex justify-content-center align-items-center py-20">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+
+            // Find current index
+            currentProofIndex = activeProofIds.indexOf(proofId);
+
+            // Enable/disable navigation buttons
+            $('.btn-modal-prev').prop('disabled', currentProofIndex <= 0);
+            $('.btn-modal-next').prop('disabled', currentProofIndex === -1 || currentProofIndex >= activeProofIds.length - 1);
+
+            // Fetch detail content via AJAX
+            $.ajax({
+                url: `/console/transaction-proofs/${proofId}`,
+                type: 'GET',
+                dataType: 'html',
+                success: function(html) {
+                    container.html(html);
+                    
+                    // Update modal title with current proof name
+                    let proofName = container.find('.modal-proof-display-name').text() || 'Detail Bukti Transaksi';
+                    $('#modal_proof_title').text('Detail Bukti: ' + proofName);
+                },
+                error: function(xhr) {
+                    let msg = "Gagal memuat rincian bukti transaksi.";
+                    if (xhr.status === 403) {
+                        msg = "Anda tidak memiliki akses untuk bukti transaksi ini.";
+                    }
+                    container.html(`
+                        <div class="alert alert-danger d-flex align-items-center p-5 m-5">
+                            <i class="ki-duotone ki-information fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            <div class="d-flex flex-column">
+                                <h4 class="mb-1 text-danger">Terjadi Kesalahan</h4>
+                                <span>${msg}</span>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Handle eye/detail button click
+        $(document).on('click', '.btn-view-detail', function() {
+            let button = $(this);
+            let proofId = parseInt(button.data('id'));
+            
+            // Update array before loading (in case cards were deleted)
+            updateActiveProofIds();
+
+            // Load details
+            loadProofDetail(proofId);
+
+            // Open modal
+            $('#kt_modal_proof_detail').modal('show');
+        });
+
+        // Handle prev button click
+        $('.btn-modal-prev').on('click', function() {
+            if (currentProofIndex > 0) {
+                let prevId = activeProofIds[currentProofIndex - 1];
+                loadProofDetail(prevId);
+            }
+        });
+
+        // Handle next button click
+        $('.btn-modal-next').on('click', function() {
+            if (currentProofIndex !== -1 && currentProofIndex < activeProofIds.length - 1) {
+                let nextId = activeProofIds[currentProofIndex + 1];
+                loadProofDetail(nextId);
+            }
         });
     });
 </script>

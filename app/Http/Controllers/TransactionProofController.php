@@ -114,7 +114,7 @@ class TransactionProofController extends Controller
         ]);
     }
 
-    public function show(TransactionProof $transactionProof)
+    public function show(Request $request, TransactionProof $transactionProof)
     {
         if ($transactionProof->user_id !== Auth::id()) {
             abort(403);
@@ -145,13 +145,19 @@ class TransactionProofController extends Controller
         $totalKonsumsi = $transactionProof->workerJobs->sum('konsumsi');
         $totalWorkerJobs = $totalWages + $totalKonsumsi;
 
-        return view('transaction_proofs.show', compact(
+        $compactData = compact(
             'transactionProof',
             'totalPurchases',
             'totalIncomes',
             'totalWages',
             'totalKonsumsi',
             'totalWorkerJobs'
-        ));
+        );
+
+        if ($request->ajax()) {
+            return view('transaction_proofs.modal_content', $compactData);
+        }
+
+        return view('transaction_proofs.show', $compactData);
     }
 }
