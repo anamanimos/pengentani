@@ -107,6 +107,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::resource('pertanians.updates', \App\Http\Controllers\PertanianUpdateController::class)->except(['show']);
 
     // Bukti Transaksi
+    Route::patch('transaction-proofs/{transaction_proof}/rename', [\App\Http\Controllers\TransactionProofController::class, 'rename'])->name('transaction-proofs.rename');
     Route::resource('transaction-proofs', \App\Http\Controllers\TransactionProofController::class)->only(['index', 'store', 'destroy']);
 });
 

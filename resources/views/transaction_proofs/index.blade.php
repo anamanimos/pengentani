@@ -131,10 +131,28 @@
                                         </div>
                                         
                                         <!-- Bottom Info -->
-                                        <div class="d-flex justify-content-between align-items-end">
+                                        <div class="d-flex justify-content-between align-items-end pe-auto" style="z-index: 2; position: relative;">
                                             <div class="text-white text-truncate pe-2 w-100">
-                                                <span class="fw-bold d-block text-truncate" title="{{ $proof->name }}">{{ $proof->name }}</span>
+                                                <span class="fw-bold d-block text-truncate proof-name-display" title="{{ $proof->name }}">{{ $proof->name }}</span>
                                                 <span class="fs-8 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
+                                            </div>
+                                            <!-- Rename and History Buttons -->
+                                            <div class="d-flex gap-1">
+                                                @if(!empty($proof->rename_history))
+                                                    <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-history" 
+                                                            title="Lihat Riwayat Nama" 
+                                                            data-name="{{ $proof->name }}"
+                                                            data-history="{{ json_encode($proof->rename_history) }}">
+                                                        <i class="fa fa-history text-gray-700"></i>
+                                                    </button>
+                                                @endif
+                                                <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-rename" 
+                                                        title="Ganti Nama" 
+                                                        data-id="{{ $proof->id }}" 
+                                                        data-name="{{ $proof->name }}"
+                                                        data-url="{{ route('transaction-proofs.rename', $proof->id) }}">
+                                                    <i class="ki-duotone ki-pencil fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -232,6 +250,152 @@
                 alert("Upload gagal: " + (response.message || "Kesalahan server"));
             });
         }
+    });
+
+    $(document).ready(function() {
+        // Handle Rename click
+        $(document).on('click', '.btn-rename', function() {
+            let button = $(this);
+            let url = button.data('url');
+            let currentName = button.data('name');
+            let container = button.closest('.position-relative'); // container card
+            let nameDisplay = container.find('.proof-name-display');
+
+            Swal.fire({
+                title: 'Ubah Nama Bukti',
+                input: 'text',
+                inputValue: currentName,
+                inputPlaceholder: 'Masukkan nama bukti baru...',
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-light'
+                },
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Nama tidak boleh kosong!'
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let newName = result.value;
+                    
+                    Swal.fire({
+                        title: 'Mohon tunggu...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        }
+                    });
+
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            _method: 'PATCH',
+                            name: newName
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            Swal.close();
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    }
+                                });
+                                
+                                // Update dynamic values
+                                nameDisplay.text(response.name).attr('title', response.name);
+                                button.data('name', response.name);
+                                
+                                // Find or create the history button
+                                let historyBtn = container.find('.btn-view-history');
+                                if (historyBtn.length > 0) {
+                                    historyBtn.data('name', response.name);
+                                    historyBtn.data('history', response.rename_history);
+                                } else {
+                                    // Prepend history button if it was newly created
+                                    let btnContainer = button.parent();
+                                    let newHistoryBtn = `
+                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-history" 
+                                                title="Lihat Riwayat Nama" 
+                                                data-name="${response.name}"
+                                                data-history='${JSON.stringify(response.rename_history)}'>
+                                            <i class="fa fa-history text-gray-700"></i>
+                                        </button>
+                                    `;
+                                    btnContainer.prepend(newHistoryBtn);
+                                }
+                            } else {
+                                Swal.fire({
+                                    title: 'Gagal!',
+                                    text: response.message || 'Gagal mengubah nama',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.close();
+                            let msg = "Terjadi kesalahan saat memproses data.";
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            Swal.fire({
+                                title: 'Gagal!',
+                                text: msg,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Handle History click
+        $(document).on('click', '.btn-view-history', function() {
+            let button = $(this);
+            let name = button.data('name');
+            let history = button.data('history'); // Should be an array of objects
+            
+            if (typeof history === 'string') {
+                history = JSON.parse(history);
+            }
+
+            let html = '<div class="table-responsive"><table class="table table-bordered table-striped fs-7 text-start align-middle">';
+            html += '<thead><tr class="fw-bold text-gray-800 bg-light"><th>Nama Lama</th><th>Nama Baru</th><th>Pengubah</th><th>Tanggal</th></tr></thead><tbody>';
+            
+            history.forEach(function(item) {
+                html += `<tr>
+                    <td class="text-truncate" style="max-width: 120px;" title="${item.old_name}">${item.old_name}</td>
+                    <td class="text-truncate" style="max-width: 120px;" title="${item.new_name}">${item.new_name}</td>
+                    <td>${item.changed_by}</td>
+                    <td class="text-nowrap">${item.changed_at}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+
+            Swal.fire({
+                title: 'Riwayat Nama: ' + name,
+                html: html,
+                icon: 'info',
+                confirmButtonText: 'Tutup',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                width: '600px'
+            });
+        });
     });
 </script>
 @endpush

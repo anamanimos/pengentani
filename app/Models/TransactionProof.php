@@ -13,6 +13,11 @@ class TransactionProof extends Model
         'user_id',
         'name',
         'file_path',
+        'rename_history',
+    ];
+
+    protected $casts = [
+        'rename_history' => 'array',
     ];
 
     public function user()

@@ -77,4 +77,40 @@ class TransactionProofController extends Controller
 
         return redirect()->back()->with('success', 'Bukti transaksi berhasil dihapus');
     }
+
+    public function rename(Request $request, TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $oldName = $transactionProof->name;
+        $newName = $request->name;
+
+        if ($oldName !== $newName) {
+            $history = $transactionProof->rename_history ?? [];
+            $history[] = [
+                'old_name' => $oldName,
+                'new_name' => $newName,
+                'changed_by' => Auth::user()->name,
+                'changed_at' => now()->format('d M Y, H:i')
+            ];
+
+            $transactionProof->update([
+                'name' => $newName,
+                'rename_history' => $history
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Nama bukti transaksi berhasil diubah',
+            'name' => $newName,
+            'rename_history' => $transactionProof->rename_history
+        ]);
+    }
 }
