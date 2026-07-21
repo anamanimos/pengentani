@@ -9,7 +9,7 @@ class JobCategoryController extends Controller
 {
     public function index()
     {
-        $categories = JobCategory::latest()->get();
+        $categories = JobCategory::withCount('workerJobs')->latest()->get();
         return view('job_categories.index', compact('categories'));
     }
 
@@ -21,7 +21,7 @@ class JobCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:job_categories,name',
+            'name' => 'required|string|max:255|unique:job_categories,name,NULL,id,deleted_at,NULL',
             'description' => 'nullable|string'
         ]);
 
@@ -38,7 +38,7 @@ class JobCategoryController extends Controller
     public function update(Request $request, JobCategory $jobCategory)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:job_categories,name,' . $jobCategory->id,
+            'name' => 'required|string|max:255|unique:job_categories,name,' . $jobCategory->id . ',id,deleted_at,NULL',
             'description' => 'nullable|string'
         ]);
 
@@ -47,9 +47,17 @@ class JobCategoryController extends Controller
         return redirect()->route('job-categories.index')->with('success', 'Kategori pekerjaan berhasil diperbarui.');
     }
 
-    public function destroy(JobCategory $jobCategory)
+    public function destroy(Request $request, JobCategory $jobCategory)
     {
         $jobCategory->delete();
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kategori pekerjaan berhasil dihapus.'
+            ]);
+        }
+        
         return redirect()->route('job-categories.index')->with('success', 'Kategori pekerjaan berhasil dihapus.');
     }
 }

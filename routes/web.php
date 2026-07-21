@@ -83,7 +83,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('worker-jobs/ajax-worker', [\App\Http\Controllers\WorkerJobController::class, 'storeWorkerAjax'])->name('worker-jobs.ajax-worker');
     Route::post('worker-jobs/ajax-category', [\App\Http\Controllers\WorkerJobController::class, 'storeCategoryAjax'])->name('worker-jobs.ajax-category');
     Route::get('worker-jobs/export', [\App\Http\Controllers\WorkerJobController::class, 'export'])->name('worker-jobs.export');
-    Route::resource('worker-jobs/categories', \App\Http\Controllers\JobCategoryController::class)->names('job-categories');
+    Route::resource('worker-jobs/categories', \App\Http\Controllers\JobCategoryController::class)->names('job-categories')->parameters(['categories' => 'job_category']);
     Route::resource('worker-jobs', \App\Http\Controllers\WorkerJobController::class)->except(['create', 'show', 'edit', 'update']);
 
     // Pencatatan Pendapatan (Incomes)

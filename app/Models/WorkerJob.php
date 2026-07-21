@@ -23,7 +23,7 @@ class WorkerJob extends Model
 
     public function category()
     {
-        return $this->belongsTo(JobCategory::class, 'job_category_id');
+        return $this->belongsTo(JobCategory::class, 'job_category_id')->withTrashed();
     }
 
     public function purchaseItems()
