@@ -209,17 +209,30 @@
 
 <!-- Modal Detail Bukti Transaksi -->
 <div class="modal fade" id="kt_modal_proof_detail" tabindex="-1" aria-hidden="true">
+    <!-- Floating Navigation Buttons (Desktop only) -->
+    <button type="button" class="btn btn-icon btn-circle btn-color-gray-600 btn-active-color-primary bg-white shadow btn-modal-prev position-fixed d-none d-md-flex" 
+            style="left: 30px; top: 50%; transform: translateY(-50%); z-index: 9999; width: 60px; height: 60px; border: 1px solid #e1e3ea; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;" 
+            title="Sebelumnya">
+        <i class="fa-solid fa-chevron-left fs-1"></i>
+    </button>
+    <button type="button" class="btn btn-icon btn-circle btn-color-gray-600 btn-active-color-primary bg-white shadow btn-modal-next position-fixed d-none d-md-flex" 
+            style="right: 30px; top: 50%; transform: translateY(-50%); z-index: 9999; width: 60px; height: 60px; border: 1px solid #e1e3ea; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;" 
+            title="Selanjutnya">
+        <i class="fa-solid fa-chevron-right fs-1"></i>
+    </button>
+
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content">
             <div class="modal-header py-3">
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-prev" title="Bukti Sebelumnya">
+                    <!-- Small Navigation Buttons (Mobile only) -->
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-prev d-inline-flex d-md-none" title="Bukti Sebelumnya">
                         <i class="fa-solid fa-chevron-left fs-4 text-gray-700"></i>
                     </button>
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-next" title="Bukti Selanjutnya">
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-next d-inline-flex d-md-none" title="Bukti Selanjutnya">
                         <i class="fa-solid fa-chevron-right fs-4 text-gray-700"></i>
                     </button>
-                    <h3 class="modal-title ms-3 fw-bold text-gray-800" id="modal_proof_title">Detail Bukti Transaksi</h3>
+                    <h3 class="modal-title ms-3 ms-md-0 fw-bold text-gray-800" id="modal_proof_title">Detail Bukti Transaksi</h3>
                 </div>
                 <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
                     <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
