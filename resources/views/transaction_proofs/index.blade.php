@@ -543,6 +543,24 @@
                 loadProofDetail(nextId);
             }
         });
+
+        // Keyboard arrow navigation
+        $(document).on('keydown', function(e) {
+            // Only navigate if the detail modal is currently open/visible
+            if ($('#kt_modal_proof_detail').hasClass('show')) {
+                if (e.which === 37) { // Left arrow key
+                    if (currentProofIndex > 0) {
+                        let prevId = activeProofIds[currentProofIndex - 1];
+                        loadProofDetail(prevId);
+                    }
+                } else if (e.which === 39) { // Right arrow key
+                    if (currentProofIndex !== -1 && currentProofIndex < activeProofIds.length - 1) {
+                        let nextId = activeProofIds[currentProofIndex + 1];
+                        loadProofDetail(nextId);
+                    }
+                }
+            }
+        });
     });
 </script>
 @endpush
