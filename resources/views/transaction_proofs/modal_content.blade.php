@@ -1,27 +1,22 @@
 <div class="row g-5">
     <!-- Left Column: Compact Preview (4 columns) -->
-    <div class="col-xl-4">
-        <div class="card card-flush shadow-sm">
-            <div class="card-body p-4 text-center">
-                <h4 class="fw-bold text-gray-800 text-start mb-3 fs-6">Pratinjau Bukti</h4>
-                <div class="mb-4 overflow-hidden d-flex justify-content-center align-items-center bg-light rounded border" style="height: 380px;">
-                    @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
-                        <iframe src="{{ Storage::url($transactionProof->file_path) }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
-                    @else
-                        <a href="{{ Storage::url($transactionProof->file_path) }}" data-fslightbox="gallery_detail_modal" title="Klik untuk memperbesar">
-                            <img src="{{ Storage::url($transactionProof->file_path) }}" class="img-fluid rounded" style="max-height: 380px; width: auto; object-fit: contain;" alt="Bukti Transaksi" />
-                        </a>
-                    @endif
-                </div>
-                <div class="d-flex gap-2 justify-content-center">
-                    <a href="{{ Storage::url($transactionProof->file_path) }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
-                        <i class="ki-duotone ki-dots-square fs-5 me-1"></i> Tab Baru
-                    </a>
-                    <a href="{{ Storage::url($transactionProof->file_path) }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-xs btn-primary fw-bold px-3 py-2 fs-8">
-                        <i class="ki-duotone ki-file-down fs-5 me-1"></i> Download
-                    </a>
-                </div>
-            </div>
+    <div class="col-xl-4 text-center">
+        <div class="mb-4 overflow-hidden d-flex justify-content-center align-items-center bg-light rounded border shadow-sm" style="height: 420px;">
+            @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
+                <iframe src="{{ Storage::url($transactionProof->file_path) }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
+            @else
+                <a href="{{ Storage::url($transactionProof->file_path) }}" data-fslightbox="gallery_detail_modal" class="d-block w-100 h-100 d-flex align-items-center justify-content-center" title="Klik untuk memperbesar">
+                    <img src="{{ Storage::url($transactionProof->file_path) }}" class="img-fluid rounded" style="max-height: 420px; max-width: 100%; object-fit: contain;" alt="Bukti Transaksi" />
+                </a>
+            @endif
+        </div>
+        <div class="d-flex gap-2 justify-content-center mb-5 mb-xl-0">
+            <a href="{{ Storage::url($transactionProof->file_path) }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
+                <i class="ki-duotone ki-dots-square fs-5 me-1"></i> Tab Baru
+            </a>
+            <a href="{{ Storage::url($transactionProof->file_path) }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-xs btn-primary fw-bold px-3 py-2 fs-8">
+                <i class="ki-duotone ki-file-down fs-5 me-1"></i> Download
+            </a>
         </div>
     </div>
 
