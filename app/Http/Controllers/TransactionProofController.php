@@ -121,7 +121,7 @@ class TransactionProofController extends Controller
         }
 
         $transactionProof->load([
-            'purchaseItems.purchase.kebun',
+            'purchaseItems.purchase.pertanian.kebun',
             'purchaseItems.purchaseCategory',
             'incomes.pertanian',
             'incomes.category',

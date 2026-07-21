@@ -154,7 +154,7 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $item->purchase->date ?? '-' }}</td>
-                                                <td>{{ $item->purchase->kebun->name ?? '-' }}</td>
+                                                <td>{{ $item->purchase->pertanian->kebun->name ?? '-' }}</td>
                                                 <td>
                                                     <span class="text-gray-800 fw-bold">{{ $item->category }}</span>
                                                     @if($item->description)
