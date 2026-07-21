@@ -8,125 +8,97 @@
 
 @section('page_actions')
 <a href="{{ route('transaction-proofs.index') }}" class="btn btn-sm fw-bold btn-secondary">
-    <i class="ki-duotone ki-black-left fs-4 me-1"></i> Kembali ke Galeri
+    <i class="ki-duotone ki-black-left fs-5 me-1"></i> Kembali ke Galeri
 </a>
 @endsection
 
 @section('content')
 <div class="app-content flex-column-fluid">
     <div class="app-container container-fluid">
-        <div class="row g-5 g-xl-8">
-            <!-- Left Column: Large Preview (5 columns) -->
-            <div class="col-xl-5">
-                <div class="card card-flush shadow-sm h-xl-100">
-                    <div class="card-header pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-gray-800">Pratinjau Bukti Transaksi</span>
-                            <span class="text-gray-500 mt-1 fw-semibold fs-7">Format berkas: {{ strtoupper(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)) }}</span>
-                        </h3>
-                    </div>
-                    <div class="card-body pt-2 text-center">
-                        <div class="mb-5 overflow-hidden d-flex justify-content-center align-items-center bg-light rounded" style="min-height: 400px;">
+        <div class="row g-5">
+            <!-- Left Column: Compact Preview (4 columns) -->
+            <div class="col-xl-4">
+                <div class="card card-flush shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        <h4 class="fw-bold text-gray-800 text-start mb-3 fs-6">Pratinjau Bukti</h4>
+                        <div class="mb-4 overflow-hidden d-flex justify-content-center align-items-center bg-light rounded border" style="height: 380px;">
                             @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
-                                <iframe src="{{ Storage::url($transactionProof->file_path) }}" class="w-100 rounded" style="min-height: 550px; border: none;"></iframe>
+                                <iframe src="{{ Storage::url($transactionProof->file_path) }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
                             @else
                                 <a href="{{ Storage::url($transactionProof->file_path) }}" data-fslightbox="gallery_detail" title="Klik untuk memperbesar">
-                                    <img src="{{ Storage::url($transactionProof->file_path) }}" class="img-fluid rounded border shadow-sm" style="max-height: 600px; width: auto;" alt="Bukti Transaksi" />
+                                    <img src="{{ Storage::url($transactionProof->file_path) }}" class="img-fluid rounded" style="max-height: 380px; width: auto; object-fit: contain;" alt="Bukti Transaksi" />
                                 </a>
                             @endif
                         </div>
                         <div class="d-flex gap-2 justify-content-center">
-                            <a href="{{ Storage::url($transactionProof->file_path) }}" target="_blank" class="btn btn-sm btn-light-primary fw-bold">
-                                <i class="ki-duotone ki-dots-square fs-4 me-1"></i> Buka di Tab Baru
+                            <a href="{{ Storage::url($transactionProof->file_path) }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
+                                <i class="ki-duotone ki-dots-square fs-5 me-1"></i> Tab Baru
                             </a>
-                            <a href="{{ Storage::url($transactionProof->file_path) }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-sm btn-primary fw-bold">
-                                <i class="ki-duotone ki-file-down fs-4 me-1"></i> Download Berkas Asli
+                            <a href="{{ Storage::url($transactionProof->file_path) }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-xs btn-primary fw-bold px-3 py-2 fs-8">
+                                <i class="ki-duotone ki-file-down fs-5 me-1"></i> Download
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Transactions & Totals (7 columns) -->
-            <div class="col-xl-7">
-                <!-- Summary Card -->
-                <div class="card card-flush shadow-sm mb-5">
-                    <div class="card-header pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-gray-800">Informasi & Ringkasan Bukti</span>
-                            <span class="text-gray-500 mt-1 fw-semibold fs-7">Diunggah pada: {{ $transactionProof->created_at->format('d M Y, H:i') }}</span>
-                        </h3>
-                    </div>
-                    <div class="card-body pt-2">
-                        <div class="row g-4 mb-4">
-                            <!-- Incomes Summary -->
-                            <div class="col-md-4">
-                                <div class="alert alert-light-success d-flex align-items-center p-4 rounded mb-0 h-100">
-                                    <i class="ki-duotone ki-arrow-up fs-2hx text-success me-3"><span class="path1"></span><span class="path2"></span></i>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-semibold text-gray-600 fs-7">Total Pendapatan</span>
-                                        <span class="fw-bold text-success fs-5">Rp {{ number_format($totalIncomes, 0, ',', '.') }}</span>
-                                    </div>
+            <!-- Right Column: Slim Summary & Tables (8 columns) -->
+            <div class="col-xl-8">
+                <!-- Slim Summary Bar -->
+                @php
+                    $balance = $totalIncomes - ($totalPurchases + $totalWorkerJobs);
+                @endphp
+                <div class="card card-flush shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="d-flex flex-column">
+                                <span class="fs-8 text-gray-500 fw-semibold">Nama Bukti & Tanggal Unggah</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fs-6 fw-bold text-gray-800">{{ $transactionProof->name }}</span>
+                                    <span class="badge badge-light fs-8 text-gray-500">{{ $transactionProof->created_at->format('d M Y, H:i') }}</span>
                                 </div>
                             </div>
                             
-                            <!-- Purchases Summary -->
-                            <div class="col-md-4">
-                                <div class="alert alert-light-danger d-flex align-items-center p-4 rounded mb-0 h-100">
-                                    <i class="ki-duotone ki-arrow-down fs-2hx text-danger me-3"><span class="path1"></span><span class="path2"></span></i>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-semibold text-gray-600 fs-7">Total Pembelian</span>
-                                        <span class="fw-bold text-danger fs-5">Rp {{ number_format($totalPurchases, 0, ',', '.') }}</span>
-                                    </div>
+                            <div class="d-flex align-items-center gap-4">
+                                <div class="d-flex flex-column text-end">
+                                    <span class="fs-8 text-gray-500 fw-semibold">Pendapatan</span>
+                                    <span class="fs-7 fw-bold text-success">Rp {{ number_format($totalIncomes, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="d-flex flex-column text-end">
+                                    <span class="fs-8 text-gray-500 fw-semibold">Pembelian</span>
+                                    <span class="fs-7 fw-bold text-danger">Rp {{ number_format($totalPurchases, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="d-flex flex-column text-end">
+                                    <span class="fs-8 text-gray-500 fw-semibold">Upah Pekerja</span>
+                                    <span class="fs-7 fw-bold text-warning">Rp {{ number_format($totalWorkerJobs, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="d-flex flex-column text-end ps-3 border-start">
+                                    <span class="fs-8 text-gray-500 fw-semibold">Sisa Aliran Dana</span>
+                                    <span class="fs-6 fw-bold {{ $balance >= 0 ? 'text-success' : 'text-danger' }}">
+                                        Rp {{ number_format($balance, 0, ',', '.') }}
+                                    </span>
                                 </div>
                             </div>
-
-                            <!-- Worker Jobs Summary -->
-                            <div class="col-md-4">
-                                <div class="alert alert-light-warning d-flex align-items-center p-4 rounded mb-0 h-100">
-                                    <i class="ki-duotone ki-profile-user fs-2hx text-warning me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-semibold text-gray-600 fs-7">Total Upah Pekerja</span>
-                                        <span class="fw-bold text-warning fs-5">Rp {{ number_format($totalWorkerJobs, 0, ',', '.') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Grand Total Balance -->
-                        @php
-                            $balance = $totalIncomes - ($totalPurchases + $totalWorkerJobs);
-                        @endphp
-                        <div class="border rounded p-4 d-flex justify-content-between align-items-center bg-light">
-                            <span class="fw-bold text-gray-800 fs-6">Sisa Aliran Dana Terkait Bukti (Pendapatan - Pengeluaran)</span>
-                            <span class="fw-bold fs-4 {{ $balance >= 0 ? 'text-success' : 'text-danger' }}">
-                                Rp {{ number_format($balance, 0, ',', '.') }}
-                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Accordion/Tabs of related transactions -->
+                <!-- Transaction Details Card -->
                 <div class="card card-flush shadow-sm">
-                    <div class="card-header pt-5">
-                        <h3 class="card-title">
-                            <span class="card-label fw-bold text-gray-800">Daftar Transaksi Terkait</span>
-                        </h3>
-                    </div>
-                    <div class="card-body pt-2">
-                        <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold mb-5" role="tablist">
+                    <div class="card-body p-4 pt-3">
+                        <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-6 fw-bold mb-4" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-danger active" data-bs-toggle="tab" href="#kt_tab_purchases" role="tab">
+                                <a class="nav-link text-active-danger active py-3" data-bs-toggle="tab" href="#kt_tab_purchases" role="tab">
                                     Pembelian ({{ $transactionProof->purchaseItems->count() }})
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-success" data-bs-toggle="tab" href="#kt_tab_incomes" role="tab">
+                                <a class="nav-link text-active-success py-3" data-bs-toggle="tab" href="#kt_tab_incomes" role="tab">
                                     Pendapatan ({{ $transactionProof->incomes->count() }})
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-warning" data-bs-toggle="tab" href="#kt_tab_worker_jobs" role="tab">
+                                <a class="nav-link text-active-warning py-3" data-bs-toggle="tab" href="#kt_tab_worker_jobs" role="tab">
                                     Upah Pekerja ({{ $transactionProof->workerJobs->count() }})
                                 </a>
                             </li>
@@ -136,15 +108,15 @@
                             <!-- Tab Purchases -->
                             <div class="tab-pane fade show active" id="kt_tab_purchases" role="tabpanel">
                                 <div class="table-responsive">
-                                    <table class="table align-middle table-row-dashed fs-7 gy-3">
+                                    <table class="table align-middle table-row-dashed fs-8 gy-2">
                                         <thead>
-                                            <tr class="text-start text-muted fw-bold fs-8 text-uppercase gs-0">
+                                            <tr class="text-start text-muted fw-bold fs-9 text-uppercase gs-0">
                                                 <th class="min-w-30px">No</th>
-                                                <th class="min-w-100px">Tanggal</th>
+                                                <th class="min-w-80px">Tanggal</th>
                                                 <th class="min-w-100px">Kebun</th>
                                                 <th class="min-w-150px">Nama Item / Deskripsi</th>
-                                                <th class="min-w-100px">Kategori</th>
-                                                <th class="min-w-50px text-center">Qty</th>
+                                                <th class="min-w-90px">Kategori</th>
+                                                <th class="min-w-40px text-center">Qty</th>
                                                 <th class="min-w-80px text-end">Harga Satuan</th>
                                                 <th class="min-w-90px text-end">Subtotal</th>
                                             </tr>
@@ -153,16 +125,16 @@
                                             @forelse($transactionProof->purchaseItems as $index => $item)
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
-                                                <td>{{ $item->purchase->date ?? '-' }}</td>
+                                                <td>{{ $item->purchase->date ? $item->purchase->date->format('Y-m-d') : '-' }}</td>
                                                 <td>{{ $item->purchase->pertanian->kebun->name ?? '-' }}</td>
                                                 <td>
                                                     <span class="text-gray-800 fw-bold">{{ $item->category }}</span>
                                                     @if($item->description)
-                                                        <span class="d-block text-gray-400 fs-8">{{ $item->description }}</span>
+                                                        <span class="d-block text-gray-400 fs-9">{{ $item->description }}</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-light-danger">{{ $item->purchaseCategory->name ?? '-' }}</span>
+                                                    <span class="badge badge-light-danger fs-9">{{ $item->purchaseCategory->name ?? '-' }}</span>
                                                 </td>
                                                 <td class="text-center">{{ $item->qty }}</td>
                                                 <td class="text-end">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
@@ -170,13 +142,13 @@
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="8" class="text-center text-muted py-5">Tidak ada data pembelian terkait bukti ini.</td>
+                                                <td colspan="8" class="text-center text-muted py-4">Tidak ada data pembelian terkait bukti ini.</td>
                                             </tr>
                                             @endforelse
                                         </tbody>
                                         @if($transactionProof->purchaseItems->count() > 0)
                                         <tfoot>
-                                            <tr class="fw-bold fs-7 text-gray-800">
+                                            <tr class="fw-bold fs-8 text-gray-800">
                                                 <td colspan="7" class="text-end text-uppercase">Total Pembelian:</td>
                                                 <td class="text-end text-danger text-nowrap">Rp {{ number_format($totalPurchases, 0, ',', '.') }}</td>
                                             </tr>
@@ -189,15 +161,15 @@
                             <!-- Tab Incomes -->
                             <div class="tab-pane fade" id="kt_tab_incomes" role="tabpanel">
                                 <div class="table-responsive">
-                                    <table class="table align-middle table-row-dashed fs-7 gy-3">
+                                    <table class="table align-middle table-row-dashed fs-8 gy-2">
                                         <thead>
-                                            <tr class="text-start text-muted fw-bold fs-8 text-uppercase gs-0">
+                                            <tr class="text-start text-muted fw-bold fs-9 text-uppercase gs-0">
                                                 <th class="min-w-30px">No</th>
-                                                <th class="min-w-100px">Tanggal</th>
-                                                <th class="min-w-120px">Pertanian / Proyek</th>
+                                                <th class="min-w-80px">Tanggal</th>
+                                                <th class="min-w-120px">Proyek Pertanian</th>
                                                 <th class="min-w-150px">Deskripsi</th>
-                                                <th class="min-w-100px">Kategori</th>
-                                                <th class="min-w-50px text-center">Qty</th>
+                                                <th class="min-w-90px">Kategori</th>
+                                                <th class="min-w-40px text-center">Qty</th>
                                                 <th class="min-w-80px text-end">Harga Satuan</th>
                                                 <th class="min-w-90px text-end">Subtotal</th>
                                             </tr>
@@ -207,15 +179,15 @@
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $income->date ? $income->date->format('Y-m-d') : '-' }}</td>
-                                                <td>{{ $income->pertanian->tanaman->name ?? '-' }}</td>
+                                                <td><span class="text-gray-800 fw-bold">{{ $income->pertanian->name ?? '-' }}</span></td>
                                                 <td>
-                                                    <span class="text-gray-800 fw-bold">{{ $income->description }}</span>
+                                                    <span class="text-gray-800">{{ $income->description }}</span>
                                                     @if($income->tengkulak)
-                                                        <span class="d-block text-gray-400 fs-8">Tengkulak: {{ $income->tengkulak->name }}</span>
+                                                        <span class="d-block text-gray-400 fs-9">Tengkulak: {{ $income->tengkulak->name }}</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-light-success">{{ $income->category->name ?? '-' }}</span>
+                                                    <span class="badge badge-light-success fs-9">{{ $income->category->name ?? '-' }}</span>
                                                 </td>
                                                 <td class="text-center">{{ $income->qty }}</td>
                                                 <td class="text-end">Rp {{ number_format($income->unit_price, 0, ',', '.') }}</td>
@@ -223,13 +195,13 @@
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="8" class="text-center text-muted py-5">Tidak ada data pendapatan terkait bukti ini.</td>
+                                                <td colspan="8" class="text-center text-muted py-4">Tidak ada data pendapatan terkait bukti ini.</td>
                                             </tr>
                                             @endforelse
                                         </tbody>
                                         @if($transactionProof->incomes->count() > 0)
                                         <tfoot>
-                                            <tr class="fw-bold fs-7 text-gray-800">
+                                            <tr class="fw-bold fs-8 text-gray-800">
                                                 <td colspan="7" class="text-end text-uppercase">Total Pendapatan:</td>
                                                 <td class="text-end text-success text-nowrap">Rp {{ number_format($totalIncomes, 0, ',', '.') }}</td>
                                             </tr>
@@ -242,17 +214,17 @@
                             <!-- Tab Worker Jobs -->
                             <div class="tab-pane fade" id="kt_tab_worker_jobs" role="tabpanel">
                                 <div class="table-responsive">
-                                    <table class="table align-middle table-row-dashed fs-7 gy-3">
+                                    <table class="table align-middle table-row-dashed fs-8 gy-2">
                                         <thead>
-                                            <tr class="text-start text-muted fw-bold fs-8 text-uppercase gs-0">
+                                            <tr class="text-start text-muted fw-bold fs-9 text-uppercase gs-0">
                                                 <th class="min-w-30px">No</th>
-                                                <th class="min-w-100px">Tanggal</th>
-                                                <th class="min-w-120px">Pekerja</th>
-                                                <th class="min-w-150px">Kategori & Pekerjaan</th>
-                                                <th class="min-w-100px">Proyek Pertanian</th>
-                                                <th class="min-w-85px text-end">Upah</th>
-                                                <th class="min-w-85px text-end">Konsumsi</th>
-                                                <th class="min-w-95px text-end">Total</th>
+                                                <th class="min-w-80px">Tanggal</th>
+                                                <th class="min-w-100px">Pekerja</th>
+                                                <th class="min-w-130px">Kategori Pekerjaan</th>
+                                                <th class="min-w-120px">Proyek Pertanian</th>
+                                                <th class="min-w-80px text-end">Upah</th>
+                                                <th class="min-w-70px text-end">Konsumsi</th>
+                                                <th class="min-w-85px text-end">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody class="text-gray-600 fw-semibold">
@@ -262,26 +234,30 @@
                                                 <td>{{ $job->date }}</td>
                                                 <td>
                                                     <span class="text-gray-800 fw-bold">{{ $job->worker->name ?? '-' }}</span>
-                                                    <span class="d-block text-gray-400 fs-8">{{ $job->worker->whatsapp ?? '-' }}</span>
+                                                    @if($job->worker && $job->worker->whatsapp)
+                                                        <span class="d-block text-gray-400 fs-9">{{ $job->worker->whatsapp }}</span>
+                                                    @endif
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-light-warning fw-bold mb-1">{{ $job->category->name ?? '-' }}</span>
-                                                    <span class="d-block fs-8 text-gray-600 text-truncate" style="max-width: 150px;" title="{{ $job->description }}">{{ $job->description }}</span>
+                                                    <span class="badge badge-light-warning fw-bold fs-9 mb-1">{{ $job->category->name ?? '-' }}</span>
+                                                    @if($job->description)
+                                                        <span class="d-block fs-9 text-gray-500 text-truncate" style="max-width: 140px;" title="{{ $job->description }}">{{ $job->description }}</span>
+                                                    @endif
                                                 </td>
-                                                <td>{{ $job->pertanian->tanaman->name ?? '-' }}</td>
+                                                <td><span class="text-gray-800 fw-bold">{{ $job->pertanian->name ?? '-' }}</span></td>
                                                 <td class="text-end">Rp {{ number_format($job->wage, 0, ',', '.') }}</td>
                                                 <td class="text-end">Rp {{ number_format($job->konsumsi, 0, ',', '.') }}</td>
                                                 <td class="text-end fw-bold text-gray-800">Rp {{ number_format($job->wage + $job->konsumsi, 0, ',', '.') }}</td>
                                             </tr>
                                             @empty
                                             <tr>
-                                                <td colspan="8" class="text-center text-muted py-5">Tidak ada data upah pekerja terkait bukti ini.</td>
+                                                <td colspan="8" class="text-center text-muted py-4">Tidak ada data upah pekerja terkait bukti ini.</td>
                                             </tr>
                                             @endforelse
                                         </tbody>
                                         @if($transactionProof->workerJobs->count() > 0)
                                         <tfoot>
-                                            <tr class="fw-bold fs-7 text-gray-800">
+                                            <tr class="fw-bold fs-8 text-gray-800">
                                                 <td colspan="5" class="text-end text-uppercase">Subtotal Upah & Konsumsi:</td>
                                                 <td class="text-end text-nowrap">Rp {{ number_format($totalWages, 0, ',', '.') }}</td>
                                                 <td class="text-end text-nowrap">Rp {{ number_format($totalKonsumsi, 0, ',', '.') }}</td>
