@@ -113,4 +113,36 @@ class TransactionProofController extends Controller
             'rename_history' => $transactionProof->rename_history
         ]);
     }
+
+    public function show(TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $transactionProof->load([
+            'purchaseItems.purchase.kebun',
+            'purchaseItems.purchaseCategory',
+            'incomes.pertanian',
+            'incomes.category',
+            'workerJobs.pertanian',
+            'workerJobs.worker',
+            'workerJobs.category'
+        ]);
+
+        $totalPurchases = $transactionProof->purchaseItems->sum('total_price');
+        $totalIncomes = $transactionProof->incomes->sum('amount');
+        $totalWages = $transactionProof->workerJobs->sum('wage');
+        $totalKonsumsi = $transactionProof->workerJobs->sum('konsumsi');
+        $totalWorkerJobs = $totalWages + $totalKonsumsi;
+
+        return view('transaction_proofs.show', compact(
+            'transactionProof',
+            'totalPurchases',
+            'totalIncomes',
+            'totalWages',
+            'totalKonsumsi',
+            'totalWorkerJobs'
+        ));
+    }
 }

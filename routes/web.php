@@ -108,7 +108,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
 
     // Bukti Transaksi
     Route::patch('transaction-proofs/{transaction_proof}/rename', [\App\Http\Controllers\TransactionProofController::class, 'rename'])->name('transaction-proofs.rename');
-    Route::resource('transaction-proofs', \App\Http\Controllers\TransactionProofController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('transaction-proofs', \App\Http\Controllers\TransactionProofController::class)->only(['index', 'store', 'show', 'destroy']);
 });
 
 require __DIR__.'/auth.php';

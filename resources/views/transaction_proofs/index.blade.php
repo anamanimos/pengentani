@@ -146,6 +146,9 @@
                                                         <i class="fa fa-history text-gray-700"></i>
                                                     </button>
                                                 @endif
+                                                <a href="{{ route('transaction-proofs.show', $proof->id) }}" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75" title="Detail Transaksi">
+                                                    <i class="ki-duotone ki-eye fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                                </a>
                                                 <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-rename" 
                                                         title="Ganti Nama" 
                                                         data-id="{{ $proof->id }}" 
