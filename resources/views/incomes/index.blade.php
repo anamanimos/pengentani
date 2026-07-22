@@ -678,14 +678,14 @@
                 columns: [
                     { type: 'hidden', title: 'ID' },
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 250, source: pertanians },
-                    { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks },
-                    { type: 'dropdown', title: 'Kategori', width: 150, source: types },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 250, source: pertanians, autocomplete: true },
+                    { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks, autocomplete: true },
+                    { type: 'dropdown', title: 'Kategori', width: 150, source: types, autocomplete: true },
                     { type: 'text', title: 'Deskripsi', width: 250 },
                     { type: 'numeric', title: 'Qty', width: 100, mask: '#,##0' },
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true }
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
                     if (col == 9 && val && proofUrls[val]) {

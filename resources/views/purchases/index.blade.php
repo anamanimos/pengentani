@@ -688,14 +688,14 @@
                 columns: [
                     { type: 'hidden', title: 'ID' }, // 0
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } }, // 1
-                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians }, // 2
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true }, // 2
                     { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true }, // 3
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 4
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 5
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 6
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 7
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 8
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs } // 9
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true } // 9
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
                     if (col == 9 && val && proofUrls[val]) {

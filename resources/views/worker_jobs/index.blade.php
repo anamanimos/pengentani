@@ -709,7 +709,7 @@
                 columns: [
                     { type: 'hidden', title: 'ID' },
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 140, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians, autocomplete: true },
                     { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true },
                     { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true },
                     { type: 'text', title: 'Deskripsi', width: 250 },
@@ -717,8 +717,8 @@
                     { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
                     { type: 'numeric', title: 'Upah (Rp)', width: 130, mask: '#,##0' },
                     { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: '#,##0' },
-                    { type: 'dropdown', title: 'Status', width: 120, source: statuses },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs }
+                    { type: 'dropdown', title: 'Status', width: 120, source: statuses, autocomplete: true },
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true }
                 ],
                 onselection: function(instance, x1, y1, x2, y2, origin) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
