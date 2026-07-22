@@ -13,6 +13,8 @@ class PurchaseController extends Controller
 {
     public function index(Request $request)
     {
+        $this->cleanUpCorruptRecords();
+
         $pertanians = Pertanian::where('user_id', Auth::id())->with('kebun')->orderBy('name')->get();
         $categories = \App\Models\PurchaseCategory::orderBy('name')->get();
         $stores = \App\Models\Store::orderBy('name')->get();
@@ -94,14 +96,30 @@ class PurchaseController extends Controller
             $invoiceNumber = $row['invoice_number'] ?? '-';
             $storeId = $row['store_id'] ?? null;
             
-            // Create new store if user typed a string instead of selecting an existing ID
-            if (!empty($storeId) && !is_numeric($storeId)) {
-                $newStore = \App\Models\Store::firstOrCreate([
-                    'name' => trim($storeId)
-                ]);
-                $storeId = $newStore->id;
+            // Create or resolve store with strict sanitization
+            if (!empty($storeId)) {
+                $storeStr = trim((string)$storeId);
+                if (
+                    $storeStr === 'NEW_STORE' ||
+                    str_contains($storeStr, '+ Tambah') ||
+                    str_contains($storeStr, 'NEW_STORE') ||
+                    str_contains($storeStr, '...') ||
+                    strlen($storeStr) > 60
+                ) {
+                    $storeId = null;
+                } elseif (!is_numeric($storeStr)) {
+                    $existingStore = \App\Models\Store::where('name', $storeStr)->first();
+                    if ($existingStore) {
+                        $storeId = $existingStore->id;
+                    } else {
+                        $newStore = \App\Models\Store::create(['name' => $storeStr]);
+                        $storeId = $newStore->id;
+                    }
+                } else {
+                    $storeId = (int)$storeStr;
+                }
             } else {
-                $storeId = $storeId ?: null;
+                $storeId = null;
             }
             
             // Find or create Purchase (Nota)
@@ -125,16 +143,35 @@ class PurchaseController extends Controller
 
             $catId = $row['category_id'] ?? null;
             
-            if (!empty($catId) && !is_numeric($catId)) {
-                $newCat = \App\Models\PurchaseCategory::firstOrCreate([
-                    'name' => trim($catId)
-                ]);
-                $catId = $newCat->id;
-                $categoryName = $newCat->name;
+            if (!empty($catId)) {
+                $catStr = trim((string)$catId);
+                if (
+                    $catStr === 'NEW_CATEGORY' ||
+                    str_contains($catStr, '+ Tambah') ||
+                    str_contains($catStr, 'NEW_CATEGORY') ||
+                    str_contains($catStr, '...') ||
+                    strlen($catStr) > 60
+                ) {
+                    $catId = null;
+                    $categoryName = 'Lain-lain';
+                } elseif (!is_numeric($catStr)) {
+                    $existingCat = \App\Models\PurchaseCategory::where('name', $catStr)->first();
+                    if ($existingCat) {
+                        $catId = $existingCat->id;
+                        $categoryName = $existingCat->name;
+                    } else {
+                        $newCat = \App\Models\PurchaseCategory::create(['name' => $catStr]);
+                        $catId = $newCat->id;
+                        $categoryName = $newCat->name;
+                    }
+                } else {
+                    $category = \App\Models\PurchaseCategory::find((int)$catStr);
+                    $categoryName = $category ? $category->name : 'Lain-lain';
+                    $catId = $category ? $category->id : null;
+                }
             } else {
-                $category = \App\Models\PurchaseCategory::find($catId);
-                $categoryName = $category ? $category->name : 'Lain-lain';
-                $catId = $catId ?: null;
+                $catId = null;
+                $categoryName = 'Lain-lain';
             }
 
             if (!empty($row['id'])) {
@@ -213,8 +250,29 @@ class PurchaseController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
+    private function cleanUpCorruptRecords()
+    {
+        try {
+            \App\Models\Store::where('name', 'like', '%+ Tambah%')
+                ->orWhere('name', 'like', '%NEW_STORE%')
+                ->orWhere('name', 'like', '%...%')
+                ->orWhereRaw('LENGTH(name) > 60')
+                ->delete();
+
+            \App\Models\PurchaseCategory::where('name', 'like', '%+ Tambah%')
+                ->orWhere('name', 'like', '%NEW_CATEGORY%')
+                ->orWhere('name', 'like', '%...%')
+                ->orWhereRaw('LENGTH(name) > 60')
+                ->delete();
+        } catch (\Exception $e) {
+            // Silence exceptions during cleanup
+        }
+    }
+
     public function getDropdownsAjax()
     {
+        $this->cleanUpCorruptRecords();
+
         $stores = \App\Models\Store::orderBy('name')->get(['id', 'name']);
         $categories = \App\Models\PurchaseCategory::orderBy('name')->get(['id', 'name']);
         
@@ -239,14 +297,22 @@ class PurchaseController extends Controller
     public function storeStoreAjax(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255']);
-        $store = \App\Models\Store::firstOrCreate(['name' => trim($request->name)]);
+        $name = trim($request->name);
+        if ($name === 'NEW_STORE' || str_contains($name, '+ Tambah') || str_contains($name, '...') || strlen($name) > 60) {
+            return response()->json(['error' => 'Nama toko tidak valid.'], 422);
+        }
+        $store = \App\Models\Store::firstOrCreate(['name' => $name]);
         return response()->json(['id' => $store->id, 'name' => $store->name]);
     }
 
     public function storeCategoryAjax(Request $request)
     {
         $request->validate(['name' => 'required|string|max:255']);
-        $cat = \App\Models\PurchaseCategory::firstOrCreate(['name' => trim($request->name)]);
+        $name = trim($request->name);
+        if ($name === 'NEW_CATEGORY' || str_contains($name, '+ Tambah') || str_contains($name, '...') || strlen($name) > 60) {
+            return response()->json(['error' => 'Nama kategori tidak valid.'], 422);
+        }
+        $cat = \App\Models\PurchaseCategory::firstOrCreate(['name' => $name]);
         return response()->json(['id' => $cat->id, 'name' => $cat->name]);
     }
 

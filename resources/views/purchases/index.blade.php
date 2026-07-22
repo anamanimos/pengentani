@@ -947,11 +947,17 @@
                         var cellStore = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
                         if (cellStore && cellStore.innerText.trim() !== '') storeVal = cellStore.innerText.trim();
                     }
+                    if (storeVal && (storeVal === 'NEW_STORE' || storeVal.indexOf('+ Tambah') !== -1 || storeVal.indexOf('...') !== -1 || storeVal.length > 60)) {
+                        storeVal = '';
+                    }
 
                     var categoryVal = row[4];
                     if (!categoryVal) {
                         var cellCat = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
                         if (cellCat && cellCat.innerText.trim() !== '') categoryVal = cellCat.innerText.trim();
+                    }
+                    if (categoryVal && (categoryVal === 'NEW_CATEGORY' || categoryVal.indexOf('+ Tambah') !== -1 || categoryVal.indexOf('...') !== -1 || categoryVal.length > 60)) {
+                        categoryVal = '';
                     }
 
                     var hasAnyData = false;

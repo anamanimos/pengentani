@@ -12,6 +12,14 @@ class StoreController extends Controller
      */
     public function index()
     {
+        try {
+            Store::where('name', 'like', '%+ Tambah%')
+                ->orWhere('name', 'like', '%NEW_STORE%')
+                ->orWhere('name', 'like', '%...%')
+                ->orWhereRaw('LENGTH(name) > 60')
+                ->delete();
+        } catch (\Exception $e) {}
+
         $stores = Store::orderBy('name')->get();
         return view('stores.index', compact('stores'));
     }
