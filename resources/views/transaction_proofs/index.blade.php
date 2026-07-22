@@ -64,12 +64,18 @@
     }
 </style>
 
-@section('page_title', 'Bukti Transaksi')
+@section('page_title')
+    Galeri Bukti Transaksi <span class="text-gray-500 fw-semibold fs-7 ms-2">({{ $proofs->count() }} bukti tersimpan)</span>
+@endsection
 
 @section('page_actions')
-<button type="button" class="btn btn-sm fw-bold btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
-    Upload Bukti Manual
-</button>
+<form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
+    <select name="status" class="form-select form-select-sm form-select-solid fw-bold" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
+        <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+        <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
+        <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
+    </select>
+</form>
 @endsection
 
 @section('content')
@@ -108,7 +114,7 @@
                     <div class="card-header pt-5">
                         <h3 class="card-title align-items-start flex-column">
                             <span class="card-label fw-bold text-gray-800">Upload Bukti Multi File</span>
-                            <span class="text-gray-500 mt-1 fw-semibold fs-7">Tarik & lepas satu atau beberapa file</span>
+                            <span class="text-gray-500 mt-1 fw-semibold fs-7">Tarik-lepas file atau Paste (CTRL+V)</span>
                         </h3>
                     </div>
                     <div class="card-body pt-3 pb-5">
@@ -119,8 +125,8 @@
                                 <div class="dz-message needsclick text-center py-4">
                                     <i class="ki-duotone ki-file-up fs-3x text-primary mb-2"><span class="path1"></span><span class="path2"></span></i>
                                     <div class="ms-0">
-                                        <h3 class="fs-6 fw-bold text-gray-900 mb-1">Tarik file ke sini atau klik untuk upload.</h3>
-                                        <span class="fs-8 fw-semibold text-gray-500">Dapat pilih banyak file sekaligus (JPG, PNG, PDF max 5MB/file)</span>
+                                        <h3 class="fs-6 fw-bold text-gray-900 mb-1">Tarik file ke sini, Paste (CTRL+V), atau klik.</h3>
+                                        <span class="fs-8 fw-semibold text-gray-500">Bisa upload banyak file/gambar clipboard sekaligus (JPG, PNG, PDF max 5MB)</span>
                                     </div>
                                 </div>
                             </div>
@@ -140,27 +146,10 @@
                 </div>
             </div>
 
-            <!-- Right Side: Gallery Area (8 columns, Frameless Look) -->
+            <!-- Right Side: Gallery Area (8 columns, Frameless Look & No Card Shadow/Background) -->
             <div class="col-xl-8">
-                <!-- Frameless Gallery Top Toolbar -->
-                <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-1">
-                    <div>
-                        <h3 class="fw-bold text-gray-900 fs-4 mb-0">Galeri Bukti Transaksi</h3>
-                        <span class="text-gray-500 fw-semibold fs-7">{{ $proofs->count() }} bukti tersimpan</span>
-                    </div>
-                    <div>
-                        <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
-                            <select name="status" class="form-select form-select-sm form-select-solid fw-bold" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
-                                <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-                                <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
-                                <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
-                            </select>
-                        </form>
-                    </div>
-                </div>
-
                 <!-- Frameless Gallery Grid -->
-                <div class="row g-0 rounded overflow-hidden border shadow-sm">
+                <div class="row g-0">
                     @forelse($proofs as $proof)
                     <div class="col-xl-3 col-md-4 col-sm-6 proof-card" data-id="{{ $proof->id }}">
                         <div class="proof-card-item">
@@ -235,39 +224,6 @@
                     @endforelse
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Upload Manual (Multi-file enabled) -->
-<div class="modal fade" id="kt_modal_upload_proof" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mw-650px">
-        <div class="modal-content">
-            <div class="modal-header py-4">
-                <h3 class="fw-bold modal-title text-gray-800">Upload Bukti Transaksi (Multi File)</h3>
-                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
-                </div>
-            </div>
-            <form class="form" action="{{ route('transaction-proofs.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body scroll-y mx-3 my-3">
-                    <div class="fv-row mb-5">
-                        <label class="required fs-6 fw-semibold form-label mb-2">Pilih File Bukti (Bisa Lebih Dari 1)</label>
-                        <input type="file" class="form-control form-control-solid" name="files[]" id="modal_files_input" accept=".jpg,.jpeg,.png,.pdf" multiple required />
-                        <span class="fs-8 text-gray-500 mt-1 d-block">Gunakan CTRL atau Shift untuk memilih beberapa file sekaligus (max 5MB/file)</span>
-                    </div>
-                    <div class="fv-row mb-5" id="modal_naming_wrapper" style="display: none;">
-                        <label class="fs-6 fw-semibold form-label mb-2">Penamaan File (Opsional)</label>
-                        <div id="modal_file_names_container" class="d-flex flex-column gap-2 pe-1" style="max-height: 250px; overflow-y: auto;">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer flex-center pt-4 pb-4">
-                    <button type="button" data-bs-dismiss="modal" class="btn btn-light me-3">Batal</button>
-                    <button type="submit" class="btn btn-primary fw-bold">Upload Semua</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -439,36 +395,52 @@
         }
     });
 
-    $(document).ready(function() {
-        // Handle Modal Multi-File Selection
-        $('#modal_files_input').on('change', function() {
-            var files = this.files;
-            var wrapper = $('#modal_naming_wrapper');
-            var container = $('#modal_file_names_container');
-            container.empty();
+    // Global Clipboard Paste Event Listener (CTRL+V)
+    $(document).on('paste', function(e) {
+        var clipboardData = (e.originalEvent || e).clipboardData;
+        if (!clipboardData || !clipboardData.items) return;
+        
+        var items = clipboardData.items;
+        var pastedCount = 0;
 
-            if (files.length === 0) {
-                wrapper.hide();
-                return;
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.kind === 'file' || item.type.indexOf('image') !== -1) {
+                var blob = item.getAsFile();
+                if (blob) {
+                    var ext = blob.type.split('/')[1] || 'png';
+                    if (ext === 'jpeg') ext = 'jpg';
+                    var now = new Date();
+                    var dateStr = now.getFullYear() +
+                                  String(now.getMonth() + 1).padStart(2, '0') +
+                                  String(now.getDate()).padStart(2, '0') + "_" +
+                                  String(now.getHours()).padStart(2, '0') +
+                                  String(now.getMinutes()).padStart(2, '0');
+                    var fileName = "Paste_" + dateStr + (pastedCount > 0 ? "_" + (pastedCount + 1) : "") + "." + ext;
+                    
+                    var file = new File([blob], fileName, { type: blob.type });
+                    myDropzone.addFile(file);
+                    pastedCount++;
+                }
             }
+        }
 
-            wrapper.show();
-            Array.from(files).forEach(function(file) {
-                var defaultName = file.name.replace(/\.[^/.]+$/, "");
-                var fileRow = `
-                    <div class="d-flex align-items-center gap-2 p-2 bg-light rounded border mb-2">
-                        <i class="fa ${file.type === 'application/pdf' ? 'fa-file-pdf text-danger' : 'fa-file-image text-primary'} fs-5"></i>
-                        <span class="fs-8 text-gray-700 text-truncate fw-semibold flex-grow-1" style="max-width: 160px;" title="${file.name}">${file.name}</span>
-                        <input type="text" 
-                               class="form-control form-control-solid form-control-sm py-1 px-2 fs-8" 
-                               name="names[]" 
-                               placeholder="Nama Bukti..." 
-                               value="${defaultName}">
-                    </div>
-                `;
-                container.append(fileRow);
+        if (pastedCount > 0) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
             });
-        });
+            Toast.fire({
+                icon: 'info',
+                title: pastedCount + ' gambar dari clipboard ditambahkan!'
+            });
+        }
+    });
+
+    $(document).ready(function() {
         // Handle Rename click
         $(document).on('click', '.btn-rename', function() {
             let button = $(this);
