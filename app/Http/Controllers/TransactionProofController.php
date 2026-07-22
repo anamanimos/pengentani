@@ -39,16 +39,58 @@ class TransactionProofController extends Controller
 
     public function store(Request $request)
     {
+        // Handle multiple files submission
+        if ($request->hasFile('files')) {
+            $request->validate([
+                'files' => 'required|array',
+                'files.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Max 5MB per file
+                'names' => 'nullable|array',
+                'names.*' => 'nullable|string|max:255',
+            ]);
+
+            $createdProofs = [];
+            foreach ($request->file('files') as $index => $file) {
+                $path = $file->store('transaction_proofs', 'public');
+                $customName = trim($request->names[$index] ?? '');
+                if (empty($customName)) {
+                    $customName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                }
+
+                $createdProofs[] = TransactionProof::create([
+                    'user_id' => Auth::id(),
+                    'name' => $customName,
+                    'file_path' => $path,
+                ]);
+            }
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'proofs' => $createdProofs,
+                    'message' => count($createdProofs) . ' bukti transaksi berhasil diunggah'
+                ]);
+            }
+
+            return redirect()->back()->with('success', count($createdProofs) . ' bukti transaksi berhasil diunggah');
+        }
+
+        // Handle single file submission (e.g. Dropzone per-file upload)
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'file' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120', // Max 5MB
         ]);
 
-        $path = $request->file('file')->store('transaction_proofs', 'public');
+        $file = $request->file('file');
+        $path = $file->store('transaction_proofs', 'public');
+
+        $name = trim($request->name ?? '');
+        if (empty($name)) {
+            $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        }
 
         $proof = TransactionProof::create([
             'user_id' => Auth::id(),
-            'name' => $request->name,
+            'name' => $name,
             'file_path' => $path,
         ]);
 
