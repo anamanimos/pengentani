@@ -56,9 +56,11 @@ class TransactionProofController extends Controller
                     $customName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 }
 
+                $uniqueName = TransactionProof::generateUniqueName(Auth::id(), $customName);
+
                 $createdProofs[] = TransactionProof::create([
                     'user_id' => Auth::id(),
-                    'name' => $customName,
+                    'name' => $uniqueName,
                     'file_path' => $path,
                 ]);
             }
@@ -88,9 +90,11 @@ class TransactionProofController extends Controller
             $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         }
 
+        $uniqueName = TransactionProof::generateUniqueName(Auth::id(), $name);
+
         $proof = TransactionProof::create([
             'user_id' => Auth::id(),
-            'name' => $name,
+            'name' => $uniqueName,
             'file_path' => $path,
         ]);
 
@@ -131,7 +135,8 @@ class TransactionProofController extends Controller
         ]);
 
         $oldName = $transactionProof->name;
-        $newName = $request->name;
+        $requestedName = trim($request->name);
+        $newName = TransactionProof::generateUniqueName(Auth::id(), $requestedName, $transactionProof->id);
 
         if ($oldName !== $newName) {
             $history = $transactionProof->rename_history ?? [];

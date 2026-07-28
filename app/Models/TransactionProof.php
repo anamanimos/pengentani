@@ -39,4 +39,39 @@ class TransactionProof extends Model
     {
         return $this->hasMany(WorkerJob::class);
     }
+
+    public static function generateUniqueName($userId, $requestedName, $excludeId = null)
+    {
+        $name = trim($requestedName);
+        if (empty($name)) {
+            $name = 'Bukti Transaksi';
+        }
+
+        $baseName = $name;
+        $startCounter = 1;
+
+        if (preg_match('/^(.*?)\s*\((\d+)\)$/', $name, $matches)) {
+            $baseName = trim($matches[1]);
+            $startCounter = (int) $matches[2];
+        }
+
+        $candidateName = ($startCounter > 1) ? $baseName . ' (' . $startCounter . ')' : $baseName;
+        $counter = $startCounter;
+
+        while (true) {
+            $query = static::where('user_id', $userId)
+                ->where('name', $candidateName);
+
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+
+            if (!$query->exists()) {
+                return $candidateName;
+            }
+
+            $candidateName = $baseName . ' (' . $counter . ')';
+            $counter++;
+        }
+    }
 }

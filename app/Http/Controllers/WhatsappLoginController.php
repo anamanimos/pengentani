@@ -92,13 +92,15 @@ class WhatsappLoginController extends Controller
                                 
                             $userId = $user ? $user->id : (User::first()->id ?? 1);
                             
+                            $uniqueProofName = TransactionProof::generateUniqueName($userId, $proofName);
+
                             TransactionProof::create([
                                 'user_id' => $userId,
-                                'name' => $proofName,
+                                'name' => $uniqueProofName,
                                 'file_path' => $filename,
                             ]);
                             
-                            \App\Services\WaGatewayService::sendMessage($chatId ?: $fromLid, "Bukti Transaksi '$proofName' berhasil disimpan.");
+                            \App\Services\WaGatewayService::sendMessage($chatId ?: $fromLid, "Bukti Transaksi '$uniqueProofName' berhasil disimpan.");
                             return response()->json(['status' => 'proof_saved']);
                         } else {
                             Log::error("Failed to download WA image. HTTP Status: " . $response->status());
