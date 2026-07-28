@@ -947,7 +947,8 @@
                         var cellStore = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(3, i));
                         if (cellStore && cellStore.innerText.trim() !== '') storeVal = cellStore.innerText.trim();
                     }
-                    if (storeVal && (storeVal === 'NEW_STORE' || storeVal.indexOf('+ Tambah') !== -1 || storeVal.indexOf('...') !== -1 || storeVal.length > 60)) {
+                    var storeStr = (storeVal !== null && storeVal !== undefined) ? String(storeVal) : '';
+                    if (storeStr && (storeStr === 'NEW_STORE' || storeStr.indexOf('+ Tambah') !== -1 || storeStr.indexOf('...') !== -1 || storeStr.length > 60)) {
                         storeVal = '';
                     }
 
@@ -956,7 +957,8 @@
                         var cellCat = spreadsheet.getCell(jspreadsheet.helpers.getColumnNameFromCoords(4, i));
                         if (cellCat && cellCat.innerText.trim() !== '') categoryVal = cellCat.innerText.trim();
                     }
-                    if (categoryVal && (categoryVal === 'NEW_CATEGORY' || categoryVal.indexOf('+ Tambah') !== -1 || categoryVal.indexOf('...') !== -1 || categoryVal.length > 60)) {
+                    var categoryStr = (categoryVal !== null && categoryVal !== undefined) ? String(categoryVal) : '';
+                    if (categoryStr && (categoryStr === 'NEW_CATEGORY' || categoryStr.indexOf('+ Tambah') !== -1 || categoryStr.indexOf('...') !== -1 || categoryStr.length > 60)) {
                         categoryVal = '';
                     }
 
