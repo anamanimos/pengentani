@@ -29,6 +29,10 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
     Route::get('/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
     Route::post('/whatsapp/settings', [\App\Http\Controllers\WhatsappSettingController::class, 'saveSettings'])->name('whatsapp.settings.save');
+    Route::get('/settings/storage', [\App\Http\Controllers\StorageSettingController::class, 'index'])->name('settings.storage.index');
+    Route::post('/settings/storage', [\App\Http\Controllers\StorageSettingController::class, 'update'])->name('settings.storage.update');
+    Route::post('/settings/storage/test', [\App\Http\Controllers\StorageSettingController::class, 'testConnection'])->name('settings.storage.test');
+    Route::post('/settings/storage/migrate', [\App\Http\Controllers\StorageSettingController::class, 'migrateLocalToR2'])->name('settings.storage.migrate');
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -150,6 +150,21 @@
                     <!--begin:Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
+                        <a class="menu-link {{ request()->routeIs('settings.storage.*') ? 'active' : '' }}" href="{{ route('settings.storage.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-cloud-change fs-2">
+                                    <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">Storage Cloud (R2)</span>
+                        </a>
+                        <!--end:Menu link-->
+                    </div>
+                    <!--end:Menu item-->
+
+                    <!--begin:Menu item-->
+                    <div class="menu-item">
+                        <!--begin:Menu link-->
                         <a class="menu-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}" href="{{ route('activity-logs.index') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-document fs-2">
