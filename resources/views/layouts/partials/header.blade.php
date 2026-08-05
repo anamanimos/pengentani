@@ -100,6 +100,16 @@
                         <!--begin::Menu separator-->
                         <div class="separator my-2"></div>
                         <!--end::Menu separator-->
+
+                        @if(Auth::check() && Auth::user()->isSuperAdmin())
+                        <!--begin::Menu item (Git Pull)-->
+                        <div class="menu-item px-5">
+                            <a href="{{ route('git.pull') }}" class="menu-link px-5 text-primary fw-bold">
+                                <i class="ki-duotone ki-cloud-download fs-5 me-2 text-primary"><span class="path1"></span><span class="path2"></span></i> Git Pull Repository
+                            </a>
+                        </div>
+                        <div class="separator my-2"></div>
+                        @endif
                         
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">

@@ -112,6 +112,12 @@ Route::prefix('console')->middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// GIT PULL ROUTE (Super Admin Only)
+Route::match(['get', 'post'], '/pull', [\App\Http\Controllers\GitPullController::class, 'handle'])
+    ->middleware('auth')
+    ->name('git.pull');
+
 Route::get('/logs', function() {
     $path = storage_path('logs/laravel.log');
     if (!\Illuminate\Support\Facades\File::exists($path)) return 'No logs';
