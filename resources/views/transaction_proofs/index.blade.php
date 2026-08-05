@@ -42,19 +42,19 @@
         aspect-ratio: 1 / 1;
         background-color: #1a1a27;
         border-radius: 6px;
-        border: 1px solid rgba(0, 0, 0, 0.03);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e4e6ef;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     [data-bs-theme="dark"] .proof-card-item {
-        border-color: rgba(255, 255, 255, 0.04);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        border-color: #2b2b40;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
     }
     
     .proof-card-item:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+        transform: translateY(-3px);
     }
 
     .proof-card-item .proof-img {
