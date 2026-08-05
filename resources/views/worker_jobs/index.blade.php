@@ -1786,7 +1786,7 @@
                             modal.hide();
 
                             proofs.push({ id: res.proof.id, name: res.proof.name });
-                            proofUrls[res.proof.id] = '/storage/' + res.proof.file_path;
+                            proofUrls[res.proof.id] = res.proof.url || ('/storage/' + res.proof.file_path);
                             spreadsheet.options.columns[10].source = proofs;
                             
                             if (window._activeProofCell) {

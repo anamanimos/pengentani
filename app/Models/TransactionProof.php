@@ -20,6 +20,15 @@ class TransactionProof extends Model
         'rename_history' => 'array',
     ];
 
+    protected $appends = [
+        'url',
+    ];
+
+    public function getUrlAttribute()
+    {
+        return \Illuminate\Support\Facades\Storage::url($this->file_path);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
