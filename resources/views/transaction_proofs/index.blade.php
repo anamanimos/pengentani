@@ -39,24 +39,22 @@
         position: relative;
         overflow: hidden;
         width: 100%;
-        height: calc(140px + (8 - var(--grid-cols, 8)) * 22px);
-        min-height: 140px;
-        max-height: 280px;
+        aspect-ratio: 1 / 1;
         background-color: #1a1a27;
-        border-radius: 12px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, height 0.3s ease;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     [data-bs-theme="dark"] .proof-card-item {
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     
     .proof-card-item:hover {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
     }
 
     .proof-card-item .proof-img {
