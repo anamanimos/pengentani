@@ -11,7 +11,11 @@ class StorageSettingController extends Controller
 {
     public function index()
     {
-        $driver = Setting::get('storage_driver', 'local');
+        $driver = Setting::get('storage_driver', 'r2');
+        if ($driver !== 'r2') {
+            Setting::set('storage_driver', 'r2');
+            $driver = 'r2';
+        }
         $accountId = Setting::get('r2_account_id', config('filesystems.disks.r2.account_id', ''));
         $accessKey = Setting::get('r2_access_key_id', config('filesystems.disks.r2.key', ''));
         $secretKey = Setting::get('r2_secret_access_key', config('filesystems.disks.r2.secret', ''));
@@ -52,7 +56,7 @@ class StorageSettingController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'storage_driver' => 'required|in:local,r2',
+            'storage_driver' => 'nullable|string|in:local,r2',
             'r2_account_id' => 'nullable|string|max:255',
             'r2_access_key_id' => 'nullable|string|max:255',
             'r2_secret_access_key' => 'nullable|string|max:255',
@@ -61,7 +65,7 @@ class StorageSettingController extends Controller
             'r2_endpoint' => 'nullable|string|max:255',
         ]);
 
-        Setting::set('storage_driver', $request->storage_driver);
+        Setting::set('storage_driver', 'r2');
         Setting::set('r2_account_id', trim($request->r2_account_id ?? ''));
         Setting::set('r2_access_key_id', trim($request->r2_access_key_id ?? ''));
         Setting::set('r2_secret_access_key', trim($request->r2_secret_access_key ?? ''));
