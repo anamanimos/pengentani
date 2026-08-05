@@ -108,61 +108,29 @@
         pointer-events: auto;
     }
 
-    /* Floating Search Bar */
-    .floating-search-bar {
-        position: fixed;
-        bottom: 24px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1040;
-        width: 90%;
-        max-width: 480px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .floating-search-card {
-        background: rgba(255, 255, 255, 0.92);
+    /* Sticky Unified Tools Bar */
+    .sticky-tools-bar {
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
-        border-radius: 50rem;
-        padding: 6px 16px;
+        border: 1px solid #e4e6ef;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease;
     }
 
-    [data-bs-theme="dark"] .floating-search-card {
-        background: rgba(30, 30, 45, 0.92);
-        border-color: rgba(255, 255, 255, 0.15);
+    [data-bs-theme="dark"] .sticky-tools-bar {
+        background: rgba(30, 30, 45, 0.94);
+        border-color: #2b2b40;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 </style>
 
 @section('page_title')
     Galeri Bukti Transaksi <span class="text-gray-500 fw-semibold fs-7 ms-2">({{ $proofs->count() }} bukti tersimpan)</span>
-@endsection
-
-@section('page_actions')
-<div class="d-flex align-items-center gap-3">
-    <!-- Grid Volume/Column Slider -->
-    <div class="d-none d-sm-flex align-items-center gap-2 bg-body rounded-pill px-3 py-1 border shadow-xs" title="Atur Ukuran Grid Galeri">
-        <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-        <input type="range" class="form-range" id="grid_cols_range" min="3" max="8" value="8" step="1" style="width: 90px; cursor: pointer;">
-        <span class="fs-8 fw-bold text-gray-700 min-w-45px text-end" id="grid_cols_label">8 Kolom</span>
-    </div>
-
-    <!-- Filter Status -->
-    <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
-        <select name="status" class="form-select form-select-sm form-select-solid fw-bold rounded-pill" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
-            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-            <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
-            <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
-        </select>
-    </form>
-
-    <!-- Upload Modal Trigger Button -->
-    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
-        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
-    </button>
-</div>
 @endsection
 
 @section('content')
@@ -193,6 +161,47 @@
             </div>
         </div>
         @endif
+
+        <!-- Unified Sticky Toolbar Container -->
+        <div class="sticky-tools-bar mb-6 p-3 px-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <!-- Left: Live Search Input -->
+                <div class="d-flex align-items-center flex-grow-1 flex-md-grow-0" style="min-width: 260px; max-width: 450px;">
+                    <div class="position-relative w-100">
+                        <i class="ki-duotone ki-magnifier fs-2 text-primary position-absolute top-50 translate-middle-y ms-3"><span class="path1"></span><span class="path2"></span></i>
+                        <input type="text" id="floating_search_input" class="form-control form-control-solid ps-10 pe-10 fs-7 fw-semibold rounded-pill" placeholder="Cari nama bukti transaksi..." autocomplete="off">
+                        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary position-absolute top-50 translate-middle-y end-0 me-2 d-none" id="clear_search_btn" title="Hapus pencarian">
+                            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                        </button>
+                    </div>
+                    <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-2 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
+                </div>
+
+                <!-- Right: Cluster Tools (Grid Slider + Status Filter + Upload Button) -->
+                <div class="d-flex align-items-center flex-wrap gap-3 ms-auto">
+                    <!-- Grid Volume/Column Slider -->
+                    <div class="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-1 border border-gray-300 shadow-2xs" title="Atur Ukuran Grid Galeri">
+                        <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                        <input type="range" class="form-range" id="grid_cols_range" min="3" max="8" value="8" step="1" style="width: 80px; cursor: pointer;">
+                        <span class="fs-8 fw-bold text-gray-700 min-w-45px text-end" id="grid_cols_label">8 Kolom</span>
+                    </div>
+
+                    <!-- Filter Status -->
+                    <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
+                        <select name="status" class="form-select form-select-sm form-select-solid fw-bold rounded-pill" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
+                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                            <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
+                            <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
+                        </select>
+                    </form>
+
+                    <!-- Upload Modal Trigger Button -->
+                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
+                        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Full Width Gallery Grid Container -->
         <div class="row">
@@ -249,7 +258,7 @@
                                             </button>
                                         @endif
                                         <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-detail" 
-                                                title="Detail Transaksi" 
+                                                title="Detail Transaksi (Offcanvas)" 
                                                 data-id="{{ $proof->id }}">
                                             <i class="ki-duotone ki-eye fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                         </button>
@@ -328,53 +337,24 @@
     </div>
 </div>
 
-<!-- Modal Detail Bukti Transaksi -->
-<div class="modal fade" id="kt_modal_proof_detail" tabindex="-1" aria-hidden="true">
-    <!-- Floating Navigation Buttons (Desktop only) -->
-    <button type="button" class="btn btn-icon btn-circle btn-color-gray-600 btn-active-color-primary bg-white shadow btn-modal-prev position-fixed d-none d-md-flex" 
-            style="left: 30px; top: 50%; transform: translateY(-50%); z-index: 9999; width: 60px; height: 60px; border: 1px solid #e1e3ea; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;" 
-            title="Sebelumnya">
-        <i class="fa-solid fa-chevron-left fs-1"></i>
-    </button>
-    <button type="button" class="btn btn-icon btn-circle btn-color-gray-600 btn-active-color-primary bg-white shadow btn-modal-next position-fixed d-none d-md-flex" 
-            style="right: 30px; top: 50%; transform: translateY(-50%); z-index: 9999; width: 60px; height: 60px; border: 1px solid #e1e3ea; box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;" 
-            title="Selanjutnya">
-        <i class="fa-solid fa-chevron-right fs-1"></i>
-    </button>
-
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content rounded-3">
-            <div class="modal-header py-3">
-                <div class="d-flex align-items-center gap-2">
-                    <!-- Small Navigation Buttons (Mobile only) -->
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-prev d-inline-flex d-md-none" title="Bukti Sebelumnya">
-                        <i class="fa-solid fa-chevron-left fs-4 text-gray-700"></i>
-                    </button>
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-modal-next d-inline-flex d-md-none" title="Bukti Selanjutnya">
-                        <i class="fa-solid fa-chevron-right fs-4 text-gray-700"></i>
-                    </button>
-                    <h3 class="modal-title ms-3 ms-md-0 fw-bold text-gray-800" id="modal_proof_title">Detail Bukti Transaksi</h3>
-                </div>
-                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
-                </div>
-            </div>
-            <div class="modal-body p-6 bg-light" id="modal_proof_body">
-                <!-- AJAX loaded content will be placed here -->
-            </div>
+<!-- Offcanvas Detail Bukti Transaksi Drawer -->
+<div class="offcanvas offcanvas-end w-100 w-md-650px w-xl-800px shadow-lg" tabindex="-1" id="kt_offcanvas_proof_detail" aria-labelledby="offcanvas_proof_title" style="z-index: 1060;">
+    <div class="offcanvas-header py-4 px-6 border-bottom bg-body d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-icon btn-sm btn-light btn-offcanvas-prev me-1" title="Bukti Sebelumnya">
+                <i class="fa-solid fa-chevron-left fs-4 text-gray-700"></i>
+            </button>
+            <button type="button" class="btn btn-icon btn-sm btn-light btn-offcanvas-next me-2" title="Bukti Selanjutnya">
+                <i class="fa-solid fa-chevron-right fs-4 text-gray-700"></i>
+            </button>
+            <h4 class="offcanvas-title fw-bold text-gray-800 text-truncate mb-0" id="offcanvas_proof_title" style="max-width: 450px;">Detail Bukti Transaksi</h4>
         </div>
-    </div>
-</div>
-
-<!-- Floating Search Bar at Bottom -->
-<div class="floating-search-bar">
-    <div class="floating-search-card d-flex align-items-center">
-        <i class="ki-duotone ki-magnifier fs-2 text-primary me-2"><span class="path1"></span><span class="path2"></span></i>
-        <input type="text" id="floating_search_input" class="form-control form-control-flush fs-6 fw-semibold text-gray-800 bg-transparent" placeholder="Cari nama bukti transaksi..." autocomplete="off">
-        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary d-none me-1" id="clear_search_btn" title="Hapus pencarian">
-            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
         </button>
-        <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-1 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
+    </div>
+    <div class="offcanvas-body p-6 bg-light" id="offcanvas_proof_body">
+        <!-- AJAX loaded content will be placed here -->
     </div>
 </div>
 @endsection
@@ -382,205 +362,199 @@
 @push('scripts')
 <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 <script>
-    // Grid Column Slider Logic
-    var savedCols = localStorage.getItem('proof_grid_cols') || '8';
-    $('#grid_cols_range').val(savedCols);
-    updateGridCols(savedCols);
+    $(document).ready(function() {
+        // Grid Column Slider Logic
+        var savedCols = localStorage.getItem('proof_grid_cols') || '8';
+        $('#grid_cols_range').val(savedCols);
+        updateGridCols(savedCols);
 
-    $('#grid_cols_range').on('input change', function() {
-        var cols = $(this).val();
-        updateGridCols(cols);
-        localStorage.setItem('proof_grid_cols', cols);
-    });
+        $('#grid_cols_range').on('input change', function() {
+            var cols = $(this).val();
+            updateGridCols(cols);
+            localStorage.setItem('proof_grid_cols', cols);
+        });
 
-    function updateGridCols(cols) {
-        document.documentElement.style.setProperty('--grid-cols', cols);
-        $('#grid_cols_label').text(cols + ' Kolom');
-    }
+        function updateGridCols(cols) {
+            document.documentElement.style.setProperty('--grid-cols', cols);
+            $('#grid_cols_label').text(cols + ' Kolom');
+        }
 
-    // Initialize Dropzone for Multi-Upload
-    Dropzone.autoDiscover = false;
-    var myDropzone = new Dropzone("#kt_dropzone_proof", {
-        url: "{{ route('transaction-proofs.store') }}",
-        paramName: "file",
-        maxFiles: 50,
-        maxFilesize: 5, // MB
-        parallelUploads: 5,
-        addRemoveLinks: true,
-        autoProcessQueue: false,
-        acceptedFiles: ".jpeg,.jpg,.png,.pdf",
-        headers: {
-            'X-CSRF-TOKEN': "{{ csrf_token() }}"
-        },
-        init: function() {
-            var submitButton = document.querySelector("#submit_dropzone");
-            var myDropzone = this;
+        // Initialize Dropzone for Multi-Upload
+        Dropzone.autoDiscover = false;
+        var myDropzone = new Dropzone("#kt_dropzone_proof", {
+            url: "{{ route('transaction-proofs.store') }}",
+            paramName: "file",
+            maxFiles: 50,
+            maxFilesize: 5, // MB
+            parallelUploads: 5,
+            addRemoveLinks: true,
+            autoProcessQueue: false,
+            acceptedFiles: ".jpeg,.jpg,.png,.pdf",
+            headers: {
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            init: function() {
+                var submitButton = document.querySelector("#submit_dropzone");
+                var myDropzone = this;
 
-            function renderNamingContainer() {
-                var files = myDropzone.files;
-                var wrapper = $("#multi_naming_wrapper");
-                var container = $("#file_names_container");
+                function renderNamingContainer() {
+                    var files = myDropzone.files;
+                    var wrapper = $("#multi_naming_wrapper");
+                    var container = $("#file_names_container");
 
-                if (files.length === 0) {
-                    wrapper.hide();
+                    if (files.length === 0) {
+                        wrapper.hide();
+                        container.empty();
+                        return;
+                    }
+
+                    wrapper.show();
+
+                    // Preserve existing input values
+                    var existingValues = {};
+                    container.find('.proof-file-name-input').each(function() {
+                        var uuid = $(this).data('uuid');
+                        existingValues[uuid] = $(this).val();
+                    });
+
                     container.empty();
-                    return;
-                }
 
-                wrapper.show();
+                    files.forEach(function(file, index) {
+                        var uuid = file.upload ? file.upload.uuid : index;
+                        var defaultName = file.name.replace(/\.[^/.]+$/, "");
+                        var currentVal = existingValues[uuid] !== undefined ? existingValues[uuid] : defaultName;
 
-                // Preserve existing input values
-                var existingValues = {};
-                container.find('.proof-file-name-input').each(function() {
-                    var uuid = $(this).data('uuid');
-                    existingValues[uuid] = $(this).val();
-                });
-
-                container.empty();
-
-                files.forEach(function(file, index) {
-                    var uuid = file.upload ? file.upload.uuid : index;
-                    var defaultName = file.name.replace(/\.[^/.]+$/, "");
-                    var currentVal = existingValues[uuid] !== undefined ? existingValues[uuid] : defaultName;
-
-                    var fileRow = `
-                        <div class="d-flex align-items-center gap-2 p-2 bg-light rounded border">
-                            <i class="fa ${file.type === 'application/pdf' ? 'fa-file-pdf text-danger' : 'fa-file-image text-primary'} fs-5"></i>
-                            <span class="fs-8 text-gray-700 text-truncate fw-semibold flex-grow-1" style="max-width: 140px;" title="${file.name}">${file.name}</span>
-                            <input type="text" 
-                                   class="form-control form-control-solid form-control-sm py-1 px-2 fs-8 proof-file-name-input" 
-                                   data-uuid="${uuid}" 
-                                   placeholder="Nama Bukti..." 
-                                   value="${currentVal}">
-                        </div>
-                    `;
-                    container.append(fileRow);
-                });
-            }
-
-            this.on("addedfile", function(file) {
-                renderNamingContainer();
-                // Ensure upload modal is open when file is added
-                if (!$('#kt_modal_upload_proof').hasClass('show')) {
-                    $('#kt_modal_upload_proof').modal('show');
-                }
-            });
-
-            this.on("removedfile", function(file) {
-                renderNamingContainer();
-            });
-
-            submitButton.addEventListener("click", function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (myDropzone.getQueuedFiles().length > 0) {
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengunggah...';
-                    myDropzone.processQueue();
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Perhatian',
-                        text: 'Pilih minimal 1 file terlebih dahulu!',
-                        customClass: { confirmButton: 'btn btn-primary' }
+                        var fileRow = `
+                            <div class="d-flex align-items-center gap-2 p-2 bg-light rounded border">
+                                <i class="fa ${file.type === 'application/pdf' ? 'fa-file-pdf text-danger' : 'fa-file-image text-primary'} fs-5"></i>
+                                <span class="fs-8 text-gray-700 text-truncate fw-semibold flex-grow-1" style="max-width: 140px;" title="${file.name}">${file.name}</span>
+                                <input type="text" 
+                                       class="form-control form-control-sm form-control-solid proof-file-name-input flex-grow-1" 
+                                       data-uuid="${uuid}" 
+                                       placeholder="Nama Bukti..." 
+                                       value="${currentVal}">
+                            </div>
+                        `;
+                        container.append(fileRow);
                     });
                 }
-            });
 
-            this.on("sending", function(file, xhr, formData) {
-                var uuid = file.upload ? file.upload.uuid : '';
-                var inputEl = $(`input[data-uuid="${uuid}"]`);
-                var customName = inputEl.length ? inputEl.val().trim() : '';
-                if (!customName) {
-                    customName = file.name.replace(/\.[^/.]+$/, "");
-                }
-                formData.append("name", customName);
-            });
-
-            this.on("queuecomplete", function() {
-                submitButton.disabled = false;
-                submitButton.innerHTML = 'Upload Semua Bukti';
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Semua bukti transaksi berhasil diunggah!',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.reload();
+                this.on("addedfile", function(file) {
+                    renderNamingContainer();
                 });
-            });
 
-            this.on("error", function(file, response) {
-                submitButton.disabled = false;
-                submitButton.innerHTML = 'Upload Semua Bukti';
-                let msg = typeof response === 'object' ? (response.message || 'Gagal mengunggah file') : response;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Upload Gagal',
-                    text: msg,
-                    customClass: { confirmButton: 'btn btn-primary' }
+                this.on("removedfile", function(file) {
+                    renderNamingContainer();
                 });
-            });
-        }
-    });
 
-    // Global Clipboard Paste Event Listener (CTRL+V)
-    $(document).on('paste', function(e) {
-        var clipboardData = (e.originalEvent || e).clipboardData;
-        if (!clipboardData || !clipboardData.items) return;
-        
-        var items = clipboardData.items;
-        var pastedCount = 0;
+                this.on("reset", function() {
+                    renderNamingContainer();
+                });
 
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            if (item.kind === 'file' || item.type.indexOf('image') !== -1) {
-                var blob = item.getAsFile();
-                if (blob) {
-                    var ext = blob.type.split('/')[1] || 'png';
-                    if (ext === 'jpeg') ext = 'jpg';
-                    var now = new Date();
-                    var dateStr = now.getFullYear() +
-                                  String(now.getMonth() + 1).padStart(2, '0') +
-                                  String(now.getDate()).padStart(2, '0') + "_" +
-                                  String(now.getHours()).padStart(2, '0') +
-                                  String(now.getMinutes()).padStart(2, '0');
-                    var fileName = "Paste_" + dateStr + (pastedCount > 0 ? "_" + (pastedCount + 1) : "") + "." + ext;
-                    
-                    var file = new File([blob], fileName, { type: blob.type });
-                    myDropzone.addFile(file);
-                    pastedCount++;
+                submitButton.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        Swal.fire({
+                            title: 'Mengunggah Bukti Transaksi...',
+                            text: 'Mohon tunggu hingga seluruh berkas terunggah',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading()
+                            }
+                        });
+                        myDropzone.processQueue();
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Peringatan',
+                            text: 'Pilih minimal satu file bukti transaksi untuk diunggah.'
+                        });
+                    }
+                });
+
+                this.on("sendingmultiple", function(data, xhr, formData) {
+                    var container = $("#file_names_container");
+                    myDropzone.files.forEach(function(file, index) {
+                        var uuid = file.upload ? file.upload.uuid : index;
+                        var input = container.find(`.proof-file-name-input[data-uuid="${uuid}"]`);
+                        var customName = input.length ? input.val() : '';
+                        formData.append(`names[${index}]`, customName);
+                    });
+                });
+
+                this.on("successmultiple", function(files, response) {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message || 'File bukti transaksi berhasil diunggah',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                });
+
+                this.on("errormultiple", function(files, response) {
+                    Swal.close();
+                    let errMsg = typeof response === 'string' ? response : (response.message || 'Gagal mengunggah file.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Upload',
+                        text: errMsg
+                    });
+                });
+            }
+        });
+
+        // Global Paste (CTRL+V) Event for Image Upload
+        $(document).on('paste', function(e) {
+            var clipboardData = (e.originalEvent || e).clipboardData;
+            if (!clipboardData || !clipboardData.items) return;
+
+            var items = clipboardData.items;
+            var hasImage = false;
+
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    var file = items[i].getAsFile();
+                    if (file) {
+                        var timeStamp = new Date().toISOString().replace(/[-:T.]/g, "").slice(0, 14);
+                        var ext = file.type.split('/')[1] || 'png';
+                        var newFileName = "Pasted_Proof_" + timeStamp + "." + ext;
+                        
+                        var renamedFile = new File([file], newFileName, { type: file.type });
+                        myDropzone.addFile(renamedFile);
+                        hasImage = true;
+                    }
                 }
             }
-        }
 
-        if (pastedCount > 0) {
-            if (!$('#kt_modal_upload_proof').hasClass('show')) {
-                $('#kt_modal_upload_proof').modal('show');
+            if (hasImage) {
+                var modalEl = document.getElementById('kt_modal_upload_proof');
+                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+
+                Toastify({
+                    text: "Gambar berhasil dipaste dari clipboard!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "linear-[#1E1E2D]",
+                        borderRadius: "8px"
+                    }
+                }).showToast();
             }
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 2500,
-                timerProgressBar: true
-            });
-            Toast.fire({
-                icon: 'info',
-                title: pastedCount + ' gambar dari clipboard ditambahkan!'
-            });
-        }
-    });
+        });
 
-    $(document).ready(function() {
-        // Floating Live Search Filter
+        // Live Search Input Filtering
         $('#floating_search_input').on('input', function() {
-            var query = $(this).val().toLowerCase().trim();
-            var matchCount = 0;
-            var totalCards = $('.proof-card').length;
+            let query = $(this).val().toLowerCase().trim();
+            let cards = $('.proof-card');
+            let totalCards = cards.length;
+            let matchCount = 0;
 
             if (query.length > 0) {
                 $('#clear_search_btn').removeClass('d-none');
@@ -588,13 +562,13 @@
                 $('#clear_search_btn').addClass('d-none');
             }
 
-            $('.proof-card').each(function() {
-                var name = $(this).data('name') || '';
-                if (name.indexOf(query) !== -1) {
-                    $(this).show();
+            cards.each(function() {
+                let cardName = $(this).attr('data-name') || '';
+                if (cardName.indexOf(query) !== -1) {
+                    $(this).removeClass('d-none');
                     matchCount++;
                 } else {
-                    $(this).hide();
+                    $(this).addClass('d-none');
                 }
             });
 
@@ -756,9 +730,11 @@
             });
         });
 
-        // Modal navigation variables
+        // Offcanvas Navigation & Instance
         let activeProofIds = [];
         let currentProofIndex = -1;
+        let offcanvasEl = document.getElementById('kt_offcanvas_proof_detail');
+        let proofOffcanvas = offcanvasEl ? bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl) : null;
 
         // Function to populate activeProofIds array
         function updateActiveProofIds() {
@@ -779,9 +755,9 @@
             updateActiveProofIds();
         });
 
-        // Function to load proof details into modal
+        // Function to load proof details into Offcanvas
         function loadProofDetail(proofId) {
-            let container = $('#modal_proof_body');
+            let container = $('#offcanvas_proof_body');
             
             // Show loading spinner
             container.html(`
@@ -796,8 +772,8 @@
             currentProofIndex = activeProofIds.indexOf(proofId);
 
             // Enable/disable navigation buttons
-            $('.btn-modal-prev').prop('disabled', currentProofIndex <= 0);
-            $('.btn-modal-next').prop('disabled', currentProofIndex === -1 || currentProofIndex >= activeProofIds.length - 1);
+            $('.btn-offcanvas-prev').prop('disabled', currentProofIndex <= 0);
+            $('.btn-offcanvas-next').prop('disabled', currentProofIndex === -1 || currentProofIndex >= activeProofIds.length - 1);
 
             // Fetch detail content via AJAX
             $.ajax({
@@ -807,9 +783,14 @@
                 success: function(html) {
                     container.html(html);
                     
-                    // Update modal title with current proof name
+                    // Re-init FSLightbox if available
+                    if (typeof refreshFsLightbox === 'function') {
+                        refreshFsLightbox();
+                    }
+
+                    // Update offcanvas title with current proof name
                     let proofName = container.find('.modal-proof-display-name').text() || 'Detail Bukti Transaksi';
-                    $('#modal_proof_title').text('Detail Bukti: ' + proofName);
+                    $('#offcanvas_proof_title').text('Detail: ' + proofName).attr('title', proofName);
                 },
                 error: function(xhr) {
                     let msg = "Gagal memuat rincian bukti transaksi.";
@@ -829,7 +810,7 @@
             });
         }
 
-        // Handle eye/detail button click
+        // Handle eye/detail button click -> Open Offcanvas
         $(document).on('click', '.btn-view-detail', function() {
             let button = $(this);
             let proofId = parseInt(button.data('id'));
@@ -840,30 +821,32 @@
             // Load details
             loadProofDetail(proofId);
 
-            // Open modal
-            $('#kt_modal_proof_detail').modal('show');
+            // Open Offcanvas drawer
+            if (proofOffcanvas) {
+                proofOffcanvas.show();
+            }
         });
 
-        // Handle prev button click
-        $('.btn-modal-prev').on('click', function() {
+        // Handle prev button click in Offcanvas
+        $('.btn-offcanvas-prev').on('click', function() {
             if (currentProofIndex > 0) {
                 let prevId = activeProofIds[currentProofIndex - 1];
                 loadProofDetail(prevId);
             }
         });
 
-        // Handle next button click
-        $('.btn-modal-next').on('click', function() {
+        // Handle next button click in Offcanvas
+        $('.btn-offcanvas-next').on('click', function() {
             if (currentProofIndex !== -1 && currentProofIndex < activeProofIds.length - 1) {
                 let nextId = activeProofIds[currentProofIndex + 1];
                 loadProofDetail(nextId);
             }
         });
 
-        // Keyboard arrow navigation
+        // Keyboard arrow navigation for Offcanvas
         $(document).on('keydown', function(e) {
-            // Only navigate if the detail modal is currently open/visible
-            if ($('#kt_modal_proof_detail').hasClass('show')) {
+            // Only navigate if the offcanvas drawer is currently open/visible
+            if ($('#kt_offcanvas_proof_detail').hasClass('show')) {
                 if (e.which === 37) { // Left arrow key
                     if (currentProofIndex > 0) {
                         let prevId = activeProofIds[currentProofIndex - 1];
