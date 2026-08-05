@@ -38,6 +38,15 @@ class GitPullController extends Controller
                 $output = 'Gagal menjalankan perintah shell_exec git pull.';
             }
 
+            // Automatically clear route, view, and config cache so new routes are registered immediately
+            try {
+                \Illuminate\Support\Facades\Artisan::call('route:clear');
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+            } catch (\Throwable $ex) {
+                // Ignore cache clear error if artisan command fails
+            }
+
             $trimmedOutput = trim($output);
             $isError = (bool) preg_match('/(fatal:|error:|Permission denied)/i', $trimmedOutput);
 

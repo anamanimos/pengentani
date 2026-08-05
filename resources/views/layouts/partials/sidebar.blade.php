@@ -147,6 +147,7 @@
                     </div>
                     <!--end:Menu item-->
 
+                    @if(\Illuminate\Support\Facades\Route::has('settings.storage.index'))
                     <!--begin:Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
@@ -161,6 +162,7 @@
                         <!--end:Menu link-->
                     </div>
                     <!--end:Menu item-->
+                    @endif
 
                     <!--begin:Menu item-->
                     <div class="menu-item">
