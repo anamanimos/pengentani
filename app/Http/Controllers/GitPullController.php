@@ -28,26 +28,33 @@ class GitPullController extends Controller
             $basePath = base_path();
             chdir($basePath);
 
-            // Execute git pull
-            $output = shell_exec('git pull 2>&1');
+            // Automatically configure safe directory both globally and inline to fix dubious ownership on Linux servers
+            shell_exec('git config --global --add safe.directory ' . escapeshellarg($basePath) . ' 2>&1');
+            shell_exec('git config --global --add safe.directory "*" 2>&1');
+
+            // Execute git pull with inline safe.directory configuration
+            $output = shell_exec('git -c safe.directory="*" -c safe.directory=' . escapeshellarg($basePath) . ' pull 2>&1');
             if ($output === null) {
                 $output = 'Gagal menjalankan perintah shell_exec git pull.';
             }
 
-            Log::info("Git pull executed by user ID {$user->id} ({$user->name}): " . $output);
+            $trimmedOutput = trim($output);
+            $isError = (bool) preg_match('/(fatal:|error:|Permission denied)/i', $trimmedOutput);
+
+            Log::info("Git pull executed by user ID {$user->id} ({$user->name}): " . $trimmedOutput);
 
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Git pull berhasil dieksekusi',
-                    'output' => trim($output)
-                ]);
+                    'success' => !$isError,
+                    'message' => $isError ? 'Gagal mengeksekusi git pull' : 'Git pull berhasil dieksekusi',
+                    'output' => $trimmedOutput
+                ], $isError ? 500 : 200);
             }
 
             return view('git_pull_result', [
-                'output' => trim($output),
+                'output' => $trimmedOutput,
                 'user' => $user,
-                'isError' => false
+                'isError' => $isError
             ]);
         } catch (\Exception $e) {
             Log::error("Git pull error: " . $e->getMessage());
