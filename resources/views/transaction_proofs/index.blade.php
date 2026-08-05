@@ -1,23 +1,70 @@
 @extends('layouts.metronic')
 
-@section('title', 'Kelola Bukti Transaksi')
+@section('title', 'Galeri Bukti Transaksi')
 
 <style>
+    :root {
+        --grid-cols: 8;
+    }
+
+    .proof-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--grid-cols, 8), minmax(0, 1fr));
+        gap: 14px;
+        transition: grid-template-columns 0.3s ease;
+    }
+
+    @media (max-width: 1600px) {
+        .proof-gallery-grid {
+            grid-template-columns: repeat(min(var(--grid-cols, 8), 6), minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 1200px) {
+        .proof-gallery-grid {
+            grid-template-columns: repeat(min(var(--grid-cols, 8), 4), minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 768px) {
+        .proof-gallery-grid {
+            grid-template-columns: repeat(min(var(--grid-cols, 8), 3), minmax(0, 1fr));
+        }
+    }
+    @media (max-width: 480px) {
+        .proof-gallery-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
     .proof-card-item {
         position: relative;
         overflow: hidden;
         width: 100%;
-        height: 180px;
-        background-color: #000;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: calc(140px + (8 - var(--grid-cols, 8)) * 22px);
+        min-height: 140px;
+        max-height: 280px;
+        background-color: #1a1a27;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, height 0.3s ease;
+    }
+
+    [data-bs-theme="dark"] .proof-card-item {
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     
+    .proof-card-item:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px);
+    }
+
     .proof-card-item .proof-img {
         width: 100%;
         height: 100%;
         background-size: cover;
         background-position: center;
-        transition: transform 0.4s ease;
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
     
     .proof-card-item .proof-pdf-placeholder {
@@ -34,7 +81,7 @@
     
     .proof-card-item:hover .proof-img,
     .proof-card-item:hover .proof-pdf-placeholder {
-        transform: scale(1.1);
+        transform: scale(1.08);
     }
     
     .proof-card-item .proof-overlay {
@@ -43,13 +90,13 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.85) 100%);
+        background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.85) 100%);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 12px;
+        padding: 10px;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.25s ease;
         z-index: 2;
         pointer-events: none;
     }
@@ -62,6 +109,33 @@
     .proof-overlay-badge {
         pointer-events: auto;
     }
+
+    /* Floating Search Bar */
+    .floating-search-bar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1040;
+        width: 90%;
+        max-width: 480px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .floating-search-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 50rem;
+        padding: 6px 16px;
+    }
+
+    [data-bs-theme="dark"] .floating-search-card {
+        background: rgba(30, 30, 45, 0.92);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
 </style>
 
 @section('page_title')
@@ -69,20 +143,35 @@
 @endsection
 
 @section('page_actions')
-<form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
-    <select name="status" class="form-select form-select-sm form-select-solid fw-bold" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
-        <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-        <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
-        <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
-    </select>
-</form>
+<div class="d-flex align-items-center gap-3">
+    <!-- Grid Volume/Column Slider -->
+    <div class="d-none d-sm-flex align-items-center gap-2 bg-body rounded-pill px-3 py-1 border shadow-xs" title="Atur Ukuran Grid Galeri">
+        <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+        <input type="range" class="form-range" id="grid_cols_range" min="3" max="8" value="8" step="1" style="width: 90px; cursor: pointer;">
+        <span class="fs-8 fw-bold text-gray-700 min-w-45px text-end" id="grid_cols_label">8 Kolom</span>
+    </div>
+
+    <!-- Filter Status -->
+    <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
+        <select name="status" class="form-select form-select-sm form-select-solid fw-bold rounded-pill" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
+            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+            <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
+            <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
+        </select>
+    </form>
+
+    <!-- Upload Modal Trigger Button -->
+    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
+        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
+    </button>
+</div>
 @endsection
 
 @section('content')
-<div class="app-content flex-column-fluid">
+<div class="app-content flex-column-fluid pb-15">
     <div class="app-container container-fluid">
         @if(session('success'))
-        <div class="alert alert-success d-flex align-items-center p-5 mb-5">
+        <div class="alert alert-success d-flex align-items-center p-5 mb-5 rounded-3 shadow-xs">
             <i class="ki-duotone ki-check-circle fs-2hx text-success me-4"><span class="path1"></span><span class="path2"></span></i>
             <div class="d-flex flex-column">
                 <h4 class="mb-1 text-success">Berhasil</h4>
@@ -92,7 +181,7 @@
         @endif
 
         @if($errors->any())
-        <div class="alert alert-danger d-flex align-items-center p-5 mb-5">
+        <div class="alert alert-danger d-flex align-items-center p-5 mb-5 rounded-3 shadow-xs">
             <i class="ki-duotone ki-information fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
             <div class="d-flex flex-column">
                 <h4 class="mb-1 text-danger">Terjadi Kesalahan</h4>
@@ -107,51 +196,12 @@
         </div>
         @endif
 
-        <div class="row g-5 g-xl-8">
-            <!-- Left Side: Dropzone Area (4 columns, Sticky & Auto-Height) -->
-            <div class="col-xl-4">
-                <div class="card card-flush shadow-sm sticky-top" style="top: 90px; z-index: 10;">
-                    <div class="card-header pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold text-gray-800">Upload Bukti Multi File</span>
-                            <span class="text-gray-500 mt-1 fw-semibold fs-7">Tarik-lepas file atau Paste (CTRL+V)</span>
-                        </h3>
-                    </div>
-                    <div class="card-body pt-3 pb-5">
-                        <form class="form" action="{{ route('transaction-proofs.store') }}" method="POST" enctype="multipart/form-data" id="kt_dropzone_form">
-                            @csrf
-                            <!-- Dropzone Area -->
-                            <div class="dropzone border-dashed border-primary bg-light-primary rounded" id="kt_dropzone_proof">
-                                <div class="dz-message needsclick text-center py-4">
-                                    <i class="ki-duotone ki-file-up fs-3x text-primary mb-2"><span class="path1"></span><span class="path2"></span></i>
-                                    <div class="ms-0">
-                                        <h3 class="fs-6 fw-bold text-gray-900 mb-1">Tarik file ke sini, Paste (CTRL+V), atau klik.</h3>
-                                        <span class="fs-8 fw-semibold text-gray-500">Bisa upload banyak file/gambar clipboard sekaligus (JPG, PNG, PDF max 5MB)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Multi-naming container -->
-                            <div class="mt-4" id="multi_naming_wrapper" style="display: none;">
-                                <label class="fs-7 fw-bold text-gray-800 mb-2 d-block">Penamaan File Bukti (Opsional):</label>
-                                <div id="file_names_container" class="d-flex flex-column gap-2 pe-1" style="max-height: 250px; overflow-y: auto;">
-                                </div>
-                            </div>
-
-                            <div class="mt-5">
-                                <button type="submit" class="btn btn-primary w-100 fw-bold" id="submit_dropzone">Upload Semua Bukti</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Side: Gallery Area (8 columns, Frameless Look & No Card Shadow/Background) -->
-            <div class="col-xl-8">
-                <!-- Frameless Gallery Grid -->
-                <div class="row g-0">
+        <!-- Full Width Gallery Grid Container -->
+        <div class="row">
+            <div class="col-12">
+                <div class="proof-gallery-grid" id="proof_gallery_grid">
                     @forelse($proofs as $proof)
-                    <div class="col-xl-3 col-md-4 col-sm-6 proof-card" data-id="{{ $proof->id }}">
+                    <div class="proof-card" data-id="{{ $proof->id }}" data-name="{{ strtolower($proof->name) }}">
                         <div class="proof-card-item">
                             <a href="{{ Storage::url($proof->file_path) }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
                             
@@ -170,15 +220,15 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="proof-overlay-badge" style="z-index: 3;">
                                         @if($proof->is_used)
-                                            <span class="badge badge-success fw-bold fs-9 py-1" title="Terikat dengan data">Sudah Digunakan</span>
+                                            <span class="badge badge-success fw-bold fs-9 py-1 rounded-pill" title="Terikat dengan data">Sudah Digunakan</span>
                                         @else
-                                            <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75 fs-9 py-1" title="Belum terikat data">Belum Digunakan</span>
+                                            <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75 fs-9 py-1 rounded-pill" title="Belum terikat data">Belum Digunakan</span>
                                         @endif
                                     </div>
                                     <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline proof-overlay-btn" style="z-index: 3;" onsubmit="return confirm('Hapus bukti ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-90 w-25px h-25px" title="Hapus Bukti">
+                                        <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-90 w-25px h-25px rounded-circle" title="Hapus Bukti">
                                             <i class="ki-duotone ki-trash fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                                         </button>
                                     </form>
@@ -193,19 +243,19 @@
                                     <!-- Rename and History Buttons -->
                                     <div class="d-flex gap-1 proof-overlay-btn" style="z-index: 3;">
                                         @if(!empty($proof->rename_history))
-                                            <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-view-history" 
+                                            <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-history" 
                                                     title="Lihat Riwayat Nama" 
                                                     data-name="{{ $proof->name }}"
                                                     data-history="{{ json_encode($proof->rename_history) }}">
                                                 <i class="fa fa-history text-gray-700 fs-9"></i>
                                             </button>
                                         @endif
-                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-view-detail" 
+                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-detail" 
                                                 title="Detail Transaksi" 
                                                 data-id="{{ $proof->id }}">
                                             <i class="ki-duotone ki-eye fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                         </button>
-                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px btn-rename" 
+                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-rename" 
                                                 title="Ganti Nama" 
                                                 data-id="{{ $proof->id }}" 
                                                 data-name="{{ $proof->name }}"
@@ -218,12 +268,64 @@
                         </div>
                     </div>
                     @empty
-                    <div class="col-12 text-center text-muted py-10 bg-white">
-                        Belum ada bukti transaksi.
+                    <div class="col-12 text-center text-muted py-15 bg-body rounded-3 border">
+                        <i class="ki-duotone ki-file-slash fs-3x text-gray-400 mb-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div class="fs-5 fw-bold text-gray-700">Belum Ada Bukti Transaksi</div>
+                        <span class="fs-7 text-gray-500">Klik tombol Upload Bukti untuk menambahkan berkas baru.</span>
                     </div>
                     @endforelse
                 </div>
+
+                <!-- Empty Search Result Indicator -->
+                <div id="no_search_results" class="d-none text-center text-muted py-15 bg-body rounded-3 border mt-4">
+                    <i class="ki-duotone ki-magnifier fs-3x text-gray-400 mb-3"><span class="path1"></span><span class="path2"></span></i>
+                    <div class="fs-5 fw-bold text-gray-700">Tidak Ada Bukti Transaksi Sesuai</div>
+                    <span class="fs-7 text-gray-500">Coba ubah kata kunci pencarian Anda.</span>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Upload Bukti Transaksi -->
+<div class="modal fade" id="kt_modal_upload_proof" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content rounded-3">
+            <div class="modal-header py-4 px-6">
+                <h3 class="fw-bold modal-title text-gray-800 d-flex align-items-center">
+                    <i class="ki-duotone ki-file-up fs-1 text-primary me-2"><span class="path1"></span><span class="path2"></span></i>
+                    Upload Bukti Transaksi
+                </h3>
+                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <form class="form" action="{{ route('transaction-proofs.store') }}" method="POST" enctype="multipart/form-data" id="kt_dropzone_form">
+                @csrf
+                <div class="modal-body scroll-y px-6 py-5">
+                    <!-- Dropzone Area -->
+                    <div class="dropzone border-dashed border-primary bg-light-primary rounded-3" id="kt_dropzone_proof">
+                        <div class="dz-message needsclick text-center py-5">
+                            <i class="ki-duotone ki-cloud-upload fs-4x text-primary mb-3"><span class="path1"></span><span class="path2"></span></i>
+                            <div class="ms-0">
+                                <h3 class="fs-6 fw-bold text-gray-900 mb-1">Tarik file ke sini, Paste (CTRL+V), atau klik untuk upload.</h3>
+                                <span class="fs-8 fw-semibold text-gray-500">Dapat pilih banyak file sekaligus (JPG, PNG, PDF max 5MB/file)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-naming container -->
+                    <div class="mt-4" id="multi_naming_wrapper" style="display: none;">
+                        <label class="fs-7 fw-bold text-gray-800 mb-2 d-block">Penamaan File Bukti (Opsional):</label>
+                        <div id="file_names_container" class="d-flex flex-column gap-2 pe-1" style="max-height: 250px; overflow-y: auto;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer flex-center py-4 px-6">
+                    <button type="button" data-bs-dismiss="modal" class="btn btn-light me-3 fw-bold rounded-pill">Batal</button>
+                    <button type="submit" class="btn btn-primary fw-bold rounded-pill px-6" id="submit_dropzone">Upload Semua Bukti</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -243,7 +345,7 @@
     </button>
 
     <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content">
+        <div class="modal-content rounded-3">
             <div class="modal-header py-3">
                 <div class="d-flex align-items-center gap-2">
                     <!-- Small Navigation Buttons (Mobile only) -->
@@ -265,11 +367,39 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Search Bar at Bottom -->
+<div class="floating-search-bar">
+    <div class="floating-search-card d-flex align-items-center">
+        <i class="ki-duotone ki-magnifier fs-2 text-primary me-2"><span class="path1"></span><span class="path2"></span></i>
+        <input type="text" id="floating_search_input" class="form-control form-control-flush fs-6 fw-semibold text-gray-800 bg-transparent" placeholder="Cari nama bukti transaksi..." autocomplete="off">
+        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary d-none me-1" id="clear_search_btn" title="Hapus pencarian">
+            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+        </button>
+        <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-1 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script src="{{ asset('assets/plugins/custom/fslightbox/fslightbox.bundle.js') }}"></script>
 <script>
+    // Grid Column Slider Logic
+    var savedCols = localStorage.getItem('proof_grid_cols') || '8';
+    $('#grid_cols_range').val(savedCols);
+    updateGridCols(savedCols);
+
+    $('#grid_cols_range').on('input change', function() {
+        var cols = $(this).val();
+        updateGridCols(cols);
+        localStorage.setItem('proof_grid_cols', cols);
+    });
+
+    function updateGridCols(cols) {
+        document.documentElement.style.setProperty('--grid-cols', cols);
+        $('#grid_cols_label').text(cols + ' Kolom');
+    }
+
     // Initialize Dropzone for Multi-Upload
     Dropzone.autoDiscover = false;
     var myDropzone = new Dropzone("#kt_dropzone_proof", {
@@ -318,7 +448,7 @@
                     var fileRow = `
                         <div class="d-flex align-items-center gap-2 p-2 bg-light rounded border">
                             <i class="fa ${file.type === 'application/pdf' ? 'fa-file-pdf text-danger' : 'fa-file-image text-primary'} fs-5"></i>
-                            <span class="fs-8 text-gray-700 text-truncate fw-semibold flex-grow-1" style="max-width: 130px;" title="${file.name}">${file.name}</span>
+                            <span class="fs-8 text-gray-700 text-truncate fw-semibold flex-grow-1" style="max-width: 140px;" title="${file.name}">${file.name}</span>
                             <input type="text" 
                                    class="form-control form-control-solid form-control-sm py-1 px-2 fs-8 proof-file-name-input" 
                                    data-uuid="${uuid}" 
@@ -332,6 +462,10 @@
 
             this.on("addedfile", function(file) {
                 renderNamingContainer();
+                // Ensure upload modal is open when file is added
+                if (!$('#kt_modal_upload_proof').hasClass('show')) {
+                    $('#kt_modal_upload_proof').modal('show');
+                }
             });
 
             this.on("removedfile", function(file) {
@@ -426,6 +560,9 @@
         }
 
         if (pastedCount > 0) {
+            if (!$('#kt_modal_upload_proof').hasClass('show')) {
+                $('#kt_modal_upload_proof').modal('show');
+            }
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -441,12 +578,47 @@
     });
 
     $(document).ready(function() {
+        // Floating Live Search Filter
+        $('#floating_search_input').on('input', function() {
+            var query = $(this).val().toLowerCase().trim();
+            var matchCount = 0;
+            var totalCards = $('.proof-card').length;
+
+            if (query.length > 0) {
+                $('#clear_search_btn').removeClass('d-none');
+            } else {
+                $('#clear_search_btn').addClass('d-none');
+            }
+
+            $('.proof-card').each(function() {
+                var name = $(this).data('name') || '';
+                if (name.indexOf(query) !== -1) {
+                    $(this).show();
+                    matchCount++;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            $('#search_count_badge').text(matchCount + ' / ' + totalCards + ' bukti');
+
+            if (matchCount === 0 && totalCards > 0) {
+                $('#no_search_results').removeClass('d-none');
+            } else {
+                $('#no_search_results').addClass('d-none');
+            }
+        });
+
+        $('#clear_search_btn').on('click', function() {
+            $('#floating_search_input').val('').trigger('input').focus();
+        });
+
         // Handle Rename click
         $(document).on('click', '.btn-rename', function() {
             let button = $(this);
             let url = button.data('url');
             let currentName = button.data('name');
-            let container = button.closest('.position-relative'); // container card
+            let container = button.closest('.proof-card-item'); // container card
             let nameDisplay = container.find('.proof-name-display');
 
             Swal.fire({
@@ -503,6 +675,7 @@
                                 // Update dynamic values
                                 nameDisplay.text(response.name).attr('title', response.name);
                                 button.data('name', response.name);
+                                button.closest('.proof-card').attr('data-name', response.name.toLowerCase());
                                 
                                 // Find or create the history button
                                 let historyBtn = container.find('.btn-view-history');
@@ -513,7 +686,7 @@
                                     // Prepend history button if it was newly created
                                     let btnContainer = button.parent();
                                     let newHistoryBtn = `
-                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-history" 
+                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-75 btn-view-history rounded-circle" 
                                                 title="Lihat Riwayat Nama" 
                                                 data-name="${response.name}"
                                                 data-history='${JSON.stringify(response.rename_history)}'>
@@ -592,7 +765,7 @@
         // Function to populate activeProofIds array
         function updateActiveProofIds() {
             activeProofIds = [];
-            $('.proof-card').each(function() {
+            $('.proof-card:visible').each(function() {
                 let id = parseInt($(this).data('id'));
                 if (id) {
                     activeProofIds.push(id);
@@ -663,7 +836,7 @@
             let button = $(this);
             let proofId = parseInt(button.data('id'));
             
-            // Update array before loading (in case cards were deleted)
+            // Update array before loading (in case cards were deleted/filtered)
             updateActiveProofIds();
 
             // Load details
