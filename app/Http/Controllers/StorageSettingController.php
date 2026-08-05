@@ -23,22 +23,51 @@ class StorageSettingController extends Controller
         $url = Setting::get('r2_url', config('filesystems.disks.r2.url', ''));
         $endpoint = Setting::get('r2_endpoint', config('filesystems.disks.r2.endpoint', ''));
 
-        // Calculate local files count & size
+        // Calculate local files count, migrated count & unmigrated count
         $localFilesCount = 0;
         $localTotalBytes = 0;
+        $migratedCount = 0;
+        $migratedTotalBytes = 0;
+        $unmigratedCount = 0;
+        $unmigratedTotalBytes = 0;
         $localPath = storage_path('app/public');
+
+        $r2FilesMap = [];
+        try {
+            $this->applyR2Config();
+            $r2Bucket = Setting::get('r2_bucket', config('filesystems.disks.r2.bucket'));
+            if (!empty($r2Bucket)) {
+                $r2Files = Storage::disk('r2')->allFiles();
+                $r2FilesMap = array_flip($r2Files);
+            }
+        } catch (\Exception $e) {
+            $r2FilesMap = [];
+        }
 
         if (File::isDirectory($localPath)) {
             $allFiles = File::allFiles($localPath);
             foreach ($allFiles as $file) {
                 if ($file->getFilename() !== '.gitignore') {
                     $localFilesCount++;
-                    $localTotalBytes += $file->getSize();
+                    $fileSize = $file->getSize();
+                    $localTotalBytes += $fileSize;
+
+                    $relativePath = str_replace('\\', '/', $file->getRelativePathname());
+                    if (isset($r2FilesMap[$relativePath])) {
+                        $migratedCount++;
+                        $migratedTotalBytes += $fileSize;
+                    } else {
+                        $unmigratedCount++;
+                        $unmigratedTotalBytes += $fileSize;
+                    }
                 }
             }
         }
 
         $localTotalFormatted = $this->formatBytes($localTotalBytes);
+        $migratedTotalFormatted = $this->formatBytes($migratedTotalBytes);
+        $unmigratedTotalFormatted = $this->formatBytes($unmigratedTotalBytes);
+        $migrationPercentage = $localFilesCount > 0 ? round(($migratedCount / $localFilesCount) * 100, 1) : 100;
 
         return view('settings.storage', compact(
             'driver',
@@ -49,7 +78,12 @@ class StorageSettingController extends Controller
             'url',
             'endpoint',
             'localFilesCount',
-            'localTotalFormatted'
+            'localTotalFormatted',
+            'migratedCount',
+            'migratedTotalFormatted',
+            'unmigratedCount',
+            'unmigratedTotalFormatted',
+            'migrationPercentage'
         ));
     }
 
@@ -210,6 +244,99 @@ class StorageSettingController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat migrasi: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function deleteMigratedLocalFiles(Request $request)
+    {
+        try {
+            $localPath = storage_path('app/public');
+            if (!File::isDirectory($localPath)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Direktori penyimpanan lokal (storage/app/public) tidak ditemukan.'
+                ], 404);
+            }
+
+            $this->applyR2Config();
+
+            $r2Bucket = Setting::get('r2_bucket', config('filesystems.disks.r2.bucket'));
+            if (empty($r2Bucket)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bucket R2 belum dikonfigurasi. Mohon atur konfigurasi R2 terlebih dahulu.'
+                ], 422);
+            }
+
+            $r2FilesMap = [];
+            try {
+                $r2Files = Storage::disk('r2')->allFiles();
+                $r2FilesMap = array_flip($r2Files);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghubungkan ke Cloudflare R2 untuk verifikasi berkas: ' . $e->getMessage()
+                ], 500);
+            }
+
+            $allFiles = File::allFiles($localPath);
+            $deletedCount = 0;
+            $deletedBytes = 0;
+            $failedCount = 0;
+            $errors = [];
+
+            foreach ($allFiles as $file) {
+                if ($file->getFilename() === '.gitignore') {
+                    continue;
+                }
+
+                $relativePath = str_replace('\\', '/', $file->getRelativePathname());
+                $fileSize = $file->getSize();
+
+                if (isset($r2FilesMap[$relativePath])) {
+                    try {
+                        File::delete($file->getRealPath());
+                        $deletedCount++;
+                        $deletedBytes += $fileSize;
+                    } catch (\Exception $ex) {
+                        $failedCount++;
+                        $errors[] = "Gagal hapus local ({$relativePath}): " . $ex->getMessage();
+                    }
+                }
+            }
+
+            $this->removeEmptyDirectories($localPath);
+
+            $formattedBytes = $this->formatBytes($deletedBytes);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Pembersihan selesai! {$deletedCount} berkas lokal ({$formattedBytes}) yang terverifikasi di Cloudflare R2 berhasil dihapus.",
+                'deleted_count' => $deletedCount,
+                'deleted_bytes_formatted' => $formattedBytes,
+                'failed_count' => $failedCount,
+                'errors' => $errors
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus berkas lokal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function removeEmptyDirectories($dir)
+    {
+        if (!File::isDirectory($dir)) {
+            return;
+        }
+
+        $subdirs = File::directories($dir);
+        foreach ($subdirs as $subdir) {
+            $this->removeEmptyDirectories($subdir);
+            if (count(File::allFiles($subdir)) === 0 && count(File::directories($subdir)) === 0) {
+                File::deleteDirectory($subdir);
+            }
         }
     }
 

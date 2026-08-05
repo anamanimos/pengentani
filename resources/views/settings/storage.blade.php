@@ -143,18 +143,19 @@
                                         </div>
                                         <div class="col-6 col-md-3">
                                             <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Public Domain</div>
-                                                <div class="fs-6 fw-bolder text-gray-800 text-truncate" title="{{ $url }}">
-                                                    {{ $url ? parse_url($url, PHP_URL_HOST) ?? $url : 'Belum diatur' }}
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Sudah Dimigrasi (R2)</div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fs-6 fw-bolder text-success">{{ $migratedCount }} File</span>
+                                                    <span class="badge badge-light-success fs-9 fw-bold">{{ $migratedTotalFormatted }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-6 col-md-3">
                                             <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Sisa Berkas Lokal</div>
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Belum Dimigrasi</div>
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="fs-6 fw-bolder text-gray-800">{{ $localFilesCount }} File</span>
-                                                    <span class="badge badge-light-{{ $localFilesCount > 0 ? 'warning' : 'success' }} fs-9 fw-bold">{{ $localTotalFormatted }}</span>
+                                                    <span class="fs-6 fw-bolder text-gray-800">{{ $unmigratedCount }} File</span>
+                                                    <span class="badge badge-light-{{ $unmigratedCount > 0 ? 'warning' : 'success' }} fs-9 fw-bold">{{ $unmigratedTotalFormatted }}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -162,12 +163,12 @@
                                 </div>
                             </div>
 
-                            <!-- Migration Card -->
+                            <!-- Migration & Cleanup Card -->
                             <div class="card card-flush shadow-sm">
                                 <div class="card-header border-0 pt-6">
                                     <h3 class="card-title fw-bold text-gray-800">
                                         <i class="ki-duotone ki-cloud-add fs-2 me-2 text-success"><span class="path1"></span><span class="path2"></span></i>
-                                        Migrasi Gambar Lokal ke R2
+                                        Migrasi & Pembersihan Storage Lokal
                                     </h3>
                                 </div>
                                 <div class="card-body pt-0">
@@ -175,39 +176,69 @@
                                         <div class="d-flex align-items-start gap-3">
                                             <i class="ki-duotone ki-information fs-2x text-primary mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                             <div class="fs-8 text-gray-700">
-                                                Menyalin sisa berkas gambar & bukti transaksi yang berada di server lokal (<code>storage/app/public/</code>) langsung ke dalam bucket <strong>Cloudflare R2</strong>.
+                                                Gunakan fitur di bawah untuk memindahkan sisa berkas lokal ke <strong>Cloudflare R2</strong>, lalu bersihkan berkas di disk lokal server yang <strong>sudah terverifikasi aman di R2</strong> untuk menghemat ruang penyimpanan.
                                             </div>
                                         </div>
                                     </div>
 
+                                    <!-- Detail Stat Cards -->
                                     <div class="row g-4 mb-6">
-                                        <div class="col-md-6">
-                                            <div class="d-flex justify-content-between align-items-center p-4 bg-light rounded-3 border">
-                                                <span class="fs-7 fw-bold text-gray-600">Sisa File di Server:</span>
-                                                <span class="fs-6 fw-bolder text-gray-800">{{ $localFilesCount }} File</span>
+                                        <div class="col-md-4">
+                                            <div class="p-4 bg-light-success rounded-3 border border-success border-opacity-25">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="fs-8 fw-bold text-success text-uppercase">Sudah Dimigrasi</span>
+                                                    <i class="ki-duotone ki-verify fs-3 text-success"><span class="path1"></span><span class="path2"></span></i>
+                                                </div>
+                                                <div class="fs-4 fw-bolder text-gray-800">{{ $migratedCount }} File</div>
+                                                <div class="fs-9 text-muted">{{ $migratedTotalFormatted }} tersimpan di Cloud R2</div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="d-flex justify-content-between align-items-center p-4 bg-light rounded-3 border">
-                                                <span class="fs-7 fw-bold text-gray-600">Total Ukuran:</span>
-                                                <span class="fs-6 fw-bolder text-primary">{{ $localTotalFormatted }}</span>
+                                        <div class="col-md-4">
+                                            <div class="p-4 bg-light-{{ $unmigratedCount > 0 ? 'warning' : 'light' }} rounded-3 border border-{{ $unmigratedCount > 0 ? 'warning' : 'gray-300' }} border-opacity-25">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="fs-8 fw-bold text-{{ $unmigratedCount > 0 ? 'warning' : 'muted' }} text-uppercase">Belum Dimigrasi</span>
+                                                    <i class="ki-duotone ki-time fs-3 text-{{ $unmigratedCount > 0 ? 'warning' : 'muted' }}"><span class="path1"></span><span class="path2"></span></i>
+                                                </div>
+                                                <div class="fs-4 fw-bolder text-gray-800">{{ $unmigratedCount }} File</div>
+                                                <div class="fs-9 text-muted">{{ $unmigratedTotalFormatted }} tersimpan di server lokal</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-4 bg-light rounded-3 border border-gray-300">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <span class="fs-8 fw-bold text-gray-600 text-uppercase">Progres Migrasi</span>
+                                                    <span class="fs-8 fw-bolder text-primary">{{ $migrationPercentage }}%</span>
+                                                </div>
+                                                <div class="progress h-8px bg-light-primary mt-2">
+                                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $migrationPercentage }}%" aria-valuenow="{{ $migrationPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <div class="fs-9 text-muted mt-1">Total Berkas Lokal: {{ $localFilesCount }} File ({{ $localTotalFormatted }})</div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Migration Progress Log Window -->
                                     <div id="migration_log_box" class="d-none mb-6">
-                                        <label class="form-label fw-bold text-gray-700 fs-8">Status Process Migrasi:</label>
+                                        <label class="form-label fw-bold text-gray-700 fs-8">Status Proses Operasi:</label>
                                         <div class="p-3 bg-dark text-success font-monospace rounded-3 fs-9 overflow-auto" id="migration_log_text" style="max-height: 180px; min-height: 80px; white-space: pre-wrap;">
-Menunggu perintah migrasi...
+Menunggu perintah...
                                         </div>
                                     </div>
 
-                                    <div class="pt-2">
-                                        <button type="button" class="btn btn-success fw-bold rounded-pill w-100 py-3" id="btn_start_migration" {{ $localFilesCount == 0 ? 'disabled' : '' }}>
-                                            <i class="ki-duotone ki-cloud-add fs-2 me-2"><span class="path1"></span><span class="path2"></span></i>
-                                            {{ $localFilesCount == 0 ? 'Semua Berkas Telah Berada di Cloud R2' : 'Mulai Migrasi Sisa Gambar ke R2' }}
-                                        </button>
+                                    <!-- Action Buttons -->
+                                    <div class="row g-3 pt-2">
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-success fw-bold rounded-pill w-100 py-3" id="btn_start_migration" {{ $unmigratedCount == 0 ? 'disabled' : '' }}>
+                                                <i class="ki-duotone ki-cloud-add fs-2 me-2"><span class="path1"></span><span class="path2"></span></i>
+                                                {{ $unmigratedCount == 0 ? 'Semua Berkas Telah Terunggah ke R2' : 'Mulai Migrasi Sisa Gambar ke R2' }}
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-danger fw-bold rounded-pill w-100 py-3" id="btn_delete_migrated" {{ $migratedCount == 0 ? 'disabled' : '' }}>
+                                                <i class="ki-duotone ki-trash fs-2 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                                {{ $migratedCount == 0 ? 'Tidak Ada Berkas Lokal Ter-migrasi' : 'Hapus Berkas Lokal yang Sudah Dimigrasi' }}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -413,6 +444,8 @@ Menunggu perintah migrasi...
                                 text: response.message,
                                 confirmButtonText: 'OK',
                                 customClass: { confirmButton: 'btn btn-primary' }
+                            }).then(() => {
+                                location.reload();
                             });
                         },
                         error: function(xhr) {
@@ -425,6 +458,80 @@ Menunggu perintah migrasi...
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Migrasi Gagal',
+                                text: msg,
+                                confirmButtonText: 'Tutup',
+                                customClass: { confirmButton: 'btn btn-danger' }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Delete Local Migrated Files AJAX
+        $('#btn_delete_migrated').on('click', function() {
+            Swal.fire({
+                title: 'Hapus Berkas Lokal Ter-migrasi?',
+                html: 'Tindakan ini akan menghapus berkas pada penyimpanan disk lokal server (<code>storage/app/public/</code>) yang <strong>SUDAH terverifikasi tersimpan di Cloudflare R2</strong>.<br><br>Apakah Anda yakin?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus Berkas Lokal',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let btn = $('#btn_delete_migrated');
+                    let logBox = $('#migration_log_box');
+                    let logText = $('#migration_log_text');
+
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Memproses Pembersihan...');
+                    logBox.removeClass('d-none');
+                    logText.text('⏳ Memeriksa dan menghapus berkas lokal yang sudah ter-migrasi ke Cloudflare R2...\nMohon tunggu sejenak.');
+
+                    $.ajax({
+                        url: "{{ route('settings.storage.delete-migrated') }}",
+                        type: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}"
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            btn.prop('disabled', false).html('<i class="ki-duotone ki-trash fs-2 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus Berkas Lokal yang Sudah Dimigrasi');
+
+                            let log = `✅ PEMBERSIHAN LOKAL SELESAI!\n-------------------------\n` +
+                                      `File Dihapus : ${response.deleted_count} file\n` +
+                                      `Ruang Dihemat: ${response.deleted_bytes_formatted}\n` +
+                                      `Gagal Dihapus: ${response.failed_count} file\n`;
+
+                            if (response.errors && response.errors.length > 0) {
+                                log += `\nRincian Error:\n` + response.errors.join('\n');
+                            }
+
+                            logText.text(log);
+
+                            Swal.fire({
+                                icon: response.failed_count === 0 ? 'success' : 'warning',
+                                title: 'Pembersihan Berhasil',
+                                text: response.message,
+                                confirmButtonText: 'OK',
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            btn.prop('disabled', false).html('<i class="ki-duotone ki-trash fs-2 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus Berkas Lokal yang Sudah Dimigrasi');
+                            let msg = "Terjadi kesalahan saat menghapus berkas lokal.";
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                msg = xhr.responseJSON.message;
+                            }
+                            logText.text('❌ GAGAL PEMBERSIHAN:\n' + msg);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Pembersihan Gagal',
                                 text: msg,
                                 confirmButtonText: 'Tutup',
                                 customClass: { confirmButton: 'btn btn-danger' }

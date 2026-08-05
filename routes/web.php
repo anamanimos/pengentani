@@ -33,6 +33,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('/settings/storage', [\App\Http\Controllers\StorageSettingController::class, 'update'])->name('settings.storage.update');
     Route::post('/settings/storage/test', [\App\Http\Controllers\StorageSettingController::class, 'testConnection'])->name('settings.storage.test');
     Route::post('/settings/storage/migrate', [\App\Http\Controllers\StorageSettingController::class, 'migrateLocalToR2'])->name('settings.storage.migrate');
+    Route::post('/settings/storage/delete-migrated', [\App\Http\Controllers\StorageSettingController::class, 'deleteMigratedLocalFiles'])->name('settings.storage.delete-migrated');
+
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
