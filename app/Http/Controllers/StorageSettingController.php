@@ -126,6 +126,9 @@ class StorageSettingController extends Controller
         $r2Url = trim($request->r2_url ?? '');
         if (!empty($r2Url)) {
             $r2Url = rtrim($r2Url, '/');
+            if (!preg_match('/^https?:\/\//i', $r2Url)) {
+                $r2Url = 'https://' . $r2Url;
+            }
         }
         Setting::set('r2_url', $r2Url);
 
@@ -374,6 +377,12 @@ class StorageSettingController extends Controller
         $secretKey = Setting::get('r2_secret_access_key', config('filesystems.disks.r2.secret'));
         $bucket = Setting::get('r2_bucket', config('filesystems.disks.r2.bucket'));
         $url = Setting::get('r2_url', config('filesystems.disks.r2.url'));
+        if (!empty($url)) {
+            $url = rtrim($url, '/');
+            if (!preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . $url;
+            }
+        }
         $endpoint = Setting::get('r2_endpoint', config('filesystems.disks.r2.endpoint'));
         $accountId = Setting::get('r2_account_id', config('filesystems.disks.r2.account_id'));
 

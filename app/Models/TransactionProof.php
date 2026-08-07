@@ -26,7 +26,11 @@ class TransactionProof extends Model
 
     public function getUrlAttribute()
     {
-        return \Illuminate\Support\Facades\Storage::url($this->file_path);
+        $url = \Illuminate\Support\Facades\Storage::url($this->file_path);
+        if ($url && !preg_match('/^https?:\/\//i', $url) && !str_starts_with($url, '/')) {
+            $url = 'https://' . $url;
+        }
+        return $url;
     }
 
     public function user()

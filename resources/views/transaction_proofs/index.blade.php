@@ -210,7 +210,7 @@
                     @forelse($proofs as $proof)
                     <div class="proof-card" data-id="{{ $proof->id }}" data-name="{{ strtolower($proof->name) }}">
                         <div class="proof-card-item">
-                            <a href="{{ Storage::url($proof->file_path) }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
+                            <a href="{{ $proof->url }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
                             
                             @if(in_array(strtolower(pathinfo($proof->file_path, PATHINFO_EXTENSION)), ['pdf']))
                                 <div class="proof-pdf-placeholder">
@@ -218,7 +218,7 @@
                                     <span class="fs-9 fw-bold text-gray-400 text-uppercase">PDF</span>
                                 </div>
                             @else
-                                <div class="proof-img" style="background-image:url('{{ Storage::url($proof->file_path) }}');"></div>
+                                <div class="proof-img" style="background-image:url('{{ $proof->url }}');"></div>
                             @endif
                             
                             <!-- Overlay -->

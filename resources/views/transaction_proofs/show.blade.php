@@ -20,18 +20,18 @@
             <div class="col-xl-4 text-center">
                 <div class="mb-4 overflow-hidden d-flex justify-content-center align-items-center bg-light rounded border shadow-sm" style="height: 420px;">
                     @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
-                        <iframe src="{{ Storage::url($transactionProof->file_path) }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
+                        <iframe src="{{ $transactionProof->url }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
                     @else
-                        <a href="{{ Storage::url($transactionProof->file_path) }}" data-fslightbox="gallery_detail" class="d-block w-100 h-100 d-flex align-items-center justify-content-center" title="Klik untuk memperbesar">
-                            <img src="{{ Storage::url($transactionProof->file_path) }}" class="img-fluid rounded" style="max-height: 420px; max-width: 100%; object-fit: contain;" alt="Bukti Transaksi" />
+                        <a href="{{ $transactionProof->url }}" data-fslightbox="gallery_detail" class="d-block w-100 h-100 d-flex align-items-center justify-content-center" title="Klik untuk memperbesar">
+                            <img src="{{ $transactionProof->url }}" class="img-fluid rounded" style="max-height: 420px; max-width: 100%; object-fit: contain;" alt="Bukti Transaksi" />
                         </a>
                     @endif
                 </div>
                 <div class="d-flex gap-2 justify-content-center mb-5 mb-xl-0">
-                    <a href="{{ Storage::url($transactionProof->file_path) }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
+                    <a href="{{ $transactionProof->url }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
                         <i class="ki-duotone ki-dots-square fs-5 me-1"></i> Tab Baru
                     </a>
-                    <a href="{{ Storage::url($transactionProof->file_path) }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-xs btn-primary fw-bold px-3 py-2 fs-8">
+                    <a href="{{ $transactionProof->url }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-xs btn-primary fw-bold px-3 py-2 fs-8">
                         <i class="ki-duotone ki-file-down fs-5 me-1"></i> Download
                     </a>
                 </div>
