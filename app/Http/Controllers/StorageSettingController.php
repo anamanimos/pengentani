@@ -313,9 +313,19 @@ class StorageSettingController extends Controller
 
                 if (isset($r2FilesMap[$relativePath])) {
                     try {
-                        File::delete($file->getRealPath());
-                        $deletedCount++;
-                        $deletedBytes += $fileSize;
+                        $realPath = $file->getRealPath();
+                        $isDeleted = @File::delete($realPath);
+                        if (!$isDeleted || File::exists($realPath)) {
+                            $isDeleted = @unlink($realPath);
+                        }
+
+                        if ($isDeleted && !File::exists($realPath)) {
+                            $deletedCount++;
+                            $deletedBytes += $fileSize;
+                        } else {
+                            $failedCount++;
+                            $errors[] = "Gagal hapus (Izin akses/permission denied): {$relativePath}";
+                        }
                     } catch (\Exception $ex) {
                         $failedCount++;
                         $errors[] = "Gagal hapus local ({$relativePath}): " . $ex->getMessage();
