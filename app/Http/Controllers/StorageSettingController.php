@@ -23,9 +23,11 @@ class StorageSettingController extends Controller
         $url = Setting::get('r2_url', config('filesystems.disks.r2.url', ''));
         $endpoint = Setting::get('r2_endpoint', config('filesystems.disks.r2.endpoint', ''));
 
-        // Calculate local files count, migrated count & unmigrated count
+        // Calculate local files count, R2 files count & size, migrated & unmigrated count
         $localFilesCount = 0;
         $localTotalBytes = 0;
+        $r2FilesCount = 0;
+        $r2TotalBytes = 0;
         $migratedCount = 0;
         $migratedTotalBytes = 0;
         $unmigratedCount = 0;
@@ -37,10 +39,23 @@ class StorageSettingController extends Controller
             $this->applyR2Config();
             $r2Bucket = Setting::get('r2_bucket', config('filesystems.disks.r2.bucket'));
             if (!empty($r2Bucket)) {
-                $r2Files = Storage::disk('r2')->allFiles();
-                $r2FilesMap = array_flip($r2Files);
+                try {
+                    $contents = Storage::disk('r2')->listContents('', true);
+                    foreach ($contents as $item) {
+                        if ($item->isFile()) {
+                            $r2FilesCount++;
+                            $itemSize = method_exists($item, 'fileSize') ? ($item->fileSize() ?? 0) : 0;
+                            $r2TotalBytes += $itemSize;
+                            $r2FilesMap[$item->path()] = true;
+                        }
+                    }
+                } catch (\Throwable $exList) {
+                    $r2Files = Storage::disk('r2')->allFiles();
+                    $r2FilesCount = count($r2Files);
+                    $r2FilesMap = array_flip($r2Files);
+                }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $r2FilesMap = [];
         }
 
@@ -65,6 +80,7 @@ class StorageSettingController extends Controller
         }
 
         $localTotalFormatted = $this->formatBytes($localTotalBytes);
+        $r2TotalFormatted = $this->formatBytes($r2TotalBytes);
         $migratedTotalFormatted = $this->formatBytes($migratedTotalBytes);
         $unmigratedTotalFormatted = $this->formatBytes($unmigratedTotalBytes);
         $migrationPercentage = $localFilesCount > 0 ? round(($migratedCount / $localFilesCount) * 100, 1) : 100;
@@ -79,6 +95,8 @@ class StorageSettingController extends Controller
             'endpoint',
             'localFilesCount',
             'localTotalFormatted',
+            'r2FilesCount',
+            'r2TotalFormatted',
             'migratedCount',
             'migratedTotalFormatted',
             'unmigratedCount',

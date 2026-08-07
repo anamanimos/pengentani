@@ -124,35 +124,55 @@
 
                                     <!-- Monitoring KPIs -->
                                     <div class="row g-4">
+                                        <!-- Card 1: Local Storage -->
                                         <div class="col-6 col-md-3">
-                                            <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Status Storage</div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="ki-duotone ki-check-circle fs-3 text-success"><span class="path1"></span><span class="path2"></span></i>
-                                                    <span class="fs-6 fw-bolder text-gray-800">Cloudflare R2</span>
+                                            <div class="bg-body rounded-3 p-4 border border-dashed border-primary border-opacity-50">
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">
+                                                    <i class="ki-duotone ki-hard-drive fs-4 me-1 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                                                    Disk Lokal Server
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fs-6 fw-bolder text-gray-800">{{ $localFilesCount }} File</span>
+                                                    <span class="badge badge-light-primary fs-9 fw-bold">{{ $localTotalFormatted }}</span>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Card 2: R2 Cloud Storage -->
                                         <div class="col-6 col-md-3">
-                                            <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Bucket Active</div>
-                                                <div class="fs-6 fw-bolder text-primary text-truncate" title="{{ $bucket }}">
-                                                    {{ $bucket ?: 'Belum diatur' }}
+                                            <div class="bg-body rounded-3 p-4 border border-dashed border-info border-opacity-50">
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">
+                                                    <i class="ki-duotone ki-cloud fs-4 me-1 text-info"><span class="path1"></span><span class="path2"></span></i>
+                                                    Cloudflare R2 Storage
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fs-6 fw-bolder text-info">{{ $r2FilesCount }} File</span>
+                                                    <span class="badge badge-light-info fs-9 fw-bold">{{ $r2TotalFormatted }}</span>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Card 3: Migrated -->
                                         <div class="col-6 col-md-3">
-                                            <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Sudah Dimigrasi (R2)</div>
+                                            <div class="bg-body rounded-3 p-4 border border-dashed border-success border-opacity-50">
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">
+                                                    <i class="ki-duotone ki-check-circle fs-4 me-1 text-success"><span class="path1"></span><span class="path2"></span></i>
+                                                    Lokal Ter-migrasi
+                                                </div>
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <span class="fs-6 fw-bolder text-success">{{ $migratedCount }} File</span>
                                                     <span class="badge badge-light-success fs-9 fw-bold">{{ $migratedTotalFormatted }}</span>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Card 4: Unmigrated -->
                                         <div class="col-6 col-md-3">
-                                            <div class="bg-body rounded-3 p-4 border border-dashed border-gray-300">
-                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">Belum Dimigrasi</div>
+                                            <div class="bg-body rounded-3 p-4 border border-dashed border-warning border-opacity-50">
+                                                <div class="text-gray-500 fs-8 fw-bold text-uppercase mb-1">
+                                                    <i class="ki-duotone ki-time fs-4 me-1 text-warning"><span class="path1"></span><span class="path2"></span></i>
+                                                    Belum Dimigrasi
+                                                </div>
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <span class="fs-6 fw-bolder text-gray-800">{{ $unmigratedCount }} File</span>
                                                     <span class="badge badge-light-{{ $unmigratedCount > 0 ? 'warning' : 'success' }} fs-9 fw-bold">{{ $unmigratedTotalFormatted }}</span>
@@ -183,36 +203,43 @@
 
                                     <!-- Detail Stat Cards -->
                                     <div class="row g-4 mb-6">
+                                        <!-- Local Storage Card -->
                                         <div class="col-md-4">
-                                            <div class="p-4 bg-light-success rounded-3 border border-success border-opacity-25">
+                                            <div class="p-4 bg-light-primary rounded-3 border border-primary border-opacity-25">
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="fs-8 fw-bold text-success text-uppercase">Sudah Dimigrasi</span>
-                                                    <i class="ki-duotone ki-verify fs-3 text-success"><span class="path1"></span><span class="path2"></span></i>
+                                                    <span class="fs-8 fw-bold text-primary text-uppercase">Disk Lokal Server</span>
+                                                    <i class="ki-duotone ki-hard-drive fs-3 text-primary"><span class="path1"></span><span class="path2"></span></i>
                                                 </div>
-                                                <div class="fs-4 fw-bolder text-gray-800">{{ $migratedCount }} File</div>
-                                                <div class="fs-9 text-muted">{{ $migratedTotalFormatted }} tersimpan di Cloud R2</div>
+                                                <div class="fs-4 fw-bolder text-gray-800">{{ $localFilesCount }} File</div>
+                                                <div class="fs-9 text-gray-600 mt-1">Total Ukuran: <strong class="text-primary">{{ $localTotalFormatted }}</strong></div>
+                                                <div class="fs-9 text-muted mt-1">{{ $unmigratedCount }} file belum dimigrasi ({{ $unmigratedTotalFormatted }})</div>
                                             </div>
                                         </div>
+
+                                        <!-- R2 Cloud Storage Card -->
                                         <div class="col-md-4">
-                                            <div class="p-4 bg-light-{{ $unmigratedCount > 0 ? 'warning' : 'light' }} rounded-3 border border-{{ $unmigratedCount > 0 ? 'warning' : 'gray-300' }} border-opacity-25">
+                                            <div class="p-4 bg-light-info rounded-3 border border-info border-opacity-25">
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="fs-8 fw-bold text-{{ $unmigratedCount > 0 ? 'warning' : 'muted' }} text-uppercase">Belum Dimigrasi</span>
-                                                    <i class="ki-duotone ki-time fs-3 text-{{ $unmigratedCount > 0 ? 'warning' : 'muted' }}"><span class="path1"></span><span class="path2"></span></i>
+                                                    <span class="fs-8 fw-bold text-info text-uppercase">Cloudflare R2 Storage</span>
+                                                    <i class="ki-duotone ki-cloud fs-3 text-info"><span class="path1"></span><span class="path2"></span></i>
                                                 </div>
-                                                <div class="fs-4 fw-bolder text-gray-800">{{ $unmigratedCount }} File</div>
-                                                <div class="fs-9 text-muted">{{ $unmigratedTotalFormatted }} tersimpan di server lokal</div>
+                                                <div class="fs-4 fw-bolder text-gray-800">{{ $r2FilesCount }} File</div>
+                                                <div class="fs-9 text-gray-600 mt-1">Total Ukuran: <strong class="text-info">{{ $r2TotalFormatted }}</strong></div>
+                                                <div class="fs-9 text-muted mt-1">{{ $migratedCount }} file lokal terverifikasi di R2</div>
                                             </div>
                                         </div>
+
+                                        <!-- Progress Card -->
                                         <div class="col-md-4">
                                             <div class="p-4 bg-light rounded-3 border border-gray-300">
                                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="fs-8 fw-bold text-gray-600 text-uppercase">Progres Migrasi</span>
+                                                    <span class="fs-8 fw-bold text-gray-600 text-uppercase">Progres Migrasi Lokal</span>
                                                     <span class="fs-8 fw-bolder text-primary">{{ $migrationPercentage }}%</span>
                                                 </div>
-                                                <div class="progress h-8px bg-light-primary mt-2">
+                                                <div class="progress h-8px bg-light-primary mt-2 mb-2">
                                                     <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $migrationPercentage }}%" aria-valuenow="{{ $migrationPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                                                 </div>
-                                                <div class="fs-9 text-muted mt-1">Total Berkas Lokal: {{ $localFilesCount }} File ({{ $localTotalFormatted }})</div>
+                                                <div class="fs-9 text-muted">{{ $migratedCount }} dari {{ $localFilesCount }} file lokal ter-migrasi</div>
                                             </div>
                                         </div>
                                     </div>
