@@ -21,43 +21,12 @@
 @endsection
 
 @section('content')
-<style>
-/* 100% Edge-to-Edge Full-Bleed Canvas Studio */
-#kt_app_content,
-#kt_app_content_container,
-.app-content,
-.app-container {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-
-/* Maintain tighter, balanced padding for Page Title Bar & Editor Control Toolbar */
-#kt_app_toolbar,
-#kt_app_toolbar_container,
-.app-toolbar {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-.editor-toolbar-header {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-.card {
-    border-radius: 0 !important;
-}
-</style>
-<div class="app-content flex-column-fluid p-0 m-0">
-    <div class="app-container container-fluid p-0 m-0 w-100">
-        <div class="card card-flush shadow-sm border-0 w-100 m-0 p-0">
+<div class="app-content flex-column-fluid">
+    <div class="app-container container-fluid">
+        <div class="card card-flush shadow-sm border-0">
             
-            <!-- 100% Full-Width Sticky Toolbar Header -->
-            <div class="card-header editor-toolbar-header border-0 py-3 bg-white shadow-xs position-sticky d-flex flex-wrap align-items-center justify-content-between gap-3" 
+            <!-- Sticky Toolbar Header -->
+            <div class="card-header border-0 py-3 px-4 px-md-6 bg-white shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
                  style="top: 70px; z-index: 100; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.08) !important;">
                 
                 <!-- Tool Modes & Color Presets -->
