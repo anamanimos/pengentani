@@ -223,10 +223,10 @@
                                         <span class="fw-bold d-block text-truncate proof-name-display fs-7" title="{{ $proof->name }}">{{ $proof->name }}</span>
                                         <span class="fs-9 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
                                     </div>
-                                    <!-- Rename, Edit Image and History Buttons -->
-                                    <div class="d-flex gap-1 proof-overlay-btn" style="z-index: 3;">
+                                    <!-- Optimized Card Action Buttons (Max 3 icons) -->
+                                    <div class="d-flex align-items-center gap-1 proof-overlay-btn" style="z-index: 3;">
                                         @if(!$isPdf)
-                                            <button type="button" class="btn btn-icon btn-sm btn-light-warning bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-edit-image" 
+                                            <button type="button" class="btn btn-icon btn-sm btn-light-warning bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-edit-image" 
                                                     title="Edit / Coret Gambar" 
                                                     data-id="{{ $proof->id }}" 
                                                     data-name="{{ $proof->name }}"
@@ -235,40 +235,59 @@
                                                     data-history="{{ json_encode($proof->image_history ?? []) }}"
                                                     data-save-url="{{ route('transaction-proofs.edit-image', $proof->id) }}"
                                                     data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
-                                                <i class="ki-duotone ki-design-1 fs-5 text-warning"><span class="path1"></span><span class="path2"></span></i>
+                                                <i class="ki-duotone ki-design-1 fs-4 text-warning"><span class="path1"></span><span class="path2"></span></i>
                                             </button>
                                         @endif
-                                        @if(!empty($proof->image_history))
-                                            <button type="button" class="btn btn-icon btn-sm btn-light-info bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-image-history" 
-                                                    title="Riwayat Edit Gambar ({{ count($proof->image_history) }})" 
-                                                    data-id="{{ $proof->id }}" 
-                                                    data-name="{{ $proof->name }}"
-                                                    data-current-url="{{ $proof->url }}"
-                                                    data-history="{{ json_encode($proof->image_history) }}"
-                                                    data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
-                                                <i class="fa fa-layer-group text-info fs-9"></i>
-                                            </button>
-                                        @endif
-                                        @if(!empty($proof->rename_history))
-                                            <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-history" 
-                                                    title="Lihat Riwayat Nama" 
-                                                    data-name="{{ $proof->name }}"
-                                                    data-history="{{ json_encode($proof->rename_history) }}">
-                                                <i class="fa fa-history text-gray-700 fs-9"></i>
-                                            </button>
-                                        @endif
-                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-detail" 
+                                        <button type="button" class="btn btn-icon btn-sm btn-light-primary bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-view-detail" 
                                                 title="Detail Transaksi (Offcanvas)" 
                                                 data-id="{{ $proof->id }}">
-                                            <i class="ki-duotone ki-eye fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                            <i class="ki-duotone ki-eye fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                         </button>
-                                        <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-rename" 
-                                                title="Ganti Nama" 
-                                                data-id="{{ $proof->id }}" 
-                                                data-name="{{ $proof->name }}"
-                                                data-url="{{ route('transaction-proofs.rename', $proof->id) }}">
-                                            <i class="ki-duotone ki-pencil fs-5 text-gray-700"><span class="path1"></span><span class="path2"></span></i>
-                                        </button>
+
+                                        <!-- Opsi Menu Dropdown -->
+                                        <div class="dropdown d-inline-block">
+                                            <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs" 
+                                                    data-bs-toggle="dropdown" 
+                                                    aria-expanded="false" 
+                                                    title="Menu Opsi">
+                                                <i class="ki-duotone ki-dots-square fs-4 text-gray-700"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-md border fs-7 py-2" style="z-index: 1050; min-width: 200px;">
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 btn-rename" href="#" 
+                                                       data-id="{{ $proof->id }}" 
+                                                       data-name="{{ $proof->name }}"
+                                                       data-url="{{ route('transaction-proofs.rename', $proof->id) }}">
+                                                        <i class="ki-duotone ki-pencil fs-5 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                                                        <span>Ganti Nama</span>
+                                                    </a>
+                                                </li>
+                                                @if(!empty($proof->image_history))
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 btn-view-image-history" href="#" 
+                                                           data-id="{{ $proof->id }}" 
+                                                           data-name="{{ $proof->name }}"
+                                                           data-current-url="{{ $proof->url }}"
+                                                           data-history="{{ json_encode($proof->image_history) }}"
+                                                           data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
+                                                            <i class="fa fa-layer-group text-info fs-7 me-1"></i>
+                                                            <span>Riwayat Edit Gambar</span>
+                                                            <span class="badge badge-light-info fs-9 ms-auto px-2 py-1">{{ count($proof->image_history) }}</span>
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if(!empty($proof->rename_history))
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 btn-view-history" href="#" 
+                                                           data-name="{{ $proof->name }}"
+                                                           data-history="{{ json_encode($proof->rename_history) }}">
+                                                            <i class="fa fa-history text-gray-600 fs-7 me-1"></i>
+                                                            <span>Riwayat Nama</span>
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
