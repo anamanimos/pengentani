@@ -21,12 +21,12 @@
 @endsection
 
 @section('content')
-<div class="app-content flex-column-fluid">
-    <div class="app-container container-fluid">
-        <div class="card card-flush shadow-sm border-0">
+<div class="app-content flex-column-fluid p-0">
+    <div class="app-container container-fluid p-0 px-2 px-md-4">
+        <div class="card card-flush shadow-sm border-0 w-100 m-0">
             
-            <!-- Sticky Glassmorphic Toolbar Header -->
-            <div class="card-header border-0 py-3 px-6 bg-white bg-opacity-95 shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
+            <!-- 100% Full-Width Sticky Toolbar Header -->
+            <div class="card-header border-0 py-3 px-4 px-md-6 bg-white shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
                  style="top: 70px; z-index: 100; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.08) !important;">
                 
                 <!-- Tool Modes & Color Presets -->
@@ -60,7 +60,7 @@
                     <!-- Size Slider -->
                     <div class="d-flex align-items-center gap-2 bg-light p-1 px-3 rounded-pill border">
                         <span class="fs-9 fw-bold text-gray-600">Tebal:</span>
-                        <input type="range" id="editor_size_slider" class="form-range" min="2" max="24" value="4" style="width: 75px;">
+                        <input type="range" id="editor_size_slider" class="form-range" min="2" max="30" value="4" style="width: 75px;">
                         <span id="editor_size_val" class="fs-9 fw-bold text-gray-800 w-25px">4px</span>
                     </div>
 
@@ -71,14 +71,15 @@
                         <button type="button" class="btn btn-icon btn-sm btn-light" id="btn_rotate_cw" title="Putar Gambar 90 Derajat Searah Jarum Jam">
                             <i class="fa fa-redo text-gray-700"></i>
                         </button>
-                        <button type="button" class="btn btn-icon btn-sm btn-light" id="btn_zoom_out" title="Perkecil Tampilan Canvas">
+                        <button type="button" class="btn btn-icon btn-sm btn-light" id="btn_zoom_out" title="Perkecil Canvas">
                             <i class="fa fa-search-minus text-gray-700"></i>
                         </button>
                         <span id="zoom_val_text" class="fs-9 fw-bold text-gray-700 px-1">100%</span>
-                        <button type="button" class="btn btn-icon btn-sm btn-light" id="btn_zoom_in" title="Perbesar Tampilan Canvas">
+                        <button type="button" class="btn btn-icon btn-sm btn-light" id="btn_zoom_in" title="Perbesar Canvas">
                             <i class="fa fa-search-plus text-gray-700"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-light px-2 py-1 fs-9 fw-bold" id="btn_zoom_reset" title="Reset Ukuran Canvas">Fit</button>
+                        <button type="button" class="btn btn-sm btn-light px-2 py-1 fs-9 fw-bold" id="btn_zoom_fit" title="Sesuaikan dengan Layar">Fit Screen</button>
+                        <button type="button" class="btn btn-sm btn-light px-2 py-1 fs-9 fw-bold" id="btn_zoom_fullwidth" title="Lebar Maksimal">Full Width</button>
                     </div>
                 </div>
 
@@ -96,24 +97,25 @@
                 </div>
             </div>
 
-            <!-- Workspace Canvas Body -->
-            <div class="card-body p-6 bg-dark bg-opacity-10 text-center overflow-auto d-flex justify-content-center align-items-start" style="min-height: 600px;">
-                <div id="canvas_viewport" class="position-relative d-inline-block transition-transform" style="transform-origin: top center;">
-                    <div id="canvas_wrapper" class="position-relative d-inline-block shadow-lg rounded border bg-white overflow-hidden">
-                        <canvas id="standalone_canvas" class="d-block" style="touch-action: none; cursor: crosshair;"></canvas>
+            <!-- Full-Width Workspace Canvas Body -->
+            <div class="card-body p-2 p-md-4 bg-dark bg-opacity-5 text-center overflow-auto d-flex justify-content-center align-items-center position-relative" style="min-height: calc(100vh - 200px);">
+                <div id="canvas_viewport" class="position-relative d-inline-block transition-transform w-100" style="transform-origin: center top;">
+                    <div id="canvas_wrapper" class="position-relative d-inline-block shadow-lg rounded border bg-white overflow-hidden" style="max-width: 100%;">
+                        <canvas id="standalone_canvas" class="d-block mx-auto" style="touch-action: none; cursor: crosshair; max-width: 100%; height: auto; max-height: calc(100vh - 210px); object-fit: contain;"></canvas>
                     </div>
                 </div>
             </div>
             
-            <div class="card-footer py-3 px-6 bg-light d-flex justify-content-between align-items-center text-muted fs-9">
+            <!-- Bottom Footer Bar -->
+            <div class="card-footer py-2 px-4 px-md-6 bg-light d-flex justify-content-between align-items-center text-muted fs-9">
                 <div>
-                    <span class="fw-bold">Shortcut Keyboard:</span> 
+                    <span class="fw-bold">Pintasan Keyboard:</span> 
                     <kbd class="bg-white text-dark shadow-2xs">Ctrl + Z</kbd> Undo | 
                     <kbd class="bg-white text-dark shadow-2xs">Ctrl + S</kbd> Simpan | 
                     <kbd class="bg-white text-dark shadow-2xs">B</kbd> Kuas | 
                     <kbd class="bg-white text-dark shadow-2xs">T</kbd> Teks
                 </div>
-                <div>Resolusi Canvas: <span id="canvas_res_text" class="fw-bold">-</span></div>
+                <div>Resolusi Asli: <span id="canvas_res_text" class="fw-bold">-</span></div>
             </div>
         </div>
     </div>
@@ -209,14 +211,21 @@ $(document).ready(function() {
 
     // Zoom Controls
     function applyZoom(newZoom) {
-        zoomLevel = Math.max(0.3, Math.min(2.5, newZoom));
-        $('#canvas_viewport').css('transform', `scale(${zoomLevel})`);
+        zoomLevel = Math.max(0.4, Math.min(3.0, newZoom));
+        $('#canvas_wrapper').css('transform', `scale(${zoomLevel})`);
         $('#zoom_val_text').text(Math.round(zoomLevel * 100) + '%');
     }
 
     $('#btn_zoom_in').click(function() { applyZoom(zoomLevel + 0.15); });
     $('#btn_zoom_out').click(function() { applyZoom(zoomLevel - 0.15); });
-    $('#btn_zoom_reset').click(function() { applyZoom(1.0); });
+    $('#btn_zoom_fit').click(function() {
+        applyZoom(1.0);
+        $('#standalone_canvas').css({ 'max-width': '100%', 'max-height': 'calc(100vh - 210px)' });
+    });
+    $('#btn_zoom_fullwidth').click(function() {
+        applyZoom(1.0);
+        $('#standalone_canvas').css({ 'max-width': '100%', 'max-height': 'none' });
+    });
 
     // Rotate Clockwise 90 degrees
     $('#btn_rotate_cw').click(function() {
@@ -238,7 +247,7 @@ $(document).ready(function() {
         pushUndoState();
     });
 
-    // Drawing Events
+    // Drawing Mouse & Touch Events
     function startDraw(e) {
         if (currentMode === 'text') {
             e.preventDefault();
