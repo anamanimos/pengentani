@@ -7,9 +7,19 @@
 @endsection
 
 @section('page_actions')
-<a href="{{ route('transaction-proofs.index') }}" class="btn btn-sm fw-bold btn-secondary">
-    <i class="ki-duotone ki-black-left fs-5 me-1"></i> Kembali ke Galeri
-</a>
+<div class="d-flex align-items-center gap-2">
+    @if(!in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
+        <a href="{{ route('transaction-proofs.edit', $transactionProof->id) }}" class="btn btn-sm fw-bold btn-warning">
+            <i class="ki-duotone ki-design-1 fs-5 me-1"><span class="path1"></span><span class="path2"></span></i> Edit & Coret Gambar
+        </a>
+    @endif
+    <a href="{{ route('transaction-proofs.history', $transactionProof->id) }}" class="btn btn-sm fw-bold btn-info">
+        <i class="fa fa-layer-group me-1"></i> Riwayat Versi
+    </a>
+    <a href="{{ route('transaction-proofs.index') }}" class="btn btn-sm fw-bold btn-secondary">
+        <i class="ki-duotone ki-black-left fs-5 me-1"></i> Kembali ke Galeri
+    </a>
+</div>
 @endsection
 
 @section('content')

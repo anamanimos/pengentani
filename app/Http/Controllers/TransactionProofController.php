@@ -209,6 +209,30 @@ class TransactionProofController extends Controller
     }
 
     /**
+     * Standalone Canvas Image Editor Page
+     */
+    public function edit(Request $request, TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('transaction_proofs.edit', compact('transactionProof'));
+    }
+
+    /**
+     * Standalone Version & Name History Page
+     */
+    public function history(Request $request, TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('transaction_proofs.history', compact('transactionProof'));
+    }
+
+    /**
      * Save edited image and preserve previous version in image_history
      */
     public function saveEditedImage(Request $request, TransactionProof $transactionProof)
