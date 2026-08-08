@@ -223,7 +223,7 @@
                                         <span class="fw-bold d-block text-truncate proof-name-display fs-7" title="{{ $proof->name }}">{{ $proof->name }}</span>
                                         <span class="fs-9 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
                                     </div>
-                                    <!-- Optimized Card Action Buttons (Max 3 icons) -->
+                                    <!-- Card Action Buttons -->
                                     <div class="d-flex align-items-center gap-1 proof-overlay-btn" style="z-index: 3;">
                                         @if(!$isPdf)
                                             <button type="button" class="btn btn-icon btn-sm btn-light-warning bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-edit-image" 
@@ -236,6 +236,25 @@
                                                     data-save-url="{{ route('transaction-proofs.edit-image', $proof->id) }}"
                                                     data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
                                                 <i class="ki-duotone ki-design-1 fs-4 text-warning"><span class="path1"></span><span class="path2"></span></i>
+                                            </button>
+                                        @endif
+                                        @if(!empty($proof->image_history))
+                                            <button type="button" class="btn btn-icon btn-sm btn-light-info bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-view-image-history" 
+                                                    title="Riwayat Edit Gambar ({{ count($proof->image_history) }})" 
+                                                    data-id="{{ $proof->id }}" 
+                                                    data-name="{{ $proof->name }}"
+                                                    data-current-url="{{ $proof->url }}"
+                                                    data-history="{{ json_encode($proof->image_history) }}"
+                                                    data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
+                                                <i class="fa fa-layer-group text-info fs-8"></i>
+                                            </button>
+                                        @endif
+                                        @if(!empty($proof->rename_history))
+                                            <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-view-history" 
+                                                    title="Lihat Riwayat Nama" 
+                                                    data-name="{{ $proof->name }}"
+                                                    data-history="{{ json_encode($proof->rename_history) }}">
+                                                <i class="fa fa-history text-gray-700 fs-8"></i>
                                             </button>
                                         @endif
                                         <button type="button" class="btn btn-icon btn-sm btn-light-primary bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-view-detail" 
@@ -1114,16 +1133,36 @@
             if ($card.length === 0) return;
 
             let $editBtn = $card.find('.btn-edit-image');
+            let $imgHistBtn = $card.find('.btn-view-image-history');
+            let $nameHistBtn = $card.find('.btn-view-history');
+            let $detailBtn = $card.find('.btn-view-detail');
+
             let isImage = $editBtn.length > 0;
+            let hasImgHistory = $imgHistBtn.length > 0;
+            let hasNameHistory = $nameHistBtn.length > 0;
+
+            let imgHistCount = 0;
+            if (hasImgHistory) {
+                try {
+                    let histArr = JSON.parse($imgHistBtn.attr('data-history') || '[]');
+                    imgHistCount = histArr.length;
+                } catch(e) {}
+            }
 
             if ($('#fslightbox_custom_toolbar').length === 0) {
                 let html = `
-                    <div id="fslightbox_custom_toolbar" class="position-fixed bottom-0 start-50 translate-middle-x mb-6 p-2 px-4 bg-dark bg-opacity-75 rounded-pill shadow-lg border border-gray-700 d-flex align-items-center gap-3" style="z-index: 100000000; backdrop-filter: blur(8px);">
-                        <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-4 py-2" id="fslightbox_action_edit" style="display: ${isImage ? 'inline-block' : 'none'};">
-                            <i class="ki-duotone ki-design-1 fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Edit / Coret Gambar
+                    <div id="fslightbox_custom_toolbar" class="position-fixed bottom-0 start-50 translate-middle-x mb-6 p-2 px-4 bg-dark bg-opacity-75 rounded-pill shadow-lg border border-gray-700 d-flex align-items-center gap-2 flex-wrap justify-content-center" style="z-index: 100000000; backdrop-filter: blur(8px); max-width: 92vw;">
+                        <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-4 py-2" id="fslightbox_action_edit">
+                            <i class="ki-duotone ki-design-1 fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Edit / Coret
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info fw-bold rounded-pill px-4 py-2" id="fslightbox_action_img_history">
+                            <i class="fa fa-layer-group fs-7 me-1"></i> Riwayat Edit <span id="fslightbox_img_history_badge" class="badge badge-light-info fs-9 ms-1"></span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary text-gray-800 fw-bold rounded-pill px-4 py-2" id="fslightbox_action_name_history">
+                            <i class="fa fa-history fs-7 me-1"></i> Riwayat Nama
                         </button>
                         <button type="button" class="btn btn-sm btn-light fw-bold rounded-pill px-4 py-2" id="fslightbox_action_detail">
-                            <i class="ki-duotone ki-eye fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Detail Transaksi
+                            <i class="ki-duotone ki-eye fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Detail
                         </button>
                     </div>
                 `;
@@ -1134,12 +1173,42 @@
                     evt.preventDefault();
                     let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
                     let $targetCard = $visibleCards.eq(currentCardIdx);
-                    let $targetEditBtn = $targetCard.find('.btn-edit-image');
+                    let $targetBtn = $targetCard.find('.btn-edit-image');
 
-                    if ($targetEditBtn.length) {
+                    if ($targetBtn.length) {
                         lightbox.close();
                         setTimeout(function() {
-                            $targetEditBtn.trigger('click');
+                            $targetBtn.trigger('click');
+                        }, 250);
+                    }
+                });
+
+                // Action Image History Click Handler
+                $(document).off('click', '#fslightbox_action_img_history').on('click', '#fslightbox_action_img_history', function(evt) {
+                    evt.preventDefault();
+                    let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
+                    let $targetCard = $visibleCards.eq(currentCardIdx);
+                    let $targetBtn = $targetCard.find('.btn-view-image-history');
+
+                    if ($targetBtn.length) {
+                        lightbox.close();
+                        setTimeout(function() {
+                            $targetBtn.trigger('click');
+                        }, 250);
+                    }
+                });
+
+                // Action Name History Click Handler
+                $(document).off('click', '#fslightbox_action_name_history').on('click', '#fslightbox_action_name_history', function(evt) {
+                    evt.preventDefault();
+                    let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
+                    let $targetCard = $visibleCards.eq(currentCardIdx);
+                    let $targetBtn = $targetCard.find('.btn-view-history');
+
+                    if ($targetBtn.length) {
+                        lightbox.close();
+                        setTimeout(function() {
+                            $targetBtn.trigger('click');
                         }, 250);
                     }
                 });
@@ -1149,12 +1218,12 @@
                     evt.preventDefault();
                     let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
                     let $targetCard = $visibleCards.eq(currentCardIdx);
-                    let $targetDetailBtn = $targetCard.find('.btn-view-detail');
+                    let $targetBtn = $targetCard.find('.btn-view-detail');
 
-                    if ($targetDetailBtn.length) {
+                    if ($targetBtn.length) {
                         lightbox.close();
                         setTimeout(function() {
-                            $targetDetailBtn.trigger('click');
+                            $targetBtn.trigger('click');
                         }, 250);
                     }
                 });
@@ -1162,11 +1231,19 @@
 
             // Update state & visibility for current slide index
             $('#fslightbox_custom_toolbar').data('card-index', stageIndex);
-            if (isImage) {
-                $('#fslightbox_action_edit').show();
+
+            if (isImage) $('#fslightbox_action_edit').show();
+            else $('#fslightbox_action_edit').hide();
+
+            if (hasImgHistory) {
+                $('#fslightbox_img_history_badge').text(imgHistCount);
+                $('#fslightbox_action_img_history').show();
             } else {
-                $('#fslightbox_action_edit').hide();
+                $('#fslightbox_action_img_history').hide();
             }
+
+            if (hasNameHistory) $('#fslightbox_action_name_history').show();
+            else $('#fslightbox_action_name_history').hide();
         }
 
         // ==========================================
