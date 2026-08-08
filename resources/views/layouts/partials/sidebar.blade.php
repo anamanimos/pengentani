@@ -135,34 +135,17 @@
                     <!--begin:Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link {{ request()->routeIs('whatsapp.*') ? 'active' : '' }}" href="{{ route('whatsapp.index') }}">
+                        <a class="menu-link {{ request()->routeIs('settings.*') || request()->routeIs('whatsapp.*') ? 'active' : '' }}" href="{{ route('settings.general.index') }}">
                             <span class="menu-icon">
-                                <i class="ki-duotone ki-whatsapp fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
+                                <i class="ki-duotone ki-setting-3 fs-2">
+                                    <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">Koneksi WhatsApp</span>
+                            <span class="menu-title">Pengaturan</span>
                         </a>
                         <!--end:Menu link-->
                     </div>
                     <!--end:Menu item-->
-
-                    @if(\Illuminate\Support\Facades\Route::has('settings.storage.index'))
-                    <!--begin:Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <a class="menu-link {{ request()->routeIs('settings.storage.*') ? 'active' : '' }}" href="{{ route('settings.storage.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-cloud-change fs-2">
-                                    <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">Storage Cloud (R2)</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Menu item-->
-                    @endif
 
                     <!--begin:Menu item-->
                     <div class="menu-item">

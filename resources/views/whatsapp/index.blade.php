@@ -31,6 +31,15 @@
                     </div>
                     <div class="card-body pt-2 pb-5">
                         <div class="nav flex-column nav-pills" role="tablist" aria-orientation="vertical">
+                            <!-- General Settings Menu Item -->
+                            <a href="{{ route('settings.general.index') }}" class="nav-link d-flex align-items-center py-3 px-4 mb-2 rounded-3 text-gray-700 text-hover-primary fw-semibold fs-7 {{ request()->routeIs('settings.general.*') ? 'active bg-light-primary text-primary fw-bold border border-primary border-opacity-25' : 'bg-hover-light' }}">
+                                <i class="ki-duotone ki-setting-2 fs-2 me-3 {{ request()->routeIs('settings.general.*') ? 'text-primary' : 'text-gray-500' }}"><span class="path1"></span><span class="path2"></span></i>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-7 fw-bold">Pengaturan Umum</span>
+                                    <span class="fs-9 text-muted">Profil Aplikasi & Sistem</span>
+                                </div>
+                            </a>
+
                             <!-- WhatsApp Menu Item -->
                             <a href="{{ route('whatsapp.index') }}" class="nav-link d-flex align-items-center py-3 px-4 mb-2 rounded-3 text-gray-700 text-hover-primary fw-semibold fs-7 {{ request()->routeIs('whatsapp.*') ? 'active bg-light-primary text-primary fw-bold border border-primary border-opacity-25' : 'bg-hover-light' }}">
                                 <i class="ki-duotone ki-whatsapp fs-2 me-3 {{ request()->routeIs('whatsapp.*') ? 'text-primary' : 'text-gray-500' }}"><span class="path1"></span><span class="path2"></span></i>
