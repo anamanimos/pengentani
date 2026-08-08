@@ -54,6 +54,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     
     // Withdrawals
     Route::post('pertanians/{pertanian}/withdrawals', [\App\Http\Controllers\WithdrawalController::class, 'store'])->name('withdrawals.store');
+    Route::put('withdrawals/{withdrawal}', [\App\Http\Controllers\WithdrawalController::class, 'update'])->name('withdrawals.update');
     Route::delete('withdrawals/{withdrawal}', [\App\Http\Controllers\WithdrawalController::class, 'destroy'])->name('withdrawals.destroy');
     
     Route::resource('kebuns', \App\Http\Controllers\KebunController::class);

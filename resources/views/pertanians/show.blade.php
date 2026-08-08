@@ -920,16 +920,33 @@
                                 <td class="text-start fw-bold text-danger">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</td>
                                 <td class="text-start">
                                     @if($withdrawal->proof_image)
-                                        <a href="{{ Storage::url($withdrawal->proof_image) }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
+                                        @php
+                                            $proofUrl = str_starts_with($withdrawal->proof_image, 'http') ? $withdrawal->proof_image : Storage::url($withdrawal->proof_image);
+                                        @endphp
+                                        <a href="{{ $proofUrl }}" target="_blank" class="btn btn-sm btn-icon btn-light-primary" title="Lihat Bukti"><i class="ki-duotone ki-picture fs-2"><span class="path1"></span><span class="path2"></span></i></a>
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="text-start">
+                                <td class="text-start text-nowrap">
+                                    <button type="button" 
+                                            class="btn btn-icon btn-light-warning btn-sm me-1 btn-edit-withdrawal" 
+                                            title="Edit Penarikan"
+                                            data-id="{{ $withdrawal->id }}"
+                                            data-update-url="{{ route('withdrawals.update', $withdrawal->id) }}"
+                                            data-type="{{ $withdrawal->type }}"
+                                            data-role="{{ $withdrawal->role }}"
+                                            data-user-id="{{ $withdrawal->user_id }}"
+                                            data-amount="{{ $withdrawal->amount }}"
+                                            data-date="{{ $withdrawal->date }}"
+                                            data-proof-url="{{ $withdrawal->proof_image ? (str_starts_with($withdrawal->proof_image, 'http') ? $withdrawal->proof_image : Storage::url($withdrawal->proof_image)) : '' }}"
+                                            data-notes="{{ $withdrawal->notes }}">
+                                        <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                    </button>
                                     <form action="{{ route('withdrawals.destroy', $withdrawal) }}" method="POST" class="d-inline form-delete-withdrawal">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
+                                        <button type="submit" class="btn btn-icon btn-light-danger btn-sm" title="Hapus Penarikan"><i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -1002,10 +1019,30 @@
                     <div class="mb-5">
                         <label class="required form-label">Tanggal Penarikan</label>
                         <input type="text" class="form-control form-control-solid" id="withdrawal_date" name="date" required value="{{ date('Y-m-d') }}" />
-                    </div>
-                    <div class="mb-5">
-                        <label class="form-label">Bukti Transfer (Opsional)</label>
-                        <input type="file" class="form-control form-control-solid" name="proof_image" accept="image/*" />
+                    </div>                    <div class="mb-5">
+                        <label class="form-label fw-semibold">Bukti Transfer (Opsional)</label>
+                        <ul class="nav nav-tabs nav-line-tabs mb-3 fs-8 fw-bold" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active py-2" data-bs-toggle="tab" href="#add_tab_proof_upload" role="tab">Upload File Baru</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link py-2" data-bs-toggle="tab" href="#add_tab_proof_gallery" role="tab">Ambil dari Galeri Bukti</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="add_tab_proof_upload" role="tabpanel">
+                                <input type="file" class="form-control form-control-solid" name="proof_image" accept="image/*,application/pdf" />
+                            </div>
+                            <div class="tab-pane fade" id="add_tab_proof_gallery" role="tabpanel">
+                                <select class="form-select form-select-solid" id="add_proof_gallery_select" data-control="select2" data-dropdown-parent="#kt_modal_add_withdrawal" data-placeholder="Pilih bukti dari galeri...">
+                                    <option value="">Tanpa Bukti Galeri</option>
+                                    @foreach($proofs as $proof)
+                                        <option value="{{ $proof->url }}">{{ $proof->name }} ({{ $proof->created_at->format('d/m/Y') }})</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="proof_url" id="add_proof_url" value="" />
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-5">
                         <label class="form-label">Keterangan</label>
@@ -1019,6 +1056,106 @@
             </form>
         </div>
     </div>
+</div>
+
+{{-- Modal Edit Penarikan Dana --}}
+<div class="modal fade" tabindex="-1" id="kt_modal_edit_withdrawal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="" method="POST" enctype="multipart/form-data" id="form_edit_withdrawal">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h3 class="modal-title">Edit Penarikan Dana</h3>
+                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-5">
+                        <label class="required form-label">Jenis Distribusi</label>
+                        <select class="form-select form-select-solid" name="type" id="edit_withdrawal_type" required>
+                            <option value="bagi_hasil">Pembagian Keuntungan (Bagi Hasil)</option>
+                            <option value="pengembalian_modal">Pengembalian Modal Investasi</option>
+                            <option value="zakat">Penyaluran Zakat</option>
+                        </select>
+                    </div>
+                    <div class="mb-5" id="edit_group_role">
+                        <label class="required form-label">Peran (Kapasitas)</label>
+                        <select class="form-select form-select-solid" name="role" id="edit_withdrawal_role">
+                            <option value="">Pilih Peran...</option>
+                            <option value="admin">Admin</option>
+                            <option value="pengelola">Pengelola</option>
+                            <option value="investor">Investor</option>
+                        </select>
+                    </div>
+                    <div class="mb-5" id="edit_group_user">
+                        <label class="required form-label">Pilih User Penerima</label>
+                        <select class="form-select form-select-solid" name="user_id" id="edit_withdrawal_user" data-control="select2" data-dropdown-parent="#kt_modal_edit_withdrawal">
+                            <option value="">Pilih...</option>
+                            @if($pertanian->admin)
+                                <option value="{{ $pertanian->admin->id }}">[Admin] {{ $pertanian->admin->name }}</option>
+                            @endif
+                            @if($pertanian->pengelolaEntity)
+                                <option value="{{ $pertanian->pengelolaEntity->users->first()->id ?? '' }}">[Pengelola] {{ $pertanian->pengelolaEntity->name }}</option>
+                            @endif
+                            @foreach($pertanian->investors as $inv)
+                                <option value="{{ $inv->entity->users->first()->id ?? '' }}">[Investor] {{ $inv->entity->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-5">
+                        <label class="required form-label">Nominal Ditarik (Rp)</label>
+                        <input type="number" class="form-control form-control-solid" name="amount" id="edit_withdrawal_amount" required min="1" />
+                    </div>
+                    <div class="mb-5">
+                        <label class="required form-label">Tanggal Penarikan</label>
+                        <input type="text" class="form-control form-control-solid" id="edit_withdrawal_date" name="date" required />
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label fw-semibold">Bukti Transfer (Opsional)</label>
+                        <div id="edit_current_proof_preview" class="mb-2 d-none">
+                            <span class="fs-9 text-muted d-block mb-1">Bukti Saat Ini:</span>
+                            <a href="#" id="edit_current_proof_link" target="_blank" class="btn btn-xs btn-light-primary fw-bold">
+                                <i class="ki-duotone ki-picture fs-5 me-1"><span class="path1"></span><span class="path2"></span></i> Lihat Bukti
+                            </a>
+                        </div>
+                        <ul class="nav nav-tabs nav-line-tabs mb-3 fs-8 fw-bold" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link active py-2" data-bs-toggle="tab" href="#edit_tab_proof_upload" role="tab">Upload File Baru</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link py-2" data-bs-toggle="tab" href="#edit_tab_proof_gallery" role="tab">Ambil dari Galeri Bukti</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="edit_tab_proof_upload" role="tabpanel">
+                                <input type="file" class="form-control form-control-solid" name="proof_image" accept="image/*,application/pdf" />
+                            </div>
+                            <div class="tab-pane fade" id="edit_tab_proof_gallery" role="tabpanel">
+                                <select class="form-select form-select-solid" id="edit_proof_gallery_select" data-control="select2" data-dropdown-parent="#kt_modal_edit_withdrawal" data-placeholder="Pilih bukti dari galeri...">
+                                    <option value="">Tanpa Bukti Galeri</option>
+                                    @foreach($proofs as $proof)
+                                        <option value="{{ $proof->url }}">{{ $proof->name }} ({{ $proof->created_at->format('d/m/Y') }})</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="proof_url" id="edit_proof_url" value="" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label">Keterangan</label>
+                        <textarea class="form-control form-control-solid" name="notes" id="edit_withdrawal_notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('styles')
@@ -1548,6 +1685,125 @@
                                 Swal.fire('Error', xhr.responseJSON?.message || 'Gagal menghapus data', 'error');
                             }
                         });
+                    }
+                });
+            // Flatpickr for Withdrawal Dates
+            $("#withdrawal_date, #edit_withdrawal_date").flatpickr({
+                dateFormat: "Y-m-d",
+                defaultDate: new Date()
+            });
+
+            // Proof Gallery Selectors
+            $('#add_proof_gallery_select').on('change', function() {
+                $('#add_proof_url').val($(this).val());
+            });
+            $('#edit_proof_gallery_select').on('change', function() {
+                $('#edit_proof_url').val($(this).val());
+            });
+
+            // Handle Edit Withdrawal Modal Trigger
+            $(document).on('click', '.btn-edit-withdrawal', function() {
+                var btn = $(this);
+                var updateUrl = btn.data('update-url');
+                var type = btn.data('type');
+                var role = btn.data('role');
+                var userId = btn.data('user-id');
+                var amount = btn.data('amount');
+                var date = btn.data('date');
+                var proofUrl = btn.data('proof-url');
+                var notes = btn.data('notes');
+
+                var form = $('#form_edit_withdrawal');
+                form.attr('action', updateUrl);
+
+                $('#edit_withdrawal_type').val(type).trigger('change');
+                $('#edit_withdrawal_amount').val(amount);
+                $('#edit_withdrawal_notes').val(notes);
+                
+                if (date) {
+                    var fp = document.getElementById('edit_withdrawal_date')._flatpickr;
+                    if (fp) fp.setDate(date);
+                }
+
+                if (type === 'zakat') {
+                    $('#edit_group_role').hide();
+                    $('#edit_withdrawal_role').val('');
+                    $('#edit_group_user').hide();
+                    $('#edit_withdrawal_user').val('').trigger('change.select2');
+                } else if (type === 'pengembalian_modal') {
+                    $('#edit_group_role').hide();
+                    $('#edit_withdrawal_role').val('investor');
+                    $('#edit_group_user').show();
+                    $('#edit_withdrawal_user').val(userId).trigger('change.select2');
+                } else {
+                    $('#edit_group_role').show();
+                    $('#edit_withdrawal_role').val(role);
+                    $('#edit_group_user').show();
+                    $('#edit_withdrawal_user').val(userId).trigger('change.select2');
+                }
+
+                // Proof preview
+                if (proofUrl) {
+                    $('#edit_current_proof_preview').removeClass('d-none');
+                    $('#edit_current_proof_link').attr('href', proofUrl);
+                } else {
+                    $('#edit_current_proof_preview').addClass('d-none');
+                }
+
+                $('#kt_modal_edit_withdrawal').modal('show');
+            });
+
+            // Handle Edit Withdrawal Type change
+            $('#edit_withdrawal_type').on('change', function() {
+                var val = $(this).val();
+                if (val === 'zakat') {
+                    $('#edit_group_role').hide();
+                    $('#edit_withdrawal_role').removeAttr('required').val('');
+                    $('#edit_group_user').hide();
+                    $('#edit_withdrawal_user').removeAttr('required').val('').trigger('change.select2');
+                } else if (val === 'pengembalian_modal') {
+                    $('#edit_group_role').hide();
+                    $('#edit_withdrawal_role').removeAttr('required').val('investor');
+                    $('#edit_group_user').show();
+                    $('#edit_withdrawal_user').attr('required', 'required');
+                } else {
+                    $('#edit_group_role').show();
+                    $('#edit_withdrawal_role').attr('required', 'required');
+                    $('#edit_group_user').show();
+                    $('#edit_withdrawal_user').attr('required', 'required');
+                }
+            });
+
+            // Handle Submit Edit Withdrawal
+            $('#form_edit_withdrawal').on('submit', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var submitBtn = form.find('button[type="submit"]');
+                var originalText = submitBtn.html();
+                
+                submitBtn.html('<span class="spinner-border spinner-border-sm align-middle ms-2"></span> Memperbarui...').prop('disabled', true);
+                
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: new FormData(this),
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $('#kt_modal_edit_withdrawal').modal('hide');
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: response.message || 'Penarikan berhasil diperbarui',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.hash = '#kt_tab_pane_withdrawals';
+                            window.location.reload();
+                        });
+                    },
+                    error: function(xhr) {
+                        submitBtn.html(originalText).prop('disabled', false);
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Terjadi kesalahan, silakan coba lagi', 'error');
                     }
                 });
             });

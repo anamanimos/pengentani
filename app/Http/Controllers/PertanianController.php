@@ -264,9 +264,11 @@ class PertanianController extends Controller
         }
 
         $realisasiList = $realisasiList->sortByDesc('date');
+        $proofs = \App\Models\TransactionProof::where('user_id', Auth::id())->orderBy('name')->get();
 
         return view('pertanians.show', compact(
             'pertanian', 
+            'proofs',
             'totalBiaya', 
             'totalInvestasi', 
             'estimasiPendapatan',
