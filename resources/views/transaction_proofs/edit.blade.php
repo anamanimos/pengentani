@@ -35,17 +35,17 @@
     width: 100% !important;
 }
 
-/* Maintain generous padding for Page Title Bar & Editor Control Toolbar */
+/* Maintain tighter, balanced padding for Page Title Bar & Editor Control Toolbar */
 #kt_app_toolbar,
 #kt_app_toolbar_container,
 .app-toolbar {
-    padding-left: 2.25rem !important;
-    padding-right: 2.25rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 .editor-toolbar-header {
-    padding-left: 2.25rem !important;
-    padding-right: 2.25rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 .card {
