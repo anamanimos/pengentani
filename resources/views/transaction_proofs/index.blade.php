@@ -237,14 +237,12 @@
                                                     data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
                                                 <i class="ki-duotone ki-design-1 fs-4 text-warning"><span class="path1"></span><span class="path2"></span></i>
                                             </button>
-                                        @endif
-                                        @if(!empty($proof->image_history))
                                             <button type="button" class="btn btn-icon btn-sm btn-light-info bg-white bg-opacity-90 w-28px h-28px rounded-circle shadow-xs btn-view-image-history" 
-                                                    title="Riwayat Edit Gambar ({{ count($proof->image_history) }})" 
+                                                    title="Riwayat Edit Gambar" 
                                                     data-id="{{ $proof->id }}" 
                                                     data-name="{{ $proof->name }}"
                                                     data-current-url="{{ $proof->url }}"
-                                                    data-history="{{ json_encode($proof->image_history) }}"
+                                                    data-history="{{ json_encode($proof->image_history ?? []) }}"
                                                     data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
                                                 <i class="fa fa-layer-group text-info fs-8"></i>
                                             </button>
@@ -1529,6 +1527,7 @@
 
             let name = $(this).attr('data-name');
             let historyJson = $(this).attr('data-history');
+            let currentUrl = $(this).attr('data-current-url');
             let revertUrl = $(this).attr('data-revert-url');
             let history = [];
 
@@ -1542,7 +1541,14 @@
 
             let html = '';
             if (!history || history.length === 0) {
-                html = '<div class="text-center text-muted py-6">Belum ada riwayat edit gambar.</div>';
+                html = `
+                    <div class="p-5 bg-light rounded border text-center">
+                        ${currentUrl ? `<div class="mb-3 d-flex justify-content-center"><img src="${currentUrl}" class="rounded border shadow-xs" style="max-height: 160px; max-width: 100%; object-fit: contain;" /></div>` : ''}
+                        <div class="fw-bold text-gray-800 fs-6 mb-1">Versi 1 (Gambar Utama Asli)</div>
+                        <div class="fs-8 text-muted mb-3">Belum ada editan / coretan lanjutan pada gambar ini.</div>
+                        <span class="badge badge-light-success fs-8 px-3 py-2 fw-bold">Gambar Asli Aktif</span>
+                    </div>
+                `;
             } else {
                 for (let i = history.length - 1; i >= 0; i--) {
                     let v = history[i];
