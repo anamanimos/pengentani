@@ -10,7 +10,7 @@
 <div class="d-flex align-items-center gap-2">
     @if(!in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
         <a href="{{ route('transaction-proofs.edit', $transactionProof->id) }}" class="btn btn-sm fw-bold btn-warning">
-            <i class="ki-duotone ki-design-1 fs-5 me-1"><span class="path1"></span><span class="path2"></span></i> Edit Gambar
+            <i class="fas fa-edit me-1"></i> Edit Gambar
         </a>
     @endif
     <a href="{{ route('transaction-proofs.show', $transactionProof->id) }}" class="btn btn-sm fw-bold btn-light-primary">
