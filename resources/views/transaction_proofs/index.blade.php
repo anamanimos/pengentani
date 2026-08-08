@@ -179,11 +179,16 @@
             <div class="col-12">
                 <div class="proof-gallery-grid" id="proof_gallery_grid">
                     @forelse($proofs as $proof)
+                    @php
+                        $ext = strtolower(pathinfo($proof->file_path, PATHINFO_EXTENSION));
+                        $isPdf = in_array($ext, ['pdf']);
+                        $dataType = $isPdf ? 'iframe' : 'image';
+                    @endphp
                     <div class="proof-card" data-id="{{ $proof->id }}" data-name="{{ strtolower($proof->name) }}">
                         <div class="proof-card-item">
-                            <a href="{{ $proof->url }}" data-fslightbox="gallery" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
+                            <a href="{{ $proof->url }}" data-fslightbox="gallery" data-type="{{ $dataType }}" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
                             
-                            @if(in_array(strtolower(pathinfo($proof->file_path, PATHINFO_EXTENSION)), ['pdf']))
+                            @if($isPdf)
                                 <div class="proof-pdf-placeholder">
                                     <i class="fas fa-file-pdf fs-2x mb-1 text-danger"></i>
                                     <span class="fs-9 fw-bold text-gray-400 text-uppercase">PDF</span>

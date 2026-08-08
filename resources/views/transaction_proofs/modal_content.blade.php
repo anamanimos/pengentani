@@ -5,7 +5,7 @@
             @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
                 <iframe src="{{ $transactionProof->url }}" class="w-100 h-100 rounded" style="border: none;"></iframe>
             @else
-                <a href="{{ $transactionProof->url }}" data-fslightbox="gallery_detail_modal" class="d-block w-100 h-100 d-flex align-items-center justify-content-center" title="Klik untuk memperbesar">
+                <a href="{{ $transactionProof->url }}" data-fslightbox="gallery_detail_modal" data-type="image" class="d-block w-100 h-100 d-flex align-items-center justify-content-center" title="Klik untuk memperbesar">
                     <img src="{{ $transactionProof->url }}" class="img-fluid rounded" style="max-height: 420px; max-width: 100%; object-fit: contain;" alt="Bukti Transaksi" />
                 </a>
             @endif
