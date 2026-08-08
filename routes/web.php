@@ -121,6 +121,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::resource('pertanians.updates', \App\Http\Controllers\PertanianUpdateController::class)->except(['show']);
 
     // Bukti Transaksi
+    Route::get('transaction-proofs/{transaction_proof}/proxy-image', [\App\Http\Controllers\TransactionProofController::class, 'proxyImage'])->name('transaction-proofs.proxy-image');
     Route::patch('transaction-proofs/{transaction_proof}/rename', [\App\Http\Controllers\TransactionProofController::class, 'rename'])->name('transaction-proofs.rename');
     Route::post('transaction-proofs/{transaction_proof}/edit-image', [\App\Http\Controllers\TransactionProofController::class, 'saveEditedImage'])->name('transaction-proofs.edit-image');
     Route::post('transaction-proofs/{transaction_proof}/revert-image', [\App\Http\Controllers\TransactionProofController::class, 'revertImage'])->name('transaction-proofs.revert-image');

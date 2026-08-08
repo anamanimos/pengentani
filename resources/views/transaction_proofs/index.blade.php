@@ -231,6 +231,7 @@
                                                     data-id="{{ $proof->id }}" 
                                                     data-name="{{ $proof->name }}"
                                                     data-url="{{ $proof->url }}"
+                                                    data-proxy-url="{{ route('transaction-proofs.proxy-image', $proof->id) }}"
                                                     data-history="{{ json_encode($proof->image_history ?? []) }}"
                                                     data-save-url="{{ route('transaction-proofs.edit-image', $proof->id) }}"
                                                     data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
@@ -1090,6 +1091,7 @@
             let proofId = $(this).attr('data-id');
             let proofName = $(this).attr('data-name');
             let proofUrl = $(this).attr('data-url');
+            let proxyUrl = $(this).attr('data-proxy-url') || proofUrl;
             activeEditorSaveUrl = $(this).attr('data-save-url');
             activeEditorProofId = proofId;
 
@@ -1110,7 +1112,7 @@
             let modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
 
-            // Load Image onto Canvas
+            // Load Image onto Canvas via same-origin Proxy Endpoint to prevent CORS errors
             canvasImg = new Image();
             canvasImg.crossOrigin = 'anonymous';
             canvasImg.onload = function() {
@@ -1125,6 +1127,12 @@
                 pushUndoState();
             };
             canvasImg.onerror = function() {
+                // If proxy fails, attempt direct URL fallback
+                if (canvasImg.src !== proofUrl && proofUrl) {
+                    canvasImg.removeAttribute('crossOrigin');
+                    canvasImg.src = proofUrl;
+                    return;
+                }
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal Memuat Gambar',
@@ -1132,7 +1140,7 @@
                 });
                 modal.hide();
             };
-            canvasImg.src = proofUrl;
+            canvasImg.src = proxyUrl;
         });
 
         // Mode Switcher Buttons

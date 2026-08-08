@@ -16,6 +16,7 @@
                         data-id="{{ $transactionProof->id }}" 
                         data-name="{{ $transactionProof->name }}"
                         data-url="{{ $transactionProof->url }}"
+                        data-proxy-url="{{ route('transaction-proofs.proxy-image', $transactionProof->id) }}"
                         data-history="{{ json_encode($transactionProof->image_history ?? []) }}"
                         data-save-url="{{ route('transaction-proofs.edit-image', $transactionProof->id) }}"
                         data-revert-url="{{ route('transaction-proofs.revert-image', $transactionProof->id) }}">

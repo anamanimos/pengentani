@@ -308,4 +308,51 @@ class TransactionProofController extends Controller
             'image_history' => $transactionProof->image_history,
         ]);
     }
+
+    /**
+     * Same-origin proxy endpoint to serve proof images to canvas without CORS issues
+     */
+    public function proxyImage(TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $filePath = $transactionProof->file_path;
+        $content = null;
+        $mime = null;
+
+        // Check storage disks
+        foreach (['r2', 'public', 's3', 'local'] as $disk) {
+            try {
+                if (Storage::disk($disk)->exists($filePath)) {
+                    $content = Storage::disk($disk)->get($filePath);
+                    $mime = Storage::disk($disk)->mimeType($filePath);
+                    break;
+                }
+            } catch (\Throwable $e) {
+                // Continue to next disk check
+            }
+        }
+
+        // Fallback: fetch via public URL
+        if (!$content) {
+            $url = $transactionProof->url;
+            $content = @file_get_contents($url);
+        }
+
+        if ($content) {
+            if (!$mime) {
+                $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
+            }
+
+            return response($content, 200)
+                ->header('Content-Type', $mime)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Cache-Control', 'max-age=86400, public');
+        }
+
+        abort(404, 'Gambar tidak ditemukan');
+    }
 }
