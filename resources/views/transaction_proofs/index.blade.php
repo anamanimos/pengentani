@@ -108,24 +108,36 @@
         pointer-events: auto;
     }
 
-    /* Sticky Unified Tools Bar */
+    /* Floating Bottom Tools Bar */
     .sticky-tools-bar {
-        position: sticky;
-        top: 70px;
-        z-index: 100;
-        background: rgba(255, 255, 255, 0.94);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid #e4e6ef;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        transition: box-shadow 0.3s ease;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 60px);
+        max-width: 1300px;
+        z-index: 999;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(228, 230, 239, 0.8);
+        border-radius: 50px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        transition: all 0.3s ease;
+    }
+
+    @media (max-width: 991.98px) {
+        .sticky-tools-bar {
+            width: calc(100% - 30px);
+            bottom: 12px;
+            border-radius: 20px;
+        }
     }
 
     [data-bs-theme="dark"] .sticky-tools-bar {
-        background: rgba(30, 30, 45, 0.94);
-        border-color: #2b2b40;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        background: rgba(30, 30, 45, 0.92);
+        border-color: rgba(43, 43, 64, 0.8);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 </style>
 
@@ -134,7 +146,7 @@
 @endsection
 
 @section('content')
-<div class="app-content flex-column-fluid pb-15">
+<div class="app-content flex-column-fluid pb-28">
     <div class="app-container container-fluid">
         @if(session('success'))
         <div class="alert alert-success d-flex align-items-center p-5 mb-5 rounded-3 shadow-xs">
@@ -162,49 +174,8 @@
         </div>
         @endif
 
-        <!-- Unified Sticky Toolbar Container -->
-        <div class="sticky-tools-bar mb-6 p-3 px-4">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <!-- Left: Live Search Input -->
-                <div class="d-flex align-items-center flex-grow-1 flex-md-grow-0" style="min-width: 260px; max-width: 450px;">
-                    <div class="position-relative w-100">
-                        <i class="ki-duotone ki-magnifier fs-2 text-primary position-absolute top-50 translate-middle-y ms-3"><span class="path1"></span><span class="path2"></span></i>
-                        <input type="text" id="floating_search_input" class="form-control form-control-solid ps-10 pe-10 fs-7 fw-semibold rounded-pill" placeholder="Cari nama bukti transaksi..." autocomplete="off">
-                        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary position-absolute top-50 translate-middle-y end-0 me-2 d-none" id="clear_search_btn" title="Hapus pencarian">
-                            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
-                        </button>
-                    </div>
-                    <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-2 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
-                </div>
-
-                <!-- Right: Cluster Tools (Grid Slider + Status Filter + Upload Button) -->
-                <div class="d-flex align-items-center flex-wrap gap-3 ms-auto">
-                    <!-- Grid Volume/Column Slider -->
-                    <div class="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-1 border border-gray-300 shadow-2xs" title="Atur Ukuran Grid Galeri">
-                        <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-                        <input type="range" class="form-range" id="grid_cols_range" min="3" max="8" value="8" step="1" style="width: 80px; cursor: pointer;">
-                        <span class="fs-8 fw-bold text-gray-700 min-w-45px text-end" id="grid_cols_label">8 Kolom</span>
-                    </div>
-
-                    <!-- Filter Status -->
-                    <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
-                        <select name="status" class="form-select form-select-sm form-select-solid fw-bold rounded-pill" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
-                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
-                            <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
-                            <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
-                        </select>
-                    </form>
-
-                    <!-- Upload Modal Trigger Button -->
-                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
-                        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Full Width Gallery Grid Container -->
-        <div class="row">
+        <div class="row mb-8">
             <div class="col-12">
                 <div class="proof-gallery-grid" id="proof_gallery_grid">
                     @forelse($proofs as $proof)
@@ -288,6 +259,47 @@
                     <i class="ki-duotone ki-magnifier fs-3x text-gray-400 mb-3"><span class="path1"></span><span class="path2"></span></i>
                     <div class="fs-5 fw-bold text-gray-700">Tidak Ada Bukti Transaksi Sesuai</div>
                     <span class="fs-7 text-gray-500">Coba ubah kata kunci pencarian Anda.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Bottom Tools Bar Container -->
+        <div class="sticky-tools-bar p-3 px-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <!-- Left: Live Search Input -->
+                <div class="d-flex align-items-center flex-grow-1 flex-md-grow-0" style="min-width: 260px; max-width: 450px;">
+                    <div class="position-relative w-100">
+                        <i class="ki-duotone ki-magnifier fs-2 text-primary position-absolute top-50 translate-middle-y ms-3"><span class="path1"></span><span class="path2"></span></i>
+                        <input type="text" id="floating_search_input" class="form-control form-control-solid ps-10 pe-10 fs-7 fw-semibold rounded-pill" placeholder="Cari nama bukti transaksi..." autocomplete="off">
+                        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary position-absolute top-50 translate-middle-y end-0 me-2 d-none" id="clear_search_btn" title="Hapus pencarian">
+                            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                        </button>
+                    </div>
+                    <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-2 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
+                </div>
+
+                <!-- Right: Cluster Tools (Grid Slider + Status Filter + Upload Button) -->
+                <div class="d-flex align-items-center flex-wrap gap-3 ms-auto">
+                    <!-- Grid Volume/Column Slider -->
+                    <div class="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-1 border border-gray-300 shadow-2xs" title="Atur Ukuran Grid Galeri">
+                        <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                        <input type="range" class="form-range" id="grid_cols_range" min="3" max="8" value="8" step="1" style="width: 80px; cursor: pointer;">
+                        <span class="fs-8 fw-bold text-gray-700 min-w-45px text-end" id="grid_cols_label">8 Kolom</span>
+                    </div>
+
+                    <!-- Filter Status -->
+                    <form action="{{ route('transaction-proofs.index') }}" method="GET" class="m-0" id="filter-form">
+                        <select name="status" class="form-select form-select-sm form-select-solid fw-bold rounded-pill" data-control="select2" data-hide-search="true" onchange="document.getElementById('filter-form').submit()">
+                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                            <option value="unused" {{ request('status') == 'unused' ? 'selected' : '' }}>Belum Digunakan</option>
+                            <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
+                        </select>
+                    </form>
+
+                    <!-- Upload Modal Trigger Button -->
+                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
+                        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
+                    </button>
                 </div>
             </div>
         </div>
