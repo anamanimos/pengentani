@@ -43,9 +43,9 @@
 <div class="app-content flex-column-fluid">
     <div class="app-container container-fluid">
         <div class="row g-6">
-            <!-- Left Column: Image Preview Box (4 columns) -->
+            <!-- Left Column: Image Preview Box (4 columns, Sticky) -->
             <div class="col-xl-4 text-center">
-                <div class="card card-flush shadow-sm">
+                <div class="card card-flush shadow-sm position-sticky" style="top: 90px; z-index: 5;">
                     <div class="card-body p-4">
                         <div class="position-relative overflow-hidden d-flex justify-content-center align-items-center bg-dark bg-opacity-5 rounded border shadow-2xs mb-4 p-2">
                             @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
