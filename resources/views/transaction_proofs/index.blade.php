@@ -855,8 +855,18 @@
             }
         });
 
-        // Keyboard arrow navigation for Offcanvas
+        // Keyboard arrow navigation for Offcanvas & Ctrl+F search shortcut
         $(document).on('keydown', function(e) {
+            // Shortcut Ctrl+F / Cmd+F -> Focus Search Input
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+                e.preventDefault();
+                let $searchInput = $('#floating_search_input');
+                if ($searchInput.length) {
+                    $searchInput.focus().select();
+                }
+                return;
+            }
+
             // Only navigate if the offcanvas drawer is currently open/visible
             if ($('#kt_offcanvas_proof_detail').hasClass('show')) {
                 if (e.which === 37) { // Left arrow key
