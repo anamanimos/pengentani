@@ -266,20 +266,13 @@
         <!-- Floating Bottom Tools Bar Container -->
         <div class="sticky-tools-bar p-3 px-4">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <!-- Left: Live Search Input -->
-                <div class="d-flex align-items-center flex-grow-1 flex-md-grow-0" style="min-width: 260px; max-width: 450px;">
-                    <div class="position-relative w-100">
-                        <i class="ki-duotone ki-magnifier fs-2 text-primary position-absolute top-50 translate-middle-y ms-3"><span class="path1"></span><span class="path2"></span></i>
-                        <input type="text" id="floating_search_input" class="form-control form-control-solid ps-10 pe-10 fs-7 fw-semibold rounded-pill" placeholder="Cari nama bukti transaksi..." autocomplete="off">
-                        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary position-absolute top-50 translate-middle-y end-0 me-2 d-none" id="clear_search_btn" title="Hapus pencarian">
-                            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
-                        </button>
-                    </div>
-                    <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-2 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
-                </div>
+                <!-- Left: Cluster Tools (Upload Button + Grid Slider + Status Filter) -->
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <!-- Upload Modal Trigger Button -->
+                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
+                        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
+                    </button>
 
-                <!-- Right: Cluster Tools (Grid Slider + Status Filter + Upload Button) -->
-                <div class="d-flex align-items-center flex-wrap gap-3 ms-auto">
                     <!-- Grid Volume/Column Slider -->
                     <div class="d-flex align-items-center gap-2 bg-light rounded-pill px-3 py-1 border border-gray-300 shadow-2xs" title="Atur Ukuran Grid Galeri">
                         <i class="ki-duotone ki-element-11 fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
@@ -295,11 +288,18 @@
                             <option value="used" {{ request('status') == 'used' ? 'selected' : '' }}>Sudah Digunakan</option>
                         </select>
                     </form>
+                </div>
 
-                    <!-- Upload Modal Trigger Button -->
-                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#kt_modal_upload_proof">
-                        <i class="ki-duotone ki-file-up fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Upload Bukti
-                    </button>
+                <!-- Right: Wider Live Search Input -->
+                <div class="d-flex align-items-center flex-grow-1 ms-auto" style="min-width: 280px; max-width: 600px;">
+                    <div class="position-relative w-100">
+                        <i class="ki-duotone ki-magnifier fs-2 text-primary position-absolute top-50 translate-middle-y ms-3"><span class="path1"></span><span class="path2"></span></i>
+                        <input type="text" id="floating_search_input" class="form-control form-control-solid ps-10 pe-10 fs-7 fw-semibold rounded-pill" placeholder="Cari nama bukti transaksi..." autocomplete="off">
+                        <button type="button" class="btn btn-icon btn-sm btn-active-color-primary position-absolute top-50 translate-middle-y end-0 me-2 d-none" id="clear_search_btn" title="Hapus pencarian">
+                            <i class="ki-duotone ki-cross fs-3"><span class="path1"></span><span class="path2"></span></i>
+                        </button>
+                    </div>
+                    <span class="badge badge-light-primary fw-bold px-3 py-2 rounded-pill fs-8 ms-2 text-nowrap" id="search_count_badge">{{ $proofs->count() }} bukti</span>
                 </div>
             </div>
         </div>
