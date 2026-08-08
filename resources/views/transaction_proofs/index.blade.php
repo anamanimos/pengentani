@@ -186,7 +186,7 @@
                     @endphp
                     <div class="proof-card" data-id="{{ $proof->id }}" data-name="{{ strtolower($proof->name) }}">
                         <div class="proof-card-item">
-                            <a href="{{ $proof->url }}" class="proof-lightbox-link position-absolute top-0 start-0 w-100 h-100" data-type="{{ $dataType }}" style="z-index: 1;" title="Lihat Bukti"></a>
+                            <a href="{{ route('transaction-proofs.show', $proof->id) }}" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Detail Bukti Transaksi"></a>
                             
                             @if($isPdf)
                                 <div class="proof-pdf-placeholder">
