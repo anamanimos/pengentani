@@ -27,8 +27,10 @@ Route::get('/login/whatsapp/{user}', [\App\Http\Controllers\WhatsappLoginControl
 // ADMIN / CONSOLE ROUTES
 Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
-    Route::get('/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
-    Route::post('/whatsapp/settings', [\App\Http\Controllers\WhatsappSettingController::class, 'saveSettings'])->name('whatsapp.settings.save');
+    Route::redirect('/whatsapp', '/console/settings/whatsapp');
+    Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
+    Route::post('/settings/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'saveSettings'])->name('whatsapp.settings.save');
+    Route::post('/whatsapp/settings', [\App\Http\Controllers\WhatsappSettingController::class, 'saveSettings']);
     Route::get('/settings/storage', [\App\Http\Controllers\StorageSettingController::class, 'index'])->name('settings.storage.index');
     Route::post('/settings/storage', [\App\Http\Controllers\StorageSettingController::class, 'update'])->name('settings.storage.update');
     Route::post('/settings/storage/test', [\App\Http\Controllers\StorageSettingController::class, 'testConnection'])->name('settings.storage.test');
