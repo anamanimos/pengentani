@@ -34,6 +34,20 @@
     max-width: 100% !important;
     width: 100% !important;
 }
+
+/* Maintain generous padding for Page Title Bar & Editor Control Toolbar */
+#kt_app_toolbar,
+#kt_app_toolbar_container,
+.app-toolbar {
+    padding-left: 2.25rem !important;
+    padding-right: 2.25rem !important;
+}
+
+.editor-toolbar-header {
+    padding-left: 2.25rem !important;
+    padding-right: 2.25rem !important;
+}
+
 .card {
     border-radius: 0 !important;
 }
@@ -43,7 +57,7 @@
         <div class="card card-flush shadow-sm border-0 w-100 m-0 p-0">
             
             <!-- 100% Full-Width Sticky Toolbar Header -->
-            <div class="card-header border-0 py-3 px-4 px-md-6 bg-white shadow-xs position-sticky d-flex flex-wrap align-items-center justify-content-between gap-3" 
+            <div class="card-header editor-toolbar-header border-0 py-3 bg-white shadow-xs position-sticky d-flex flex-wrap align-items-center justify-content-between gap-3" 
                  style="top: 70px; z-index: 100; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.08) !important;">
                 
                 <!-- Tool Modes & Color Presets -->
