@@ -600,14 +600,16 @@
             function updateTotal() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
-                let rows = $('#spreadsheet > div > table > tbody > tr');
+                let tbody = spreadsheet.tbody || document.querySelector('#spreadsheet > div > table > tbody');
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
-                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                        let amountStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/[^0-9.-]/g, '') : '0';
-                        let val = parseFloat(amountStr);
-                        if(!isNaN(val)) total += val;
+                    let tr = tbody ? tbody.querySelector('tr[data-y="' + i + '"]') : null;
+                    if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
+                        continue;
                     }
+                    let amountStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/[^0-9.-]/g, '') : '0';
+                    let val = parseFloat(amountStr);
+                    if(!isNaN(val)) total += val;
                 }
                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(total));
             }
@@ -1374,9 +1376,11 @@
                         }
                     }
 
-                    if(match) rows.eq(i).show();
-                    else rows.eq(i).hide();
+                    if(match) spreadsheet.showRow(i);
+                    else spreadsheet.hideRow(i);
                 }
+
+                updateTotal();
             }
 
             // Selection summary helper

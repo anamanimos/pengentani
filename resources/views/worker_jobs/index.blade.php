@@ -1448,27 +1448,42 @@
                     if(match) spreadsheet.showRow(i);
                     else spreadsheet.hideRow(i);
                 }
+
+                updateTotal();
             }
+
             function updateTotal() {
                 if (!spreadsheet) return;
                 var data = spreadsheet.getData();
-                let rows = $('#spreadsheet > div > table > tbody > tr');
+                var tbody = spreadsheet.tbody || document.querySelector('#spreadsheet > div > table > tbody');
                 var sumUpah = 0;
                 var sumKonsumsi = 0;
+
                 for(var i = 0; i < data.length; i++) {
-                    if (rows.length === 0 || rows.eq(i).is(':visible')) {
-                        var wageVal = data[i][8];
-                        if (wageVal !== null && wageVal !== undefined && wageVal !== '') {
-                            var cleanWage = String(wageVal).replace(/Rp|[\s,]/g, '');
-                            var valWage = parseFloat(cleanWage);
-                            if (!isNaN(valWage)) sumUpah += valWage;
-                        }
-                        var konsumsiVal = data[i][9];
-                        if (konsumsiVal !== null && konsumsiVal !== undefined && konsumsiVal !== '') {
-                            var cleanKonsumsi = String(konsumsiVal).replace(/Rp|[\s,]/g, '');
-                            var valKonsumsi = parseFloat(cleanKonsumsi);
-                            if (!isNaN(valKonsumsi)) sumKonsumsi += valKonsumsi;
-                        }
+                    // Skip completely empty rows
+                    var isEmpty = true;
+                    for(var j=1; j<=9; j++) {
+                        if(data[i][j]) { isEmpty = false; break; }
+                    }
+                    if (isEmpty) continue;
+
+                    // Check if row is visible in DOM
+                    var tr = tbody ? tbody.querySelector('tr[data-y="' + i + '"]') : null;
+                    if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
+                        continue;
+                    }
+
+                    var wageVal = data[i][8];
+                    if (wageVal !== null && wageVal !== undefined && wageVal !== '') {
+                        var cleanWage = String(wageVal).replace(/Rp|[\s,]/g, '');
+                        var valWage = parseFloat(cleanWage);
+                        if (!isNaN(valWage)) sumUpah += valWage;
+                    }
+                    var konsumsiVal = data[i][9];
+                    if (konsumsiVal !== null && konsumsiVal !== undefined && konsumsiVal !== '') {
+                        var cleanKonsumsi = String(konsumsiVal).replace(/Rp|[\s,]/g, '');
+                        var valKonsumsi = parseFloat(cleanKonsumsi);
+                        if (!isNaN(valKonsumsi)) sumKonsumsi += valKonsumsi;
                     }
                 }
                 var formattedUpah = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(sumUpah));

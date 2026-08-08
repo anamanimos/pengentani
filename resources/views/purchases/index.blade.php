@@ -589,12 +589,10 @@
             function updateTotalAndRow() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
-                 let rows = $('#spreadsheet > div > table > tbody > tr');
-                 let total = 0;
+                let tbody = spreadsheet.tbody || document.querySelector('#spreadsheet > div > table > tbody');
+                let total = 0;
                 for(let i=0; i<data.length; i++) {
-                     // Cek jika baris kosong / soft delete
                      let isSoftDeleted = false;
-                     // Baris dianggap valid jika ada qty/price DAN tanggal/pertanian (jika diperlukan)
                      if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7]) {
                          isSoftDeleted = true;
                      }
@@ -606,7 +604,6 @@
                      
                      if(!isNaN(qty) && !isNaN(price)) {
                          let rowTotal = qty * price;
-                         // update row total cell if empty or different
                          let currentTotalStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
                          let currentTotal = parseFloat(currentTotalStr);
                          if(currentTotal !== rowTotal) {
@@ -614,7 +611,8 @@
                          }
                          
                          if (!isSoftDeleted) {
-                             if (rows.length === 0 || rows.eq(i).is(':visible')) {
+                             let tr = tbody ? tbody.querySelector('tr[data-y="' + i + '"]') : null;
+                             if (!tr || (tr.style.display !== 'none' && !tr.classList.contains('jexcel_row_hidden') && !tr.classList.contains('jss_row_hidden'))) {
                                  total += rowTotal;
                              }
                          }
@@ -1387,32 +1385,11 @@
                         }
                     }
 
-                    if(match) rows.eq(i).show();
-                    else rows.eq(i).hide();
+                    if(match) spreadsheet.showRow(i);
+                    else spreadsheet.hideRow(i);
                 }
 
-                // Recalculate total based on visible rows only
-                let filteredTotal = 0;
-                for(let i = 0; i < data.length; i++) {
-                    if(rows.eq(i).is(':visible')) {
-                        // Cek soft delete untuk konsistensi
-                        let isSoftDeleted = false;
-                        if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7]) {
-                            isSoftDeleted = true;
-                        }
-
-                        if (!isSoftDeleted) {
-                            let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
-                            let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                            let qty = parseFloat(qtyStr);
-                            let price = parseFloat(priceStr);
-                            if(!isNaN(qty) && !isNaN(price)) {
-                                filteredTotal += qty * price;
-                            }
-                        }
-                    }
-                }
-                 $('#total-amount').text('Rp ' + new Intl.NumberFormat('id-ID').format(filteredTotal));
+                updateTotalAndRow();
              }
 
             // Selection summary helper
