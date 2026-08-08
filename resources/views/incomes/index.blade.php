@@ -562,7 +562,7 @@
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
                 $tengkulakData = $tengkulaks->map(fn($t) => ['id' => $t->id, 'name' => $t->name])->toArray();
-                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : [];
+                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => $p->url])->toArray() : [];
                 
                 $initialData = $incomes->map(function($income) {
                     return [

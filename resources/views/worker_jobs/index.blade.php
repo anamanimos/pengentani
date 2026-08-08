@@ -628,7 +628,7 @@
             let categories = @json($categoryData);
             categories.unshift({ id: 'NEW_CATEGORY', name: '+ Tambah Kategori Baru...' });
 
-            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
+            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => $p->url])->toArray() : []);
             const proofs = proofsData;
             proofs.unshift({ id: 'NEW_PROOF', name: '+ Tambah Bukti Baru...' });
             const proofUrls = {};

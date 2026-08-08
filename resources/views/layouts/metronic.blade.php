@@ -157,8 +157,19 @@
                 e.stopPropagation();
                 e.preventDefault();
             }
+            if (!url) return;
+
+            // Ensure URL starts with http://, https://, or /
+            if (!/^https?:\/\//i.test(url) && !url.startsWith('/')) {
+                url = 'https://' + url;
+            }
+
+            var isPdf = /\.pdf($|\?)/i.test(url);
+            var type = isPdf ? 'iframe' : 'image';
+
             var lightbox = new FsLightbox();
             lightbox.props.sources = [url];
+            lightbox.props.types = [type];
             lightbox.open();
         }
     </script>

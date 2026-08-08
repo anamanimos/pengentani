@@ -569,7 +569,7 @@
             let stores = @json($stores->map(fn($s) => ['id' => $s->id, 'name' => $s->name])->toArray());
             stores.unshift({ id: 'NEW_STORE', name: '+ Tambah Toko Baru...' });
             
-            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => Storage::url($p->file_path)])->toArray() : []);
+            const proofsData = @json(isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => $p->url])->toArray() : []);
             
             const proofs = proofsData;
             const proofUrls = {};
