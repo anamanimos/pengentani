@@ -223,8 +223,31 @@
                                         <span class="fw-bold d-block text-truncate proof-name-display fs-7" title="{{ $proof->name }}">{{ $proof->name }}</span>
                                         <span class="fs-9 opacity-75">{{ $proof->created_at->format('d M Y') }}</span>
                                     </div>
-                                    <!-- Rename and History Buttons -->
+                                    <!-- Rename, Edit Image and History Buttons -->
                                     <div class="d-flex gap-1 proof-overlay-btn" style="z-index: 3;">
+                                        @if(!$isPdf)
+                                            <button type="button" class="btn btn-icon btn-sm btn-light-warning bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-edit-image" 
+                                                    title="Edit / Coret Gambar" 
+                                                    data-id="{{ $proof->id }}" 
+                                                    data-name="{{ $proof->name }}"
+                                                    data-url="{{ $proof->url }}"
+                                                    data-history="{{ json_encode($proof->image_history ?? []) }}"
+                                                    data-save-url="{{ route('transaction-proofs.edit-image', $proof->id) }}"
+                                                    data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
+                                                <i class="ki-duotone ki-design-1 fs-5 text-warning"><span class="path1"></span><span class="path2"></span></i>
+                                            </button>
+                                        @endif
+                                        @if(!empty($proof->image_history))
+                                            <button type="button" class="btn btn-icon btn-sm btn-light-info bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-image-history" 
+                                                    title="Riwayat Edit Gambar ({{ count($proof->image_history) }})" 
+                                                    data-id="{{ $proof->id }}" 
+                                                    data-name="{{ $proof->name }}"
+                                                    data-current-url="{{ $proof->url }}"
+                                                    data-history="{{ json_encode($proof->image_history) }}"
+                                                    data-revert-url="{{ route('transaction-proofs.revert-image', $proof->id) }}">
+                                                <i class="fa fa-layer-group text-info fs-9"></i>
+                                            </button>
+                                        @endif
                                         @if(!empty($proof->rename_history))
                                             <button type="button" class="btn btn-icon btn-sm btn-light bg-white bg-opacity-90 w-25px h-25px rounded-circle btn-view-history" 
                                                     title="Lihat Riwayat Nama" 
@@ -372,6 +395,126 @@
     </div>
     <div class="offcanvas-body p-6 bg-light" id="offcanvas_proof_body">
         <!-- AJAX loaded content will be placed here -->
+    </div>
+</div>
+<!-- Modal Edit & Coret Gambar Bukti Transaksi -->
+<div class="modal fade" id="kt_modal_edit_proof_image" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered mw-950px">
+        <div class="modal-content rounded-3 shadow-lg">
+            <div class="modal-header py-3 px-6 bg-light border-bottom d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="ki-duotone ki-design-1 fs-1 text-warning me-2"><span class="path1"></span><span class="path2"></span></i>
+                    <h3 class="fw-bold modal-title text-gray-800 mb-0">
+                        Edit & Coret Gambar: <span id="editor_proof_name" class="text-primary fw-bolder"></span>
+                    </h3>
+                </div>
+                <button type="button" class="btn btn-icon btn-sm btn-active-icon-primary rounded-circle" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            
+            <div class="modal-body p-4 bg-body">
+                <!-- Toolbar Editor Bar -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 mb-3 bg-light rounded border shadow-2xs">
+                    <!-- Left: Mode Switcher -->
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-primary fw-bold active" id="editor_btn_draw" title="Coret / Garis Bebas">
+                                <i class="ki-duotone ki-pencil fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Coret
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline btn-outline-primary fw-bold" id="editor_btn_text" title="Tambah Teks / Angka Koreksi">
+                                <i class="ki-duotone ki-text fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Teks
+                            </button>
+                        </div>
+
+                        <!-- Color Presets -->
+                        <div class="d-flex align-items-center gap-1 ms-2 border-start ps-3">
+                            <span class="fs-8 fw-semibold text-gray-600 me-1">Warna:</span>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn active" data-color="#ff0000" style="background-color: #ff0000; width: 22px; height: 22px; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);" title="Merah"></button>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn" data-color="#0066ff" style="background-color: #0066ff; width: 22px; height: 22px; border: 2px solid white;" title="Biru"></button>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn" data-color="#00a854" style="background-color: #00a854; width: 22px; height: 22px; border: 2px solid white;" title="Hijau"></button>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn" data-color="#ffcc00" style="background-color: #ffcc00; width: 22px; height: 22px; border: 2px solid white;" title="Kuning"></button>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn" data-color="#000000" style="background-color: #000000; width: 22px; height: 22px; border: 2px solid white;" title="Hitam"></button>
+                            <button type="button" class="btn btn-icon btn-xs rounded-circle editor-color-btn" data-color="#ffffff" style="background-color: #ffffff; width: 22px; height: 22px; border: 2px solid #ccc;" title="Putih"></button>
+                            <input type="color" id="editor_color_picker" value="#ff0000" class="form-control form-control-color form-control-xs rounded-circle ms-1 p-0" style="width: 24px; height: 24px; cursor: pointer;" title="Pilih Warna Custom">
+                        </div>
+
+                        <!-- Line / Font Size -->
+                        <div class="d-flex align-items-center gap-1 ms-2 border-start ps-3">
+                            <span class="fs-8 fw-semibold text-gray-600 me-1">Ukuran:</span>
+                            <select id="editor_size_select" class="form-select form-select-sm form-select-solid py-1 px-2 fs-8 w-130px">
+                                <option value="3" selected>Kuas: Tipis (3px)</option>
+                                <option value="6">Kuas: Sedang (6px)</option>
+                                <option value="12">Kuas: Tebal (12px)</option>
+                                <option value="24">Kuas: X-Tebal (24px)</option>
+                                <option value="font-18">Teks: Kecil (18px)</option>
+                                <option value="font-28">Teks: Sedang (28px)</option>
+                                <option value="font-40">Teks: Besar (40px)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Right: Text Input & Canvas Controls -->
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <!-- Text Input Wrapper -->
+                        <div id="editor_text_input_wrapper" class="d-none me-2">
+                            <input type="text" id="editor_text_input" class="form-control form-control-sm form-control-solid fs-7 w-200px" placeholder="Ketik teks & klik gambar..." autocomplete="off">
+                        </div>
+
+                        <button type="button" class="btn btn-xs btn-light-warning fw-bold px-3 py-2" id="editor_btn_undo" title="Urungkan Perubahan Terakhir">
+                            <i class="fa fa-undo me-1"></i> Undo
+                        </button>
+                        <button type="button" class="btn btn-xs btn-light-danger fw-bold px-3 py-2" id="editor_btn_reset" title="Kembalikan Gambar Asli Canvas">
+                            <i class="fa fa-refresh me-1"></i> Reset Canvas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas Workbench Container -->
+                <div class="d-flex justify-content-center align-items-center bg-dark bg-opacity-10 rounded border overflow-hidden p-2 position-relative" style="min-height: 420px; max-height: 580px;">
+                    <div id="editor_loading_spinner" class="position-absolute top-50 start-50 translate-middle text-center">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div class="fs-8 fw-semibold text-gray-600">Memuat berkas gambar...</div>
+                    </div>
+                    <canvas id="proof_annotation_canvas" class="rounded shadow-xs d-none" style="cursor: crosshair; max-width: 100%; max-height: 550px; object-fit: contain;"></canvas>
+                </div>
+            </div>
+
+            <div class="modal-footer py-3 px-6 bg-light border-top d-flex align-items-center justify-content-between">
+                <span class="fs-9 text-muted"><i class="ki-duotone ki-information fs-7 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Versi asli gambar sebelumnya akan tersimpan otomatis di riwayat.</span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-light fw-bold rounded-pill px-5" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-sm btn-primary fw-bold rounded-pill px-7" id="editor_btn_save">
+                        <i class="ki-duotone ki-check fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Simpan Perubahan (Versi Baru)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Riwayat Versi Edit Gambar -->
+<div class="modal fade" id="kt_modal_image_history" tabindex="-1" aria-hidden="true" style="z-index: 1080;">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content rounded-3 shadow-lg">
+            <div class="modal-header py-4 px-6 border-bottom">
+                <h3 class="fw-bold modal-title text-gray-800 d-flex align-items-center">
+                    <i class="fa fa-layer-group text-info me-2 fs-4"></i>
+                    Riwayat Versi Gambar: <span id="history_proof_name" class="text-primary ms-1"></span>
+                </h3>
+                <button type="button" class="btn btn-icon btn-sm btn-active-icon-primary rounded-circle" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <div class="modal-body p-6 scroll-y" style="max-height: 480px;">
+                <div id="image_history_list" class="d-flex flex-column gap-4">
+                    <!-- History version items injected via JS -->
+                </div>
+            </div>
+            <div class="modal-footer py-3 px-6 bg-light border-top flex-center">
+                <button type="button" class="btn btn-sm btn-secondary fw-bold rounded-pill px-6" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -921,6 +1064,365 @@
             lightbox.props.sources = visibleUrls;
             lightbox.props.types = visibleTypes;
             lightbox.open(clickedIndex);
+        });
+
+        // ==========================================
+        // CANVAS IMAGE ANNOTATION & EDITING SYSTEM
+        // ==========================================
+        let canvas = document.getElementById('proof_annotation_canvas');
+        let ctx = canvas ? canvas.getContext('2d') : null;
+        let canvasImg = new Image();
+        let undoStack = [];
+        let isDrawing = false;
+        let lastPos = { x: 0, y: 0 };
+        let currentMode = 'draw'; // 'draw' or 'text'
+        let currentColor = '#ff0000';
+        let currentLineWidth = 3;
+        let currentFontSize = 28;
+        let activeEditorSaveUrl = '';
+        let activeEditorProofId = null;
+
+        // Open Image Editor Modal
+        $(document).on('click', '.btn-edit-image', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let proofId = $(this).attr('data-id');
+            let proofName = $(this).attr('data-name');
+            let proofUrl = $(this).attr('data-url');
+            activeEditorSaveUrl = $(this).attr('data-save-url');
+            activeEditorProofId = proofId;
+
+            $('#editor_proof_name').text(proofName);
+            $('#editor_loading_spinner').removeClass('d-none');
+            $(canvas).addClass('d-none');
+
+            // Reset tools UI
+            setEditorMode('draw');
+            setEditorColor('#ff0000');
+            $('#editor_size_select').val('3');
+            currentLineWidth = 3;
+            currentFontSize = 28;
+            $('#editor_text_input').val('');
+            undoStack = [];
+
+            let modalEl = document.getElementById('kt_modal_edit_proof_image');
+            let modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+
+            // Load Image onto Canvas
+            canvasImg = new Image();
+            canvasImg.crossOrigin = 'anonymous';
+            canvasImg.onload = function() {
+                canvas.width = canvasImg.naturalWidth;
+                canvas.height = canvasImg.naturalHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasImg, 0, 0);
+
+                $('#editor_loading_spinner').addClass('d-none');
+                $(canvas).removeClass('d-none');
+
+                pushUndoState();
+            };
+            canvasImg.onerror = function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Gambar',
+                    text: 'Tidak dapat memuat berkas gambar untuk diedit.'
+                });
+                modal.hide();
+            };
+            canvasImg.src = proofUrl;
+        });
+
+        // Mode Switcher Buttons
+        $('#editor_btn_draw').click(function() { setEditorMode('draw'); });
+        $('#editor_btn_text').click(function() { setEditorMode('text'); });
+
+        function setEditorMode(mode) {
+            currentMode = mode;
+            if (mode === 'draw') {
+                $('#editor_btn_draw').removeClass('btn-outline btn-outline-primary').addClass('btn-primary active');
+                $('#editor_btn_text').removeClass('btn-primary active').addClass('btn-outline btn-outline-primary');
+                $('#editor_text_input_wrapper').addClass('d-none');
+                if (canvas) canvas.style.cursor = 'crosshair';
+            } else {
+                $('#editor_btn_text').removeClass('btn-outline btn-outline-primary').addClass('btn-primary active');
+                $('#editor_btn_draw').removeClass('btn-primary active').addClass('btn-outline btn-outline-primary');
+                $('#editor_text_input_wrapper').removeClass('d-none');
+                $('#editor_text_input').focus();
+                if (canvas) canvas.style.cursor = 'text';
+            }
+        }
+
+        // Color Selection
+        $(document).on('click', '.editor-color-btn', function() {
+            let color = $(this).attr('data-color');
+            setEditorColor(color);
+            $('#editor_color_picker').val(color);
+        });
+
+        $('#editor_color_picker').on('change input', function() {
+            setEditorColor($(this).val());
+        });
+
+        function setEditorColor(color) {
+            currentColor = color;
+            $('.editor-color-btn').removeClass('active').css('box-shadow', 'none');
+            $(`.editor-color-btn[data-color="${color}"]`).addClass('active').css('box-shadow', '0 0 4px rgba(0,0,0,0.5)');
+        }
+
+        // Size Selection (Line width or font size)
+        $('#editor_size_select').on('change', function() {
+            let val = $(this).val();
+            if (val.startsWith('font-')) {
+                currentFontSize = parseInt(val.replace('font-', ''));
+                if (currentMode === 'draw') setEditorMode('text');
+            } else {
+                currentLineWidth = parseInt(val);
+                if (currentMode === 'text') setEditorMode('draw');
+            }
+        });
+
+        // Get Event Coordinates scaled to actual Canvas Resolution
+        function getCanvasCoords(e) {
+            let rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        // Drawing Event Handlers
+        if (canvas) {
+            $(canvas).on('mousedown touchstart', function(e) {
+                if (currentMode === 'draw') {
+                    isDrawing = true;
+                    lastPos = getCanvasCoords(e);
+                } else if (currentMode === 'text') {
+                    let pos = getCanvasCoords(e);
+                    let text = $('#editor_text_input').val().trim();
+                    if (!text) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Ketik Teks Dulu',
+                            text: 'Silakan isi kolom teks di toolbar terlebih dahulu, lalu klik pada lokasi gambar yang ingin ditambahi teks.',
+                            confirmButtonText: 'Mengerti'
+                        });
+                        $('#editor_text_input').focus();
+                        return;
+                    }
+
+                    ctx.font = 'bold ' + currentFontSize + 'px sans-serif';
+                    ctx.fillStyle = currentColor;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, pos.x, pos.y);
+
+                    pushUndoState();
+                }
+            });
+
+            $(canvas).on('mousemove touchmove', function(e) {
+                if (!isDrawing || currentMode !== 'draw') return;
+                e.preventDefault();
+
+                let pos = getCanvasCoords(e);
+                ctx.beginPath();
+                ctx.moveTo(lastPos.x, lastPos.y);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = currentLineWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+
+                lastPos = pos;
+            });
+
+            $(canvas).on('mouseup touchend mouseleave', function() {
+                if (isDrawing) {
+                    isDrawing = false;
+                    pushUndoState();
+                }
+            });
+        }
+
+        // Undo & Reset Functions
+        function pushUndoState() {
+            if (!canvas) return;
+            if (undoStack.length > 20) undoStack.shift();
+            undoStack.push(canvas.toDataURL());
+        }
+
+        $('#editor_btn_undo').click(function() {
+            if (undoStack.length > 1) {
+                undoStack.pop(); // Remove current
+                let prevState = undoStack[undoStack.length - 1];
+                let img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = prevState;
+            }
+        });
+
+        $('#editor_btn_reset').click(function() {
+            if (canvasImg.src) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(canvasImg, 0, 0);
+                undoStack = [];
+                pushUndoState();
+            }
+        });
+
+        // Save Edited Image
+        $('#editor_btn_save').click(function() {
+            let $btn = $(this);
+            let base64Image = canvas.toDataURL('image/png');
+
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...');
+
+            $.ajax({
+                url: activeEditorSaveUrl,
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    image: base64Image
+                },
+                success: function(res) {
+                    $btn.prop('disabled', false).html('<i class="ki-duotone ki-check fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Simpan Perubahan (Versi Baru)');
+                    if (res.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('kt_modal_edit_proof_image')).hide();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil Disimpan!',
+                            text: res.message || 'Gambar berhasil diperbarui. Versi sebelumnya telah tersimpan di riwayat.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(function() {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Terjadi kesalahan saat menyimpan gambar.' });
+                    }
+                },
+                error: function(xhr) {
+                    $btn.prop('disabled', false).html('<i class="ki-duotone ki-check fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Simpan Perubahan (Versi Baru)');
+                    let msg = 'Gagal menyimpan gambar.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
+                }
+            });
+        });
+
+        // ==========================================
+        // IMAGE VERSION HISTORY & REVERT SYSTEM
+        // ==========================================
+        $(document).on('click', '.btn-view-image-history', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let name = $(this).attr('data-name');
+            let historyJson = $(this).attr('data-history');
+            let revertUrl = $(this).attr('data-revert-url');
+            let history = [];
+
+            try {
+                history = JSON.parse(historyJson);
+            } catch (err) {
+                history = [];
+            }
+
+            $('#history_proof_name').text(name);
+
+            let html = '';
+            if (!history || history.length === 0) {
+                html = '<div class="text-center text-muted py-6">Belum ada riwayat edit gambar.</div>';
+            } else {
+                for (let i = history.length - 1; i >= 0; i--) {
+                    let v = history[i];
+                    let verNum = v.version || (i + 1);
+                    html += `
+                        <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded border">
+                            <div class="d-flex align-items-center gap-3">
+                                <a href="${v.url}" target="_blank" title="Lihat Gambar Full">
+                                    <img src="${v.url}" class="rounded border shadow-2xs" style="width: 50px; height: 50px; object-fit: cover;" />
+                                </a>
+                                <div>
+                                    <div class="fw-bold text-gray-800 fs-7">Versi ${verNum}</div>
+                                    <div class="fs-9 text-muted">${v.edited_at || ''} (${v.edited_by || 'User'})</div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-light-primary rounded-pill px-4 btn-revert-image" 
+                                    data-revert-url="${revertUrl}" 
+                                    data-version-index="${i}">
+                                <i class="fa fa-undo me-1"></i> Pulihkan
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            $('#image_history_list').html(html);
+            let modalEl = document.getElementById('kt_modal_image_history');
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        });
+
+        // Revert Image Version Handler
+        $(document).on('click', '.btn-revert-image', function(e) {
+            e.preventDefault();
+            let revertUrl = $(this).attr('data-revert-url');
+            let versionIndex = $(this).attr('data-version-index');
+            let $btn = $(this);
+
+            Swal.fire({
+                title: 'Kembalikan Gambar?',
+                text: 'Gambar aktif akan diganti dengan versi yang dipilih. Gambar saat ini akan disimpan ke riwayat.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Pulihkan',
+                cancelButtonText: 'Batal'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Memproses...');
+
+                    $.ajax({
+                        url: revertUrl,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            version_index: versionIndex
+                        },
+                        success: function(res) {
+                            if (res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil Dipulihkan!',
+                                    text: res.message || 'Gambar berhasil dikembalikan ke versi sebelumnya.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(function() {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Gagal memulihkan versi gambar.' });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan sistem saat memulihkan versi.' });
+                        }
+                    });
+                }
+            });
         });
     });
 </script>

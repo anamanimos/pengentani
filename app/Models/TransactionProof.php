@@ -14,10 +14,12 @@ class TransactionProof extends Model
         'name',
         'file_path',
         'rename_history',
+        'image_history',
     ];
 
     protected $casts = [
         'rename_history' => 'array',
+        'image_history' => 'array',
     ];
 
     protected $appends = [

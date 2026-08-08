@@ -10,7 +10,18 @@
                 </a>
             @endif
         </div>
-        <div class="d-flex gap-2 justify-content-center mb-5 mb-xl-0">
+        <div class="d-flex gap-2 justify-content-center mb-5 mb-xl-0 flex-wrap">
+            @if(!in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
+                <button type="button" class="btn btn-xs btn-warning fw-bold px-3 py-2 fs-8 btn-edit-image"
+                        data-id="{{ $transactionProof->id }}" 
+                        data-name="{{ $transactionProof->name }}"
+                        data-url="{{ $transactionProof->url }}"
+                        data-history="{{ json_encode($transactionProof->image_history ?? []) }}"
+                        data-save-url="{{ route('transaction-proofs.edit-image', $transactionProof->id) }}"
+                        data-revert-url="{{ route('transaction-proofs.revert-image', $transactionProof->id) }}">
+                    <i class="ki-duotone ki-design-1 fs-5 me-1"><span class="path1"></span><span class="path2"></span></i> Edit / Coret
+                </button>
+            @endif
             <a href="{{ $transactionProof->url }}" target="_blank" class="btn btn-xs btn-light-primary fw-bold px-3 py-2 fs-8">
                 <i class="ki-duotone ki-dots-square fs-5 me-1"></i> Tab Baru
             </a>

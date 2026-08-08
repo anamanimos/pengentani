@@ -207,4 +207,105 @@ class TransactionProofController extends Controller
 
         return view('transaction_proofs.show', $compactData);
     }
+
+    /**
+     * Save edited image and preserve previous version in image_history
+     */
+    public function saveEditedImage(Request $request, TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'image' => 'required|string',
+        ]);
+
+        $base64Image = $request->image;
+        if (!preg_match('/^data:image\/(\w+);base64,/', $base64Image)) {
+            return response()->json(['success' => false, 'message' => 'Format gambar tidak valid'], 422);
+        }
+
+        $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
+        $imageData = base64_decode($imageData);
+
+        if ($imageData === false) {
+            return response()->json(['success' => false, 'message' => 'Gagal memproses data gambar'], 422);
+        }
+
+        // Store current image into history before updating
+        $history = $transactionProof->image_history ?? [];
+        $currentVersionNumber = count($history) + 1;
+
+        $history[] = [
+            'version' => $currentVersionNumber,
+            'file_path' => $transactionProof->file_path,
+            'url' => $transactionProof->url,
+            'edited_by' => Auth::user()->name,
+            'edited_at' => now()->format('d M Y, H:i')
+        ];
+
+        // Generate filename for new edited image
+        $newFilename = 'transaction_proofs/edited_' . time() . '_' . uniqid() . '.png';
+        Storage::disk('public')->put($newFilename, $imageData);
+
+        // Update proof record
+        $transactionProof->update([
+            'file_path' => $newFilename,
+            'image_history' => $history,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gambar berhasil diedit & disimpan sebagai versi terbaru.',
+            'url' => $transactionProof->url,
+            'image_history' => $transactionProof->image_history,
+        ]);
+    }
+
+    /**
+     * Revert image to a previous version from image_history
+     */
+    public function revertImage(Request $request, TransactionProof $transactionProof)
+    {
+        if ($transactionProof->user_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'version_index' => 'required|integer',
+        ]);
+
+        $history = $transactionProof->image_history ?? [];
+        $index = (int) $request->version_index;
+
+        if (!isset($history[$index])) {
+            return response()->json(['success' => false, 'message' => 'Versi gambar tidak ditemukan'], 404);
+        }
+
+        $targetVersion = $history[$index];
+        $targetPath = $targetVersion['file_path'];
+
+        // Save current active image to history before reverting
+        $currentHistory = $history;
+        $currentHistory[] = [
+            'version' => count($currentHistory) + 1,
+            'file_path' => $transactionProof->file_path,
+            'url' => $transactionProof->url,
+            'edited_by' => Auth::user()->name,
+            'edited_at' => now()->format('d M Y, H:i') . ' (Sebelum Revert)'
+        ];
+
+        $transactionProof->update([
+            'file_path' => $targetPath,
+            'image_history' => $currentHistory,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil mengembalikan gambar ke versi sebelumnya.',
+            'url' => $transactionProof->url,
+            'image_history' => $transactionProof->image_history,
+        ]);
+    }
 }

@@ -122,6 +122,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
 
     // Bukti Transaksi
     Route::patch('transaction-proofs/{transaction_proof}/rename', [\App\Http\Controllers\TransactionProofController::class, 'rename'])->name('transaction-proofs.rename');
+    Route::post('transaction-proofs/{transaction_proof}/edit-image', [\App\Http\Controllers\TransactionProofController::class, 'saveEditedImage'])->name('transaction-proofs.edit-image');
+    Route::post('transaction-proofs/{transaction_proof}/revert-image', [\App\Http\Controllers\TransactionProofController::class, 'revertImage'])->name('transaction-proofs.revert-image');
     Route::resource('transaction-proofs', \App\Http\Controllers\TransactionProofController::class)->only(['index', 'store', 'show', 'destroy']);
 });
 
