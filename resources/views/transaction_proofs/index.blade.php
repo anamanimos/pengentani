@@ -186,7 +186,7 @@
                     @endphp
                     <div class="proof-card" data-id="{{ $proof->id }}" data-name="{{ strtolower($proof->name) }}">
                         <div class="proof-card-item">
-                            <a href="{{ $proof->url }}" data-fslightbox="gallery" data-type="{{ $dataType }}" class="position-absolute top-0 start-0 w-100 h-100" style="z-index: 1;" title="Lihat Bukti"></a>
+                            <a href="{{ $proof->url }}" class="proof-lightbox-link position-absolute top-0 start-0 w-100 h-100" data-type="{{ $dataType }}" style="z-index: 1;" title="Lihat Bukti"></a>
                             
                             @if($isPdf)
                                 <div class="proof-pdf-placeholder">
@@ -886,6 +886,41 @@
                     }
                 }
             }
+        });
+
+        // Dynamic Lightbox launcher for visible search result cards
+        $(document).on('click', '.proof-lightbox-link', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let clickedEl = this;
+            let $visibleCards = $('.proof-card:not(.d-none)');
+            let $visibleLinks = $visibleCards.find('.proof-lightbox-link');
+
+            if ($visibleLinks.length === 0) return;
+
+            let visibleUrls = [];
+            let visibleTypes = [];
+
+            $visibleLinks.each(function() {
+                let url = $(this).attr('href');
+                let type = $(this).attr('data-type') || 'image';
+
+                if (!/^https?:\/\//i.test(url) && !url.startsWith('/')) {
+                    url = 'https://' + url;
+                }
+
+                visibleUrls.push(url);
+                visibleTypes.push(type);
+            });
+
+            let clickedIndex = $visibleLinks.index(clickedEl);
+            if (clickedIndex < 0) clickedIndex = 0;
+
+            var lightbox = new FsLightbox();
+            lightbox.props.sources = visibleUrls;
+            lightbox.props.types = visibleTypes;
+            lightbox.open(clickedIndex);
         });
     });
 </script>
