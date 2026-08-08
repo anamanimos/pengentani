@@ -40,9 +40,7 @@
     }
 @endphp
 
-<div class="app-content flex-column-fluid">
-    <div class="app-container container-fluid">
-        <div class="row g-6">
+<div class="row g-6">
             <!-- Left Column: Image Preview Box (4 columns, Sticky) -->
             <div class="col-xl-4 text-center">
                 <div class="card card-flush shadow-sm position-sticky" style="top: 90px; z-index: 5;">
@@ -319,7 +317,6 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')

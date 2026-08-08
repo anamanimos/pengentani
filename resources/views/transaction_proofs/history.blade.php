@@ -23,9 +23,7 @@
 @endsection
 
 @section('content')
-<div class="app-content flex-column-fluid">
-    <div class="app-container container-fluid">
-        <div class="row g-5">
+<div class="row g-5">
             <!-- Left Column: Active Image Info (4 columns) -->
             <div class="col-xl-4 text-center">
                 <div class="card card-flush shadow-sm mb-5">
@@ -150,8 +148,6 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')

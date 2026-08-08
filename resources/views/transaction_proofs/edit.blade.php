@@ -21,17 +21,7 @@
 @endsection
 
 @section('content')
-<style>
-.app-container.container-fluid,
-#kt_app_content_container,
-#kt_app_toolbar_container {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-</style>
-<div class="app-content flex-column-fluid">
-    <div class="app-container container-fluid px-0">
-        <div class="card card-flush shadow-sm border-0">
+<div class="card card-flush shadow-sm border-0">
             
             <!-- Sticky Toolbar Header -->
             <div class="card-header border-0 py-3 px-0 bg-white shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
@@ -126,8 +116,6 @@
                 <div>Resolusi Asli: <span id="canvas_res_text" class="fw-bold">-</span></div>
             </div>
         </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
