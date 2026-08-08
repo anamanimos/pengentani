@@ -45,14 +45,14 @@
         <div class="row g-6">
             <!-- Left Column: Image Preview Box (4 columns) -->
             <div class="col-xl-4 text-center">
-                <div class="card card-flush shadow-sm h-100">
-                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <div class="position-relative overflow-hidden d-flex justify-content-center align-items-center bg-dark bg-opacity-5 rounded border shadow-2xs mb-4" style="min-height: 480px; max-height: 65vh;">
+                <div class="card card-flush shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="position-relative overflow-hidden d-flex justify-content-center align-items-center bg-dark bg-opacity-5 rounded border shadow-2xs mb-4 p-2">
                             @if(in_array(strtolower(pathinfo($transactionProof->file_path, PATHINFO_EXTENSION)), ['pdf']))
-                                <iframe src="{{ $transactionProof->url }}" class="w-100 h-100 rounded" style="border: none; min-height: 480px;"></iframe>
+                                <iframe src="{{ $transactionProof->url }}" class="w-100 rounded" style="border: none; min-height: 450px;"></iframe>
                             @else
-                                <a href="{{ $transactionProof->url }}" data-fslightbox="gallery_detail" data-type="image" class="d-block w-100 h-100 d-flex align-items-center justify-content-center group-hover-zoom" title="Klik untuk memperbesar gambar">
-                                    <img src="{{ $transactionProof->url }}" class="img-fluid rounded transition-transform shadow-xs" style="max-height: 520px; max-width: 100%; object-fit: contain;" alt="Bukti Transaksi" />
+                                <a href="{{ $transactionProof->url }}" data-fslightbox="gallery_detail" data-type="image" class="d-block w-100 d-flex align-items-center justify-content-center group-hover-zoom" title="Klik untuk memperbesar gambar">
+                                    <img src="{{ $transactionProof->url }}" class="img-fluid rounded transition-transform shadow-xs" style="max-width: 100%; height: auto; object-fit: contain;" alt="Bukti Transaksi" />
                                 </a>
                             @endif
                         </div>
