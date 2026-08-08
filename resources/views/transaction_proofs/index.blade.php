@@ -1083,8 +1083,91 @@
             var lightbox = new FsLightbox();
             lightbox.props.sources = visibleUrls;
             lightbox.props.types = visibleTypes;
+
+            let activeStageIdx = clickedIndex;
+
+            lightbox.props.onOpen = function(instance) {
+                setTimeout(function() {
+                    let idx = (instance && typeof instance.stageIndex !== 'undefined') ? instance.stageIndex : activeStageIdx;
+                    updateFsLightboxCustomTools(lightbox, $visibleCards, idx);
+                }, 100);
+            };
+
+            lightbox.props.onSlideChange = function(instance) {
+                let idx = (instance && typeof instance.stageIndex !== 'undefined') ? instance.stageIndex : activeStageIdx;
+                updateFsLightboxCustomTools(lightbox, $visibleCards, idx);
+            };
+
+            lightbox.props.onClose = function() {
+                $('#fslightbox_custom_toolbar').remove();
+            };
+
             lightbox.open(clickedIndex);
         });
+
+        // Floating Action Toolbar inside Full-Screen Lightbox Preview
+        function updateFsLightboxCustomTools(lightbox, $visibleCards, stageIndex) {
+            let $container = $('.fslightbox-container');
+            if ($container.length === 0) return;
+
+            let $card = $visibleCards.eq(stageIndex);
+            if ($card.length === 0) return;
+
+            let $editBtn = $card.find('.btn-edit-image');
+            let isImage = $editBtn.length > 0;
+
+            if ($('#fslightbox_custom_toolbar').length === 0) {
+                let html = `
+                    <div id="fslightbox_custom_toolbar" class="position-fixed bottom-0 start-50 translate-middle-x mb-6 p-2 px-4 bg-dark bg-opacity-75 rounded-pill shadow-lg border border-gray-700 d-flex align-items-center gap-3" style="z-index: 100000000; backdrop-filter: blur(8px);">
+                        <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-4 py-2" id="fslightbox_action_edit" style="display: ${isImage ? 'inline-block' : 'none'};">
+                            <i class="ki-duotone ki-design-1 fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Edit / Coret Gambar
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light fw-bold rounded-pill px-4 py-2" id="fslightbox_action_detail">
+                            <i class="ki-duotone ki-eye fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Detail Transaksi
+                        </button>
+                    </div>
+                `;
+                $container.append(html);
+
+                // Action Edit Click Handler
+                $(document).off('click', '#fslightbox_action_edit').on('click', '#fslightbox_action_edit', function(evt) {
+                    evt.preventDefault();
+                    let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
+                    let $targetCard = $visibleCards.eq(currentCardIdx);
+                    let $targetEditBtn = $targetCard.find('.btn-edit-image');
+
+                    if ($targetEditBtn.length) {
+                        lightbox.close();
+                        setTimeout(function() {
+                            $targetEditBtn.trigger('click');
+                        }, 250);
+                    }
+                });
+
+                // Action Detail Click Handler
+                $(document).off('click', '#fslightbox_action_detail').on('click', '#fslightbox_action_detail', function(evt) {
+                    evt.preventDefault();
+                    let currentCardIdx = $('#fslightbox_custom_toolbar').data('card-index') || 0;
+                    let $targetCard = $visibleCards.eq(currentCardIdx);
+                    let $targetDetailBtn = $targetCard.find('.btn-view-detail');
+
+                    if ($targetDetailBtn.length) {
+                        lightbox.close();
+                        setTimeout(function() {
+                            $targetDetailBtn.trigger('click');
+                        }, 250);
+                    }
+                });
+            }
+
+            // Update state & visibility for current slide index
+            $('#fslightbox_custom_toolbar').data('card-index', stageIndex);
+            if (isImage) {
+                $('#fslightbox_action_edit').show();
+            } else {
+                $('#fslightbox_action_edit').hide();
+            }
+        }
 
         // ==========================================
         // CANVAS IMAGE ANNOTATION & EDITING SYSTEM
