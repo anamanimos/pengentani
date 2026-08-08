@@ -26,7 +26,7 @@
         <div class="card card-flush shadow-sm border-0">
             
             <!-- Sticky Toolbar Header -->
-            <div class="card-header border-0 py-3 px-4 px-md-6 bg-white shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
+            <div class="card-header border-0 py-3 px-0 bg-white shadow-xs position-sticky rounded-top d-flex flex-wrap align-items-center justify-content-between gap-3" 
                  style="top: 70px; z-index: 100; backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.08) !important;">
                 
                 <!-- Tool Modes & Color Presets -->
@@ -107,7 +107,7 @@
             </div>
             
             <!-- Bottom Footer Bar -->
-            <div class="card-footer py-2 px-4 px-md-6 bg-light d-flex justify-content-between align-items-center text-muted fs-9">
+            <div class="card-footer py-2 px-0 bg-light d-flex justify-content-between align-items-center text-muted fs-9">
                 <div>
                     <span class="fw-bold">Pintasan Keyboard:</span> 
                     <kbd class="bg-white text-dark shadow-2xs">Ctrl + Z</kbd> Undo | 
