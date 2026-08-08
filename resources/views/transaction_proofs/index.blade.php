@@ -1295,7 +1295,10 @@
         // Save Edited Image
         $('#editor_btn_save').click(function() {
             let $btn = $(this);
-            let base64Image = canvas.toDataURL('image/png');
+            if (!canvas) return;
+
+            // Use JPEG with 92% quality to compress payload size from ~8MB to ~350KB for fast uploads
+            let base64Image = canvas.toDataURL('image/jpeg', 0.92);
 
             $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...');
 
@@ -1306,10 +1309,12 @@
                     _token: '{{ csrf_token() }}',
                     image: base64Image
                 },
+                timeout: 30000,
                 success: function(res) {
                     $btn.prop('disabled', false).html('<i class="ki-duotone ki-check fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Simpan Perubahan (Versi Baru)');
                     if (res.success) {
-                        bootstrap.Modal.getInstance(document.getElementById('kt_modal_edit_proof_image')).hide();
+                        let modalEl = document.getElementById('kt_modal_edit_proof_image');
+                        if (modalEl) bootstrap.Modal.getInstance(modalEl).hide();
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil Disimpan!',
@@ -1323,10 +1328,14 @@
                         Swal.fire({ icon: 'error', title: 'Gagal', text: res.message || 'Terjadi kesalahan saat menyimpan gambar.' });
                     }
                 },
-                error: function(xhr) {
+                error: function(xhr, status, error) {
                     $btn.prop('disabled', false).html('<i class="ki-duotone ki-check fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Simpan Perubahan (Versi Baru)');
                     let msg = 'Gagal menyimpan gambar.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    if (status === 'timeout') {
+                        msg = 'Proses menyimpan melebihi batas waktu (timeout). Silakan coba lagi.';
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
                     Swal.fire({ icon: 'error', title: 'Gagal', text: msg });
                 }
             });

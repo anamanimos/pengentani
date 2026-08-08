@@ -217,50 +217,87 @@ class TransactionProofController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        $request->validate([
-            'image' => 'required|string',
-        ]);
+        try {
+            $request->validate([
+                'image' => 'required|string',
+            ]);
 
-        $base64Image = $request->image;
-        if (!preg_match('/^data:image\/(\w+);base64,/', $base64Image)) {
-            return response()->json(['success' => false, 'message' => 'Format gambar tidak valid'], 422);
+            $base64Image = $request->image;
+            if (!preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+                return response()->json(['success' => false, 'message' => 'Format gambar tidak valid'], 422);
+            }
+
+            $extension = strtolower($matches[1]);
+            if ($extension === 'jpeg') $extension = 'jpg';
+            if (!in_array($extension, ['jpg', 'png', 'webp'])) $extension = 'png';
+
+            $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
+            $imageData = base64_decode($imageData);
+
+            if ($imageData === false) {
+                return response()->json(['success' => false, 'message' => 'Gagal memproses data gambar'], 422);
+            }
+
+            // Store current image into history before updating
+            $history = $transactionProof->image_history ?? [];
+            $currentVersionNumber = count($history) + 1;
+
+            $history[] = [
+                'version' => $currentVersionNumber,
+                'file_path' => $transactionProof->file_path,
+                'url' => $transactionProof->url,
+                'edited_by' => Auth::user()->name,
+                'edited_at' => now()->format('d M Y, H:i')
+            ];
+
+            // Generate filename for new edited image
+            $newFilename = 'transaction_proofs/edited_' . time() . '_' . uniqid() . '.' . $extension;
+
+            // Save to public disk
+            Storage::disk('public')->put($newFilename, $imageData);
+
+            // Also save to R2 disk if configured
+            try {
+                $accessKey = \App\Models\Setting::get('r2_access_key_id', config('filesystems.disks.r2.key'));
+                if ($accessKey) {
+                    $secretKey = \App\Models\Setting::get('r2_secret_access_key', config('filesystems.disks.r2.secret'));
+                    $bucket = \App\Models\Setting::get('r2_bucket', config('filesystems.disks.r2.bucket'));
+                    $url = \App\Models\Setting::get('r2_url', config('filesystems.disks.r2.url'));
+                    $endpoint = \App\Models\Setting::get('r2_endpoint', config('filesystems.disks.r2.endpoint'));
+
+                    config([
+                        'filesystems.disks.r2.key' => $accessKey,
+                        'filesystems.disks.r2.secret' => $secretKey,
+                        'filesystems.disks.r2.bucket' => $bucket,
+                        'filesystems.disks.r2.url' => $url,
+                        'filesystems.disks.r2.endpoint' => $endpoint,
+                    ]);
+
+                    Storage::disk('r2')->put($newFilename, $imageData);
+                }
+            } catch (\Throwable $r2Ex) {
+                \Log::warning('R2 save edited image warning: ' . $r2Ex->getMessage());
+            }
+
+            // Update proof record
+            $transactionProof->update([
+                'file_path' => $newFilename,
+                'image_history' => $history,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gambar berhasil diedit & disimpan sebagai versi terbaru.',
+                'url' => $transactionProof->url,
+                'image_history' => $transactionProof->image_history,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('saveEditedImage error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan gambar: ' . $e->getMessage()
+            ], 500);
         }
-
-        $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
-        $imageData = base64_decode($imageData);
-
-        if ($imageData === false) {
-            return response()->json(['success' => false, 'message' => 'Gagal memproses data gambar'], 422);
-        }
-
-        // Store current image into history before updating
-        $history = $transactionProof->image_history ?? [];
-        $currentVersionNumber = count($history) + 1;
-
-        $history[] = [
-            'version' => $currentVersionNumber,
-            'file_path' => $transactionProof->file_path,
-            'url' => $transactionProof->url,
-            'edited_by' => Auth::user()->name,
-            'edited_at' => now()->format('d M Y, H:i')
-        ];
-
-        // Generate filename for new edited image
-        $newFilename = 'transaction_proofs/edited_' . time() . '_' . uniqid() . '.png';
-        Storage::disk('public')->put($newFilename, $imageData);
-
-        // Update proof record
-        $transactionProof->update([
-            'file_path' => $newFilename,
-            'image_history' => $history,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Gambar berhasil diedit & disimpan sebagai versi terbaru.',
-            'url' => $transactionProof->url,
-            'image_history' => $transactionProof->image_history,
-        ]);
     }
 
     /**
