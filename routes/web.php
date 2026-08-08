@@ -26,6 +26,8 @@ Route::get('/login/whatsapp/{user}', [\App\Http\Controllers\WhatsappLoginControl
 
 // ADMIN / CONSOLE ROUTES
 Route::prefix('console')->middleware('auth')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
+
     // SETTINGS ROUTES
     Route::redirect('/settings', '/console/settings/general')->name('settings.index');
     Route::get('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'index'])->name('settings.general.index');
