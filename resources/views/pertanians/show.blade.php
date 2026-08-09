@@ -931,6 +931,8 @@
                                 <td class="text-start text-nowrap">
                                     <button type="button" 
                                             class="btn btn-icon btn-light-warning btn-sm me-1 btn-edit-withdrawal" 
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_edit_withdrawal"
                                             title="Edit Penarikan"
                                             data-id="{{ $withdrawal->id }}"
                                             data-update-url="{{ route('withdrawals.update', $withdrawal->id) }}"
@@ -1687,6 +1689,8 @@
                         });
                     }
                 });
+            });
+
             // Flatpickr for Withdrawal Dates
             $("#withdrawal_date, #edit_withdrawal_date").flatpickr({
                 dateFormat: "Y-m-d",
