@@ -50,6 +50,14 @@
         [data-bs-theme="dark"] .jexcel > tbody > tr > th:first-child {
             background-color: #2b2b40 !important;
             box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        /* Ensure Main Sidebar and Menu Popovers sit above all page cards & sticky elements */
+        #kt_app_sidebar,
+        .app-sidebar {
+            z-index: 1050 !important;
+        }
+        .app-sidebar .menu-sub-dropdown,
+        .menu-sub-dropdown {
+            z-index: 1060 !important;
         }
     </style>
     @stack('styles')

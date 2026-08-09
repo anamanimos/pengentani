@@ -63,7 +63,7 @@
 <div class="row flex-column flex-lg-row g-5">
     {{-- Left Sidebar: Tabs Navigation --}}
     <div class="col-lg-3">
-        <div class="card shadow-sm mb-5 sticky-lg-top" style="top: 100px;">
+        <div class="card shadow-sm mb-5 sticky-lg-top" style="top: 100px; z-index: 10;">
             <div class="card-body p-0">
                 <ul class="nav nav-pills flex-column px-2 py-4" role="tablist">
                     <li class="nav-item mb-1" role="presentation">
