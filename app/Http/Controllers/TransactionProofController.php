@@ -115,13 +115,21 @@ class TransactionProofController extends Controller
             abort(403);
         }
 
+        $isUsed = ($transactionProof->purchaseItems()->count() + $transactionProof->incomes()->count() + $transactionProof->workerJobs()->count()) > 0;
+        if ($isUsed) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Bukti transaksi tidak dapat dihapus karena masih terhubung dengan data transaksi.'], 422);
+            }
+            return redirect()->back()->with('error', 'Bukti transaksi tidak dapat dihapus karena masih terhubung dengan data transaksi.');
+        }
+
         $transactionProof->delete();
 
         if (request()->ajax()) {
             return response()->json(['success' => true, 'message' => 'Bukti transaksi berhasil dihapus']);
         }
 
-        return redirect()->back()->with('success', 'Bukti transaksi berhasil dihapus');
+        return redirect()->route('transaction-proofs.index')->with('success', 'Bukti transaksi berhasil dihapus');
     }
 
     public function rename(Request $request, TransactionProof $transactionProof)

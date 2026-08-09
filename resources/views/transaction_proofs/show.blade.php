@@ -16,6 +16,9 @@
     <a href="{{ route('transaction-proofs.history', $transactionProof->id) }}" class="btn btn-sm fw-bold btn-info">
         <i class="fa fa-layer-group me-1"></i> Riwayat Versi
     </a>
+    <button type="button" class="btn btn-sm fw-bold btn-light-danger btn-delete-proof-standalone">
+        <i class="ki-duotone ki-trash fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus Bukti
+    </button>
     <a href="{{ route('transaction-proofs.index') }}" class="btn btn-sm fw-bold btn-secondary">
         <i class="ki-duotone ki-black-left fs-5 me-1"></i> Kembali ke Galeri
     </a>
@@ -28,6 +31,8 @@
     $purchasesCount = $transactionProof->purchaseItems->count();
     $incomesCount = $transactionProof->incomes->count();
     $workerJobsCount = $transactionProof->workerJobs->count();
+    $totalUsages = $purchasesCount + $incomesCount + $workerJobsCount;
+    $isUsed = ($totalUsages > 0);
 
     // Smart Tab Selection: Automatically activate the first tab that has data
     $defaultTab = 'purchases';
@@ -68,6 +73,9 @@
                             <a href="{{ $transactionProof->url }}" download="{{ $transactionProof->name }}.{{ pathinfo($transactionProof->file_path, PATHINFO_EXTENSION) }}" class="btn btn-sm btn-primary fw-bold px-3 py-2 fs-8">
                                 <i class="ki-duotone ki-file-down fs-5 me-1"></i> Download
                             </a>
+                            <button type="button" class="btn btn-sm btn-light-danger fw-bold px-3 py-2 fs-8 btn-delete-proof-standalone">
+                                <i class="ki-duotone ki-trash fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -351,6 +359,72 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+
+    // Standalone Delete Proof Handler
+    $('.btn-delete-proof-standalone').click(function(e) {
+        e.preventDefault();
+        
+        let isUsed = @json($isUsed);
+        let totalUsages = @json($totalUsages);
+
+        if (isUsed) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Bukti Tidak Dapat Dihapus',
+                html: 'Bukti transaksi ini sedang terhubung dengan <b>' + totalUsages + ' data transaksi</b> (Pembelian / Pendapatan / Upah).<br><br>Lepaskan atau hapus keterikatan transaksi tersebut terlebih dahulu sebelum menghapus gambar ini.',
+                confirmButtonText: 'Paham',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                }
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Hapus Bukti Transaksi?',
+            text: 'Bukti transaksi ini akan dihapus (soft delete).',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-light'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menghapus...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                $.ajax({
+                    url: "{{ route('transaction-proofs.destroy', $transactionProof->id) }}",
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        _method: 'DELETE'
+                    },
+                    success: function(res) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Terhapus!',
+                            text: 'Bukti transaksi berhasil dihapus.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(function() {
+                            window.location.href = "{{ route('transaction-proofs.index') }}";
+                        });
+                    },
+                    error: function(xhr) {
+                        let msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal menghapus bukti transaksi.';
+                        Swal.fire({ icon: 'error', title: 'Gagal Hapus', text: msg });
+                    }
+                });
+            }
+        });
     });
 });
 </script>
