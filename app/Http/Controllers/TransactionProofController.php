@@ -85,7 +85,7 @@ class TransactionProofController extends Controller
         $file = $request->file('file');
         $path = $file->store('transaction_proofs', 'public');
 
-        $name = trim($request->name ?? '');
+        $name = trim($request->name ?? ($request->names[0] ?? ''));
         if (empty($name)) {
             $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         }

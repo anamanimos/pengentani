@@ -495,10 +495,11 @@
         Dropzone.autoDiscover = false;
         var myDropzone = new Dropzone("#kt_dropzone_proof", {
             url: "{{ route('transaction-proofs.store') }}",
-            paramName: "file",
+            paramName: "files",
+            uploadMultiple: true,
             maxFiles: 50,
             maxFilesize: 5, // MB
-            parallelUploads: 5,
+            parallelUploads: 10,
             addRemoveLinks: true,
             autoProcessQueue: false,
             acceptedFiles: ".jpeg,.jpg,.png,.pdf",
@@ -586,9 +587,18 @@
                     }
                 });
 
-                this.on("sendingmultiple", function(data, xhr, formData) {
+                this.on("sending", function(file, xhr, formData) {
                     var container = $("#file_names_container");
-                    myDropzone.files.forEach(function(file, index) {
+                    var uuid = file.upload ? file.upload.uuid : 0;
+                    var input = container.find(`.proof-file-name-input[data-uuid="${uuid}"]`);
+                    var customName = input.length ? input.val() : '';
+                    formData.append('name', customName);
+                    formData.append('names[0]', customName);
+                });
+
+                this.on("sendingmultiple", function(files, xhr, formData) {
+                    var container = $("#file_names_container");
+                    files.forEach(function(file, index) {
                         var uuid = file.upload ? file.upload.uuid : index;
                         var input = container.find(`.proof-file-name-input[data-uuid="${uuid}"]`);
                         var customName = input.length ? input.val() : '';
@@ -601,14 +611,38 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        text: response.message || 'File bukti transaksi berhasil diunggah',
+                        text: (response && response.message) ? response.message : 'File bukti transaksi berhasil diunggah',
                         confirmButtonText: 'OK'
-                    }).then(() => {
+                    }).then(function() {
                         window.location.reload();
                     });
                 });
 
+                this.on("queuecomplete", function() {
+                    if (myDropzone.getUploadingFiles().length === 0 && myDropzone.getQueuedFiles().length === 0) {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Seluruh berkas bukti transaksi berhasil diunggah',
+                            confirmButtonText: 'OK'
+                        }).then(function() {
+                            window.location.reload();
+                        });
+                    }
+                });
+
                 this.on("errormultiple", function(files, response) {
+                    Swal.close();
+                    let errMsg = typeof response === 'string' ? response : (response.message || 'Gagal mengunggah file.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Upload',
+                        text: errMsg
+                    });
+                });
+
+                this.on("error", function(file, response) {
                     Swal.close();
                     let errMsg = typeof response === 'string' ? response : (response.message || 'Gagal mengunggah file.');
                     Swal.fire({
