@@ -1657,7 +1657,7 @@
                 
                 Swal.fire({
                     title: 'Apakah Anda yakin?',
-                    text: "Data penarikan ini akan dihapus secara permanen!",
+                    text: "Data penarikan ini akan dihapus (dapat dipulihkan dari soft delete).",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Hapus!',

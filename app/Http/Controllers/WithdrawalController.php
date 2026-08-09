@@ -142,10 +142,6 @@ class WithdrawalController extends Controller
             abort(403);
         }
 
-        if ($withdrawal->proof_image && !str_starts_with($withdrawal->proof_image, 'http')) {
-            Storage::disk('public')->delete($withdrawal->proof_image);
-        }
-
         $withdrawal->delete();
 
         if (request()->ajax()) {

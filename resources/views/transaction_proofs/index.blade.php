@@ -206,7 +206,7 @@
                                             <span class="badge badge-secondary fw-bold text-gray-800 bg-white bg-opacity-75 fs-9 py-1 rounded-pill" title="Belum terikat data">Belum Digunakan</span>
                                         @endif
                                     </div>
-                                    <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline proof-overlay-btn" style="z-index: 3;" onsubmit="return confirm('Hapus bukti ini?');">
+                                    <form action="{{ route('transaction-proofs.destroy', $proof->id) }}" method="POST" class="d-inline proof-overlay-btn form-delete-proof" style="z-index: 3;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-icon btn-sm btn-light-danger bg-white bg-opacity-90 w-25px h-25px rounded-circle" title="Hapus Bukti">
@@ -839,6 +839,49 @@
                     confirmButton: 'btn btn-primary'
                 },
                 width: '600px'
+            });
+        });
+
+        // Handle SweetAlert Delete Proof
+        $(document).on('submit', '.form-delete-proof', function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let card = form.closest('.proof-card');
+
+            Swal.fire({
+                title: 'Hapus Bukti Transaksi?',
+                text: 'Data bukti transaksi akan dihapus (dapat dipulihkan dari soft delete).',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        data: form.serialize(),
+                        success: function(res) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Terhapus!',
+                                text: res.message || 'Bukti transaksi berhasil dihapus.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            card.fadeOut(400, function() {
+                                $(this).remove();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error', xhr.responseJSON?.message || 'Gagal menghapus bukti transaksi.', 'error');
+                        }
+                    });
+                }
             });
         });
 

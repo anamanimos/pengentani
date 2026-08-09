@@ -115,11 +115,11 @@ class TransactionProofController extends Controller
             abort(403);
         }
 
-        if (Storage::disk('public')->exists($transactionProof->file_path)) {
-            Storage::disk('public')->delete($transactionProof->file_path);
-        }
-
         $transactionProof->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Bukti transaksi berhasil dihapus']);
+        }
 
         return redirect()->back()->with('success', 'Bukti transaksi berhasil dihapus');
     }
