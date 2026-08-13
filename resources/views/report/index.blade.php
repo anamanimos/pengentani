@@ -37,36 +37,16 @@
     <form id="export-form" action="{{ route('report.export') }}" method="POST" class="d-none">
         @csrf
         <input type="hidden" name="filtered_data" id="export-excel-data-input">
-        @if(request('pertanian_id'))
-            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-        @endif
-        @if(request('type'))
-            <input type="hidden" name="type" value="{{ request('type') }}">
-        @endif
-        @if(request('start_date'))
-            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
-        @endif
-        @if(request('end_date'))
-            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
-        @endif
+        <input type="hidden" name="start_date" id="export-excel-start-date">
+        <input type="hidden" name="end_date" id="export-excel-end-date">
     </form>
 
     <!-- Hidden form for PDF export -->
     <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="POST" target="_blank" class="d-none">
         @csrf
         <input type="hidden" name="filtered_data" id="export-pdf-data-input">
-        @if(request('pertanian_id'))
-            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
-        @endif
-        @if(request('type'))
-            <input type="hidden" name="type" value="{{ request('type') }}">
-        @endif
-        @if(request('start_date'))
-            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
-        @endif
-        @if(request('end_date'))
-            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
-        @endif
+        <input type="hidden" name="start_date" id="export-pdf-start-date">
+        <input type="hidden" name="end_date" id="export-pdf-end-date">
     </form>
 @endsection
 
@@ -796,19 +776,64 @@
 
             window.getVisibleTableData = function() {
                 let visibleRows = [];
-                if (typeof spreadsheet !== 'undefined' && spreadsheet.tbody) {
+                if (typeof spreadsheet !== 'undefined') {
                     let data = spreadsheet.getData();
                     for (let i = 0; i < data.length; i++) {
-                        let tr = spreadsheet.tbody.children[i];
-                        if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
-                            continue;
-                        }
                         let rowData = data[i];
+
+                        // Skip empty rows
                         let isEmpty = true;
                         for (let j = 1; j <= 11; j++) {
                             if (rowData[j]) { isEmpty = false; break; }
                         }
                         if (isEmpty) continue;
+
+                        // Check DOM row visibility
+                        if (spreadsheet.tbody && spreadsheet.tbody.children[i]) {
+                            let tr = spreadsheet.tbody.children[i];
+                            let disp = window.getComputedStyle ? window.getComputedStyle(tr).display : tr.style.display;
+                            if (disp === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden')) {
+                                continue;
+                            }
+                        }
+
+                        // Double check activeFilters matching
+                        let match = true;
+                        if (typeof activeFilters !== 'undefined') {
+                            for (let colIndex in activeFilters) {
+                                let filterVal = activeFilters[colIndex];
+                                let cellVal = rowData[colIndex];
+                                let colType = spreadsheet.options.columns[colIndex].type;
+
+                                if (cellVal === null || cellVal === undefined || cellVal === '') {
+                                    match = false;
+                                    break;
+                                }
+
+                                if (colType === 'calendar') {
+                                    let rowDate = new Date(cellVal);
+                                    rowDate.setHours(0,0,0,0);
+                                    let start = new Date(filterVal[0]); start.setHours(0,0,0,0);
+                                    let end = new Date(filterVal[1]); end.setHours(0,0,0,0);
+                                    if (rowDate < start || rowDate > end) {
+                                        match = false;
+                                        break;
+                                    }
+                                } else if (colType === 'dropdown') {
+                                    let found = false;
+                                    for (let k = 0; k < filterVal.length; k++) {
+                                        if (cellVal == filterVal[k]) { found = true; break; }
+                                    }
+                                    if (!found) { match = false; break; }
+                                } else {
+                                    if (String(cellVal).toLowerCase().indexOf(String(filterVal).toLowerCase()) === -1) {
+                                        match = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!match) continue;
 
                         let rawProof = rowData[11] || '';
                         let targetProofUrl = (typeof proofUrls !== 'undefined' && proofUrls[rawProof]) ? proofUrls[rawProof] : (String(rawProof).startsWith('http') ? rawProof : '');
@@ -834,12 +859,20 @@
             window.submitExportPdf = function() {
                 let visibleData = getVisibleTableData();
                 $('#export-pdf-data-input').val(JSON.stringify(visibleData));
+                if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
+                    $('#export-pdf-start-date').val(activeFilters[1][0]);
+                    $('#export-pdf-end-date').val(activeFilters[1][1]);
+                }
                 document.getElementById('export-pdf-form').submit();
             };
 
             window.submitExportExcel = function() {
                 let visibleData = getVisibleTableData();
                 $('#export-excel-data-input').val(JSON.stringify(visibleData));
+                if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
+                    $('#export-excel-start-date').val(activeFilters[1][0]);
+                    $('#export-excel-end-date').val(activeFilters[1][1]);
+                }
                 document.getElementById('export-form').submit();
             };
 

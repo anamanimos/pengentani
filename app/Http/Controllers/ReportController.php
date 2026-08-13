@@ -508,6 +508,14 @@ class ReportController extends Controller
 
         $reportData = $reportData->sortByDesc('date')->values();
 
+        if ($reportData->isNotEmpty()) {
+            $dates = $reportData->pluck('date')->filter()->sort()->values();
+            if ($dates->isNotEmpty()) {
+                if (empty($startDate)) $startDate = $dates->first();
+                if (empty($endDate)) $endDate = $dates->last();
+            }
+        }
+
         $totalIncome = $reportData->where('type_code', 'income')->sum('total');
         $totalWorker = $reportData->where('type_code', 'worker_job')->sum('total');
         $totalKonsumsi = $reportData->sum('konsumsi');
