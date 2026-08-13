@@ -339,4 +339,125 @@ class ReportController extends Controller
         $writer->save('php://output');
         exit;
     }
+
+    public function exportPdf(Request $request)
+    {
+        $userPertanians = Pertanian::where('user_id', Auth::id())->get();
+        $userPertanianIds = $userPertanians->pluck('id')->toArray();
+
+        $selectedPertanianId = $request->get('pertanian_id');
+        $selectedType = $request->get('type', 'all');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        $targetPertanianIds = $userPertanianIds;
+        if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
+            $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
+        }
+
+        $reportData = collect();
+
+        // Fetch Incomes
+        if (in_array($selectedType, ['all', 'income'])) {
+            $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
+                ->whereIn('pertanian_id', $targetPertanianIds);
+
+            if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
+            if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
+
+            foreach ($incomeQuery->get() as $income) {
+                $reportData->push([
+                    'type_code' => 'income',
+                    'type_label' => 'Pendapatan',
+                    'date' => $income->date ? $income->date->format('Y-m-d') : '',
+                    'pertanian_name' => $income->pertanian->name ?? '-',
+                    'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
+                    'party_name' => $income->tengkulak->name ?? '-',
+                    'notes' => $income->description ?? '-',
+                    'qty' => (float) ($income->qty ?? 1),
+                    'unit_price' => (float) ($income->unit_price ?? $income->amount),
+                    'konsumsi' => 0.0,
+                    'total' => (float) $income->amount,
+                    'proof_url' => $income->transactionProof ? $income->transactionProof->url : '',
+                ]);
+            }
+        }
+
+        // Fetch Upah Pekerja
+        if (in_array($selectedType, ['all', 'worker_job'])) {
+            $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+                ->whereIn('pertanian_id', $targetPertanianIds);
+
+            if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
+            if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
+
+            foreach ($workerQuery->get() as $job) {
+                $reportData->push([
+                    'type_code' => 'worker_job',
+                    'type_label' => 'Upah Pekerja',
+                    'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
+                    'pertanian_name' => $job->pertanian->name ?? '-',
+                    'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
+                    'party_name' => $job->worker->name ?? 'Pekerja',
+                    'notes' => $job->description ?? '-',
+                    'qty' => 1.0,
+                    'unit_price' => (float) $job->wage,
+                    'konsumsi' => (float) ($job->konsumsi ?? 0),
+                    'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
+                    'proof_url' => $job->transactionProof ? $job->transactionProof->url : '',
+                ]);
+            }
+        }
+
+        // Fetch Pembelian
+        if (in_array($selectedType, ['all', 'purchase'])) {
+            $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+                ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
+                    $q->whereIn('pertanian_id', $targetPertanianIds);
+                    if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
+                    if (!empty($endDate)) $q->whereDate('date', '<=', $endDate);
+                });
+
+            foreach ($purchaseItemQuery->get() as $item) {
+                $reportData->push([
+                    'type_code' => 'purchase',
+                    'type_label' => 'Pembelian Material',
+                    'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
+                    'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                    'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
+                    'party_name' => $item->purchase->store->name ?? 'Toko',
+                    'notes' => $item->description ?? '-',
+                    'qty' => (float) ($item->qty ?? 1),
+                    'unit_price' => (float) ($item->unit_price ?? $item->total_price),
+                    'konsumsi' => 0.0,
+                    'total' => (float) $item->total_price,
+                    'proof_url' => $item->transactionProof ? $item->transactionProof->url : '',
+                ]);
+            }
+        }
+
+        $reportData = $reportData->sortByDesc('date')->values();
+
+        $totalIncome = $reportData->where('type_code', 'income')->sum('total');
+        $totalWorker = $reportData->where('type_code', 'worker_job')->sum('total');
+        $totalKonsumsi = $reportData->sum('konsumsi');
+        $totalPurchase = $reportData->where('type_code', 'purchase')->sum('total');
+        $totalExpense = $totalWorker + $totalPurchase;
+        $netCashflow = $totalIncome - $totalExpense;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
+            'reportData',
+            'startDate',
+            'endDate',
+            'totalIncome',
+            'totalPurchase',
+            'totalWorker',
+            'totalKonsumsi',
+            'totalExpense',
+            'netCashflow'
+        ))->setPaper('a4', 'landscape');
+
+        $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
+    }
 }

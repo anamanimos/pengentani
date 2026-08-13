@@ -15,10 +15,16 @@
         <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     </button>
 
-    <div class="btn-group">
+    <div class="btn-group me-2">
         <button type="button" class="btn btn-icon btn-success btn-sm" onclick="document.getElementById('export-form').submit()" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
+        <button type="button" class="btn btn-icon btn-danger btn-sm" onclick="document.getElementById('export-pdf-form').submit()" data-bs-toggle="tooltip" title="Ekspor PDF (.pdf)">
+            <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
+        </button>
+    </div>
+
+    <div class="btn-group">
         <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
             <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
         </button>
@@ -27,8 +33,24 @@
         </button>
     </div>
 
-    <!-- Hidden form for export -->
+    <!-- Hidden form for Excel export -->
     <form id="export-form" action="{{ route('report.export') }}" method="GET" class="d-none">
+        @if(request('pertanian_id'))
+            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+        @endif
+        @if(request('type'))
+            <input type="hidden" name="type" value="{{ request('type') }}">
+        @endif
+        @if(request('start_date'))
+            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+        @endif
+        @if(request('end_date'))
+            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+        @endif
+    </form>
+
+    <!-- Hidden form for PDF export -->
+    <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="GET" class="d-none">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
@@ -722,10 +744,9 @@
 
                     // Col 11: Bukti Transaksi
                     if (col == 11 && val) {
-                        if (proofUrls[val]) {
-                            cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
-                        } else if (String(val).startsWith('http')) {
-                            cell.innerHTML = '<a href="' + val + '" data-fslightbox="report_proofs" class="btn btn-xs btn-light-primary py-1 px-2 fs-9 fw-bold"><i class="ki-duotone ki-eye fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Bukti</a>';
+                        var targetUrl = proofUrls[val] || (String(val).startsWith('http') ? val : null);
+                        if (targetUrl) {
+                            cell.innerHTML = '<span onmousedown="event.stopPropagation();" onclick="openLightbox(event, \'' + targetUrl + '\')" class="cursor-pointer me-2 p-1 rounded hover-bg-light custom-proof-eye" data-url="' + targetUrl + '" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + (label || '');
                         }
                     }
                 },
@@ -752,16 +773,30 @@
                 allowDeleteRow: true
             });
 
-            window.openLightbox = function(e, url) {
+            $(document).on('mousedown click', '#spreadsheet .custom-proof-eye', function(e) {
                 e.stopPropagation();
+                var url = $(this).attr('data-url');
+                if (url && e.type === 'click') {
+                    openLightbox(e, url);
+                }
+            });
+
+            window.openLightbox = function(e, url) {
+                if (e) {
+                    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+                    if (typeof e.preventDefault === 'function') e.preventDefault();
+                }
+                if (!url) return;
                 if (typeof refreshFsLightbox === 'function') {
                     var a = document.createElement('a');
                     a.href = url;
-                    a.setAttribute('data-fslightbox', 'dynamic_gallery');
+                    a.setAttribute('data-fslightbox', 'report_proofs_gallery');
                     document.body.appendChild(a);
                     refreshFsLightbox();
                     a.click();
-                    document.body.removeChild(a);
+                    setTimeout(function() {
+                        if (a.parentNode) a.parentNode.removeChild(a);
+                    }, 500);
                 } else {
                     window.open(url, '_blank');
                 }
