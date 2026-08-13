@@ -50,7 +50,7 @@
     </form>
 
     <!-- Hidden form for PDF export -->
-    <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="GET" class="d-none">
+    <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="GET" target="_blank" class="d-none">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
@@ -787,19 +787,7 @@
                     if (typeof e.preventDefault === 'function') e.preventDefault();
                 }
                 if (!url) return;
-                if (typeof refreshFsLightbox === 'function') {
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.setAttribute('data-fslightbox', 'report_proofs_gallery');
-                    document.body.appendChild(a);
-                    refreshFsLightbox();
-                    a.click();
-                    setTimeout(function() {
-                        if (a.parentNode) a.parentNode.removeChild(a);
-                    }, 500);
-                } else {
-                    window.open(url, '_blank');
-                }
+                window.open(url, '_blank');
             };
 
             function handleSelection(sheetInstance, x1, y1, x2, y2) {

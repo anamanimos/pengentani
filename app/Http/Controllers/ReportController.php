@@ -474,7 +474,7 @@ class ReportController extends Controller
                   ->setOption('isHtml5ParserEnabled', true);
 
                 $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
-                return $pdf->download($filename);
+                return $pdf->stream($filename, ['Attachment' => false]);
             }
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('PDF Export Error: ' . $e->getMessage());
