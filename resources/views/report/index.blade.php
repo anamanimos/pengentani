@@ -874,9 +874,65 @@
                 return visibleRows;
             };
 
+            window.getActiveFilterSummary = function() {
+                let summary = [];
+                if (typeof activeFilters !== 'undefined') {
+                    for (let colIndex in activeFilters) {
+                        if (!activeFilters[colIndex] || !spreadsheet || !spreadsheet.options || !spreadsheet.options.columns || !spreadsheet.options.columns[colIndex]) continue;
+
+                        let colTitle = spreadsheet.options.columns[colIndex].title.replace(/<[^>]*>?/gm, '').trim();
+                        let filterVal = activeFilters[colIndex];
+                        let filterText = '';
+
+                        if (spreadsheet.options.columns[colIndex].type === 'calendar') {
+                            let start = new Date(filterVal[0]);
+                            let end = new Date(filterVal[1]);
+                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        } else if (spreadsheet.options.columns[colIndex].type === 'dropdown') {
+                            let col = spreadsheet.options.columns[colIndex];
+                            let selectedNames = [];
+                            let valArr = Array.isArray(filterVal) ? filterVal : [filterVal];
+                            valArr.forEach(function(v) {
+                                if (col.source) {
+                                    let found = false;
+                                    for (let k = 0; k < col.source.length; k++) {
+                                        let item = col.source[k];
+                                        if (typeof item === 'object' && item.id == v) {
+                                            selectedNames.push(item.name);
+                                            found = true;
+                                            break;
+                                        } else if (item == v) {
+                                            selectedNames.push(item);
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found) selectedNames.push(v);
+                                } else {
+                                    selectedNames.push(v);
+                                }
+                            });
+                            filterText = selectedNames.join(', ');
+                        } else {
+                            filterText = Array.isArray(filterVal) ? filterVal.join(', ') : String(filterVal);
+                        }
+
+                        if (filterText) {
+                            summary.push({
+                                title: colTitle,
+                                value: filterText
+                            });
+                        }
+                    }
+                }
+                return summary;
+            };
+
             window.submitExportPdf = function() {
                 let visibleData = getVisibleTableData();
+                let filterSummary = getActiveFilterSummary();
                 $('#export-pdf-data-input').val(JSON.stringify(visibleData));
+                $('#export-pdf-filters-input').val(JSON.stringify(filterSummary));
                 if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
                     $('#export-pdf-start-date').val(activeFilters[1][0]);
                     $('#export-pdf-end-date').val(activeFilters[1][1]);

@@ -535,6 +535,11 @@ class ReportController extends Controller
         $totalExpense = $totalWorker + $totalPurchase;
         $netCashflow = $totalIncome - $totalExpense;
 
+        $activeFilterSummary = [];
+        if ($request->filled('active_filter_summary')) {
+            $activeFilterSummary = json_decode($request->get('active_filter_summary'), true) ?? [];
+        }
+
         try {
             if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
@@ -546,7 +551,8 @@ class ReportController extends Controller
                     'totalWorker',
                     'totalKonsumsi',
                     'totalExpense',
-                    'netCashflow'
+                    'netCashflow',
+                    'activeFilterSummary'
                 ))->setPaper('a4', 'landscape')
                   ->setOption('isRemoteEnabled', false)
                   ->setOption('isHtml5ParserEnabled', true);
@@ -568,7 +574,8 @@ class ReportController extends Controller
             'totalWorker',
             'totalKonsumsi',
             'totalExpense',
-            'netCashflow'
+            'netCashflow',
+            'activeFilterSummary'
         ));
     }
 }

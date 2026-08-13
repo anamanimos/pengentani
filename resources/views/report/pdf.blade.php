@@ -105,6 +105,25 @@
         .badge-info { background-color: #f8f5ff; color: #7239ea; border: 1px solid #d4c2f8; }
         .badge-warning { background-color: #fff8dd; color: #f1416c; border: 1px solid #ffe399; }
 
+        .filter-summary-box {
+            background-color: #f4f6fa;
+            border: 1px solid #e4e6ef;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 9px;
+        }
+        .filter-badge {
+            display: inline-block;
+            background-color: #ffffff;
+            border: 1px solid #d8d8d8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 3px;
+            margin-bottom: 2px;
+            color: #1e1e2d;
+        }
+
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .fw-bold { font-weight: bold; }
@@ -167,6 +186,17 @@
             </td>
         </tr>
     </table>
+
+    @if(!empty($activeFilterSummary) && is_array($activeFilterSummary) && count($activeFilterSummary) > 0)
+        <div class="filter-summary-box">
+            <strong style="color: #1e1e2d;">Filter Aktif:</strong>
+            @foreach($activeFilterSummary as $f)
+                <span class="filter-badge">
+                    <strong>{{ $f['title'] }}:</strong> {{ $f['value'] }}
+                </span>
+            @endforeach
+        </div>
+    @endif
 
     <!-- Data Table -->
     <table class="data-table">
