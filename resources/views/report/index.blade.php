@@ -778,6 +778,23 @@
                 let visibleRows = [];
                 if (typeof spreadsheet !== 'undefined') {
                     let data = spreadsheet.getData();
+
+                    let getDropdownLabel = function(colIndex, rawVal) {
+                        if (!rawVal && rawVal !== 0) return '-';
+                        let col = spreadsheet.options.columns[colIndex];
+                        if (col && col.source) {
+                            for (let k = 0; k < col.source.length; k++) {
+                                let item = col.source[k];
+                                if (typeof item === 'object') {
+                                    if (item.id == rawVal) return item.name;
+                                } else if (item == rawVal) {
+                                    return item;
+                                }
+                            }
+                        }
+                        return String(rawVal);
+                    };
+
                     for (let i = 0; i < data.length; i++) {
                         let rowData = data[i];
 
@@ -837,11 +854,12 @@
 
                         let rawProof = rowData[11] || '';
                         let targetProofUrl = (typeof proofUrls !== 'undefined' && proofUrls[rawProof]) ? proofUrls[rawProof] : (String(rawProof).startsWith('http') ? rawProof : '');
+                        let resolvedPertanianName = getDropdownLabel(3, rowData[3]);
 
                         visibleRows.push({
                             date: rowData[1] || '',
                             type_label: rowData[2] || '',
-                            pertanian_name: rowData[3] || '',
+                            pertanian_name: resolvedPertanianName,
                             item_name: rowData[4] || '',
                             party_name: rowData[5] || '',
                             notes: rowData[6] || '',

@@ -183,11 +183,17 @@ class ReportController extends Controller
         if ($request->filled('filtered_data')) {
             $clientData = json_decode($request->get('filtered_data'), true);
             if (is_array($clientData)) {
+                $pertanianMap = Pertanian::pluck('name', 'id')->toArray();
                 foreach ($clientData as $item) {
+                    $pName = $item['pertanian_name'] ?? '-';
+                    if (is_numeric($pName) && isset($pertanianMap[$pName])) {
+                        $pName = $pertanianMap[$pName];
+                    }
+
                     $reportData->push([
                         'date' => $item['date'] ?? '',
                         'type_label' => $item['type_label'] ?? 'Transaksi',
-                        'pertanian_name' => $item['pertanian_name'] ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $item['item_name'] ?? '-',
                         'party_name' => $item['party_name'] ?? '-',
                         'notes' => $item['notes'] ?? '-',
@@ -375,6 +381,7 @@ class ReportController extends Controller
         if ($request->filled('filtered_data')) {
             $clientData = json_decode($request->get('filtered_data'), true);
             if (is_array($clientData)) {
+                $pertanianMap = Pertanian::pluck('name', 'id')->toArray();
                 foreach ($clientData as $item) {
                     $typeLabel = $item['type_label'] ?? 'Transaksi';
                     $typeCode = 'purchase';
@@ -384,11 +391,16 @@ class ReportController extends Controller
                         $typeCode = 'worker_job';
                     }
 
+                    $pName = $item['pertanian_name'] ?? '-';
+                    if (is_numeric($pName) && isset($pertanianMap[$pName])) {
+                        $pName = $pertanianMap[$pName];
+                    }
+
                     $reportData->push([
                         'type_code' => $typeCode,
                         'type_label' => $typeLabel,
                         'date' => $item['date'] ?? '',
-                        'pertanian_name' => $item['pertanian_name'] ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $item['item_name'] ?? '-',
                         'party_name' => $item['party_name'] ?? '-',
                         'notes' => $item['notes'] ?? '-',
