@@ -450,9 +450,17 @@
                 universalFilterModal.show();
             };
 
+            const defaultStartDate = '{{ $startDate }}';
+            const defaultEndDate = '{{ $endDate }}';
+
             $('#btn-reset-filter').click(function() {
                 var colIndex = $('#current-filter-col').val();
-                delete activeFilters[colIndex];
+                if (colIndex == 1) {
+                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
+                    if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
+                } else {
+                    delete activeFilters[colIndex];
+                }
                 applyAllFilters();
                 universalFilterModal.hide();
             });
@@ -465,7 +473,7 @@
                     let selectedDates = datePicker.selectedDates;
                     if (selectedDates.length === 2) activeFilters[colIndex] = [selectedDates[0], selectedDates[1]];
                     else if (selectedDates.length === 1) activeFilters[colIndex] = [selectedDates[0], selectedDates[0]];
-                    else delete activeFilters[colIndex];
+                    else activeFilters[colIndex] = [defaultStartDate, defaultEndDate];
                 } else if (column.type === 'dropdown') {
                     var val = $('#filter-select-input').val();
                     if (val && val.length > 0) activeFilters[colIndex] = val;
@@ -481,15 +489,38 @@
             });
 
             $('#btn-global-reset-filter, #btn-global-reset-filter-fs').click(function() {
-                activeFilters = {};
-                if (datePicker) datePicker.clear();
+                activeFilters = {
+                    '1': [defaultStartDate, defaultEndDate]
+                };
+                if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
                 applyAllFilters();
             });
 
             window.removeFilter = function(colIndex) {
-                delete activeFilters[colIndex];
+                if (colIndex == 1) {
+                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
+                    if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
+                } else {
+                    delete activeFilters[colIndex];
+                }
                 applyAllFilters();
             };
+
+            function hasNonDefaultFilters() {
+                let keys = Object.keys(activeFilters);
+                if (keys.length === 0) return false;
+                if (keys.length === 1 && keys[0] === '1') {
+                    let dateVal = activeFilters['1'];
+                    if (Array.isArray(dateVal) && dateVal.length === 2) {
+                        let s = typeof dateVal[0] === 'string' ? dateVal[0] : (dateVal[0] ? dateVal[0].toISOString().split('T')[0] : '');
+                        let e = typeof dateVal[1] === 'string' ? dateVal[1] : (dateVal[1] ? dateVal[1].toISOString().split('T')[0] : '');
+                        if (s === defaultStartDate && e === defaultEndDate) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
 
             function applyAllFilters() {
                 try {
@@ -500,7 +531,7 @@
 
                 let data = spreadsheet.getData();
 
-                if (Object.keys(activeFilters).length > 0) {
+                if (hasNonDefaultFilters()) {
                     $('#btn-global-reset-filter, #btn-global-reset-filter-fs').removeClass('d-none');
                 } else {
                     $('#btn-global-reset-filter, #btn-global-reset-filter-fs').addClass('d-none');
