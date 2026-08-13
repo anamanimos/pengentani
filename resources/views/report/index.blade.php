@@ -379,7 +379,25 @@
             var activeFilters = {};
             try {
                 let savedFilters = localStorage.getItem('report_filters');
-                if (savedFilters) activeFilters = JSON.parse(savedFilters);
+                if (savedFilters) {
+                    activeFilters = JSON.parse(savedFilters);
+                } else {
+                    @if($startDate && $endDate)
+                        activeFilters['1'] = ['{{ $startDate }}', '{{ $endDate }}'];
+                    @endif
+                    @if($selectedPertanianId && $selectedPertanianId !== 'all')
+                        activeFilters['3'] = ['{{ $selectedPertanianId }}'];
+                    @endif
+                    @if($selectedType && $selectedType !== 'all')
+                        @if($selectedType === 'income')
+                            activeFilters['2'] = ['Pendapatan'];
+                        @elseif($selectedType === 'purchase')
+                            activeFilters['2'] = ['Pembelian Material'];
+                        @elseif($selectedType === 'worker_job')
+                            activeFilters['2'] = ['Upah Pekerja'];
+                        @endif
+                    @endif
+                }
             } catch(e) {
                 console.error('Failed to load activeFilters:', e);
             }
