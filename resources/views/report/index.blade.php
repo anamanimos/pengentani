@@ -379,7 +379,7 @@
             var activeFilters = {};
             try {
                 let savedFilters = localStorage.getItem('report_filters');
-                if (savedFilters) {
+                if (savedFilters && Object.keys(JSON.parse(savedFilters)).length > 0) {
                     activeFilters = JSON.parse(savedFilters);
                 } else {
                     @if($startDate && $endDate)
@@ -506,41 +506,52 @@
                     $('#btn-global-reset-filter, #btn-global-reset-filter-fs').addClass('d-none');
                 }
 
-                let activeFilterHtml = '';
+                // Update header filter icon colors if present
                 $('#spreadsheet .custom-filter-icon').each(function() {
                     var cIdx = $(this).attr('data-col');
                     if (activeFilters[cIdx]) {
                         $(this).removeClass('text-gray-500').addClass('text-success');
-
-                        let colTitle = spreadsheet.options.columns[cIdx].title.replace(/<[^>]*>?/gm, '').trim();
-                        let filterVal = activeFilters[cIdx];
-                        let filterText = '';
-
-                        if (spreadsheet.options.columns[cIdx].type === 'calendar') {
-                            let start = new Date(filterVal[0]);
-                            let end = new Date(filterVal[1]);
-                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
-                        } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
-                            let names = [];
-                            let source = spreadsheet.options.columns[cIdx].source;
-                            for (let k = 0; k < filterVal.length; k++) {
-                                let match = source.find(s => (s.id || s) == filterVal[k]);
-                                if (match) names.push(match.name || match);
-                                else names.push(filterVal[k]);
-                            }
-                            filterText = names.join(', ');
-                        } else {
-                            filterText = filterVal;
-                        }
-
-                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary d-inline-flex align-items-center"><span class="text-gray-600 me-2">' + colTitle + ':</span> <span>' + filterText + '</span><i class="ki-duotone ki-cross fs-2 ms-2 cursor-pointer text-hover-danger" onclick="removeFilter(' + cIdx + ')" title="Hapus Filter"><span class="path1"></span><span class="path2"></span></i></span>';
                     } else {
                         $(this).removeClass('text-success').addClass('text-gray-500');
                     }
                 });
 
+                // Build active filter badges directly from activeFilters object keys
+                let activeFilterHtml = '';
+                for (let cIdx in activeFilters) {
+                    if (!activeFilters[cIdx] || !spreadsheet || !spreadsheet.options || !spreadsheet.options.columns || !spreadsheet.options.columns[cIdx]) continue;
+
+                    let colTitle = spreadsheet.options.columns[cIdx].title.replace(/<[^>]*>?/gm, '').trim();
+                    let filterVal = activeFilters[cIdx];
+                    let filterText = '';
+
+                    if (spreadsheet.options.columns[cIdx].type === 'calendar') {
+                        let start = new Date(filterVal[0]);
+                        let end = new Date(filterVal[1]);
+                        filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                    } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
+                        let names = [];
+                        let source = spreadsheet.options.columns[cIdx].source;
+                        if (Array.isArray(filterVal)) {
+                            for (let k = 0; k < filterVal.length; k++) {
+                                let match = source ? source.find(s => (s.id || s) == filterVal[k]) : null;
+                                if (match) names.push(match.name || match);
+                                else names.push(filterVal[k]);
+                            }
+                            filterText = names.join(', ');
+                        } else {
+                            let match = source ? source.find(s => (s.id || s) == filterVal) : null;
+                            filterText = match ? (match.name || match) : filterVal;
+                        }
+                    } else {
+                        filterText = Array.isArray(filterVal) ? filterVal.join(', ') : filterVal;
+                    }
+
+                    activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary d-inline-flex align-items-center me-2 mb-2"><span class="text-gray-600 me-2">' + colTitle + ':</span> <span>' + filterText + '</span><i class="ki-duotone ki-cross fs-2 ms-2 cursor-pointer text-hover-danger" onclick="removeFilter(' + cIdx + ')" title="Hapus Filter"><span class="path1"></span><span class="path2"></span></i></span>';
+                }
+
                 if (activeFilterHtml !== '') {
-                    $('#active-filters-display').html('<span class="text-muted fw-semibold fs-7 me-1">Filter Aktif:</span>' + activeFilterHtml);
+                    $('#active-filters-display').html('<span class="text-muted fw-semibold fs-7 me-2">Filter Aktif:</span>' + activeFilterHtml);
                     $('#active-filters-display').removeClass('d-none');
                 } else {
                     $('#active-filters-display').addClass('d-none');
