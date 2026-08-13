@@ -342,6 +342,9 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '300');
+
         $userPertanians = Pertanian::where('user_id', Auth::id())->get();
         $userPertanianIds = $userPertanians->pluck('id')->toArray();
 
@@ -445,7 +448,25 @@ class ReportController extends Controller
         $totalExpense = $totalWorker + $totalPurchase;
         $netCashflow = $totalIncome - $totalExpense;
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
+                'reportData',
+                'startDate',
+                'endDate',
+                'totalIncome',
+                'totalPurchase',
+                'totalWorker',
+                'totalKonsumsi',
+                'totalExpense',
+                'netCashflow'
+            ))->setPaper('a4', 'landscape');
+
+            $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
+            return $pdf->download($filename);
+        }
+
+        // Fallback: render print view if DomPDF package is pending deployment installation
+        return view('report.pdf', compact(
             'reportData',
             'startDate',
             'endDate',
@@ -455,9 +476,6 @@ class ReportController extends Controller
             'totalKonsumsi',
             'totalExpense',
             'netCashflow'
-        ))->setPaper('a4', 'landscape');
-
-        $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
-        return $pdf->download($filename);
+        ));
     }
 }
