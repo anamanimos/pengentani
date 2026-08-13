@@ -51,7 +51,7 @@
         <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Pendapatan, Pembelian, & Upah Pekerja)</h4>
         <span>Urutan kolom tabel: **Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi**. Klik ikon corong pada header kolom untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
     </div>
-    <button type="button" class="btn btn-icon btn-sm btn-active-light-info position-absolute top-0 end-0 m-3" id="btn-close-alert" onclick="document.getElementById('usage-alert').style.display='none';">
+    <button type="button" class="btn btn-icon btn-sm btn-active-light-info position-absolute top-0 end-0 m-3" id="btn-close-alert">
         <i class="ki-duotone ki-cross fs-1 text-info"><span class="path1"></span><span class="path2"></span></i>
     </button>
 </div>
@@ -310,11 +310,27 @@
 
     <script>
         $(document).ready(function() {
-            $('[data-bs-target="#columnVisibilityModal"]').tooltip();
+            // Check if user previously closed usage alert
+            if (localStorage.getItem('hideReportUsageAlert') === 'true') {
+                $('#usage-alert').removeClass('d-flex').addClass('d-none');
+                $('#btn-show-alert').removeClass('d-none');
+            }
 
+            // Handle closing usage alert and save state to localStorage
             $(document).on('click', '#btn-close-alert', function(e) {
                 e.preventDefault();
-                $('#usage-alert').slideUp(200);
+                $('#usage-alert').slideUp(200, function() {
+                    $(this).removeClass('d-flex').addClass('d-none');
+                    $('#btn-show-alert').removeClass('d-none');
+                });
+                localStorage.setItem('hideReportUsageAlert', 'true');
+            });
+
+            // Handle re-opening usage alert from header button
+            $('#btn-show-alert').click(function() {
+                $('#usage-alert').removeClass('d-none').addClass('d-flex').hide().slideDown(200);
+                $('#btn-show-alert').addClass('d-none');
+                localStorage.removeItem('hideReportUsageAlert');
             });
 
             @php
