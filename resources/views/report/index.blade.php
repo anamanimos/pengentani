@@ -332,12 +332,13 @@
                 localStorage.setItem('hideReportUsageAlert', 'true');
             });
 
-            // Handle re-opening usage alert from header button
-            $('#btn-show-alert').click(function() {
-                $('#usage-alert').removeClass('d-none').addClass('d-flex').hide().slideDown(200);
-                $('#btn-show-alert').addClass('d-none');
-                localStorage.removeItem('hideReportUsageAlert');
-            });
+            window.getSourceItemLabel = function(item, fallbackId) {
+                if (!item && item !== 0) return fallbackId || '-';
+                if (typeof item === 'object') {
+                    return item.name || item.title || item.original_filename || item.filename || ('Bukti #' + (item.id || fallbackId));
+                }
+                return String(item);
+            };
 
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
