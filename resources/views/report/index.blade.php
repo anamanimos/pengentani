@@ -341,7 +341,7 @@
 
             @php
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
-                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => $p->url])->toArray() : [];
+                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => ($p->name ?: ($p->original_filename ?: ('Bukti #' . $p->id))), 'url' => $p->url])->toArray() : [];
 
                 $initialData = $reportData->map(function($item) {
                     return [
@@ -571,17 +571,13 @@
                     } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
                         let names = [];
                         let source = spreadsheet.options.columns[cIdx].source;
-                        if (Array.isArray(filterVal)) {
-                            for (let k = 0; k < filterVal.length; k++) {
-                                let match = source ? source.find(s => (s.id || s) == filterVal[k]) : null;
-                                if (match) names.push(match.name || match);
-                                else names.push(filterVal[k]);
-                            }
-                            filterText = names.join(', ');
-                        } else {
-                            let match = source ? source.find(s => (s.id || s) == filterVal) : null;
-                            filterText = match ? (match.name || match) : filterVal;
+                        let valArr = Array.isArray(filterVal) ? filterVal : [filterVal];
+                        for (let k = 0; k < valArr.length; k++) {
+                            let v = valArr[k];
+                            let match = source ? source.find(s => (s.id || s) == v) : null;
+                            names.push(getSourceItemLabel(match, v));
                         }
+                        filterText = names.join(', ');
                     } else {
                         filterText = Array.isArray(filterVal) ? filterVal.join(', ') : filterVal;
                     }
@@ -893,24 +889,8 @@
                             let selectedNames = [];
                             let valArr = Array.isArray(filterVal) ? filterVal : [filterVal];
                             valArr.forEach(function(v) {
-                                if (col.source) {
-                                    let found = false;
-                                    for (let k = 0; k < col.source.length; k++) {
-                                        let item = col.source[k];
-                                        if (typeof item === 'object' && item.id == v) {
-                                            selectedNames.push(item.name);
-                                            found = true;
-                                            break;
-                                        } else if (item == v) {
-                                            selectedNames.push(item);
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!found) selectedNames.push(v);
-                                } else {
-                                    selectedNames.push(v);
-                                }
+                                let match = col.source ? col.source.find(s => (s.id || s) == v) : null;
+                                selectedNames.push(getSourceItemLabel(match, v));
                             });
                             filterText = selectedNames.join(', ');
                         } else {
