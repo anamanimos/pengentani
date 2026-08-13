@@ -384,6 +384,8 @@
                 } else {
                     @if($startDate && $endDate)
                         activeFilters['1'] = ['{{ $startDate }}', '{{ $endDate }}'];
+                    @else
+                        activeFilters['1'] = [defaultStartDate, defaultEndDate];
                     @endif
                     @if($selectedPertanianId && $selectedPertanianId !== 'all')
                         activeFilters['3'] = ['{{ $selectedPertanianId }}'];

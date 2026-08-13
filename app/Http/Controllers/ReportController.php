@@ -23,8 +23,8 @@ class ReportController extends Controller
 
         $selectedPertanianId = $request->get('pertanian_id');
         $selectedType = $request->get('type', 'all');
-        $startDate = $request->filled('start_date') ? $request->get('start_date') : now()->startOfMonth()->format('Y-m-d');
-        $endDate = $request->filled('end_date') ? $request->get('end_date') : now()->endOfMonth()->format('Y-m-d');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
 
         // Target Pertanian IDs filter
         $targetPertanianIds = $userPertanianIds;
@@ -140,6 +140,10 @@ class ReportController extends Controller
         // Sort Data by Date Descending
         $reportData = $reportData->sortByDesc('date')->values();
 
+        // Default current month start & end dates for frontend filtering
+        $defaultStartDate = now()->startOfMonth()->format('Y-m-d');
+        $defaultEndDate = now()->endOfMonth()->format('Y-m-d');
+
         // Calculate Totals
         $totalIncome = $reportData->where('type_code', 'income')->sum('total');
         $totalWorker = $reportData->where('type_code', 'worker_job')->sum('total');
@@ -160,6 +164,8 @@ class ReportController extends Controller
             'selectedType',
             'startDate',
             'endDate',
+            'defaultStartDate',
+            'defaultEndDate',
             'totalIncome',
             'totalWorker',
             'totalKonsumsi',
@@ -177,8 +183,8 @@ class ReportController extends Controller
 
         $selectedPertanianId = $request->get('pertanian_id');
         $selectedType = $request->get('type', 'all');
-        $startDate = $request->filled('start_date') ? $request->get('start_date') : now()->startOfMonth()->format('Y-m-d');
-        $endDate = $request->filled('end_date') ? $request->get('end_date') : now()->endOfMonth()->format('Y-m-d');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
 
         $targetPertanianIds = $userPertanianIds;
         if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
