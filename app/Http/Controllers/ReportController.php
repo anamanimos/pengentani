@@ -27,7 +27,7 @@ class ReportController extends Controller
         $endDate = $request->get('end_date');
 
         // Target Pertanian IDs filter
-        $targetPertanianIds = $userPertanianIds;
+        $targetPertanianIds = $userPertanians->pluck('id')->toArray();
         if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
             $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
         }
@@ -186,7 +186,7 @@ class ReportController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        $targetPertanianIds = $userPertanianIds;
+        $targetPertanianIds = $userPertanians->pluck('id')->toArray();
         if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
             $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
         }
@@ -342,8 +342,8 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
-        ini_set('memory_limit', '512M');
-        ini_set('max_execution_time', '300');
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '300');
 
         $userPertanians = Pertanian::where('user_id', Auth::id())->get();
         $userPertanianIds = $userPertanians->pluck('id')->toArray();
@@ -448,24 +448,28 @@ class ReportController extends Controller
         $totalExpense = $totalWorker + $totalPurchase;
         $netCashflow = $totalIncome - $totalExpense;
 
-        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
-                'reportData',
-                'startDate',
-                'endDate',
-                'totalIncome',
-                'totalPurchase',
-                'totalWorker',
-                'totalKonsumsi',
-                'totalExpense',
-                'netCashflow'
-            ))->setPaper('a4', 'landscape');
+        try {
+            if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('report.pdf', compact(
+                    'reportData',
+                    'startDate',
+                    'endDate',
+                    'totalIncome',
+                    'totalPurchase',
+                    'totalWorker',
+                    'totalKonsumsi',
+                    'totalExpense',
+                    'netCashflow'
+                ))->setPaper('a4', 'landscape');
 
-            $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
-            return $pdf->download($filename);
+                $filename = 'Laporan_Gabungan_PengenTani_' . date('Ymd_His') . '.pdf';
+                return $pdf->download($filename);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('PDF Export Error: ' . $e->getMessage());
         }
 
-        // Fallback: render print view if DomPDF package is pending deployment installation
+        // Fallback: render printable HTML view if DomPDF fails or GD extension is pending installation
         return view('report.pdf', compact(
             'reportData',
             'startDate',
