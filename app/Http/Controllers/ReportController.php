@@ -146,10 +146,12 @@ class ReportController extends Controller
         $totalRows = $reportData->count();
 
         $pertanians = $userPertanians;
+        $proofs = \App\Models\TransactionProof::where('user_id', Auth::id())->latest()->get();
 
         return view('report.index', compact(
             'reportData',
             'pertanians',
+            'proofs',
             'selectedPertanianId',
             'selectedType',
             'startDate',

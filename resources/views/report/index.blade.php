@@ -1,50 +1,24 @@
 @extends('layouts.metronic')
 
 @section('title', 'Laporan Gabungan Transaksi')
-
 @section('page_title')
     <div class="d-flex align-items-center flex-row">
         Laporan Gabungan Transaksi
         <span class="badge badge-light-primary fw-bold fs-7 ms-3">
-            <i class="ki-duotone ki-file-sheet text-primary fs-6 me-1"><span class="path1"></span><span class="path2"></span></i> Tampilan Excel
+            <i class="ki-duotone ki-file-sheet text-primary fs-6 me-1"><span class="path1"></span><span class="path2"></span></i> Mode Excel
         </span>
     </div>
 @endsection
 
 @section('page_actions')
-    <form action="{{ route('report.index') }}" method="GET" id="report_filter_form" class="d-flex flex-wrap align-items-center gap-2 me-3">
-        <!-- Proyek Pertanian Filter -->
-        <select name="pertanian_id" class="form-select form-select-sm form-select-solid w-175px" onchange="this.form.submit()">
-            <option value="all" {{ $selectedPertanianId == 'all' || !$selectedPertanianId ? 'selected' : '' }}>Semua Proyek Pertanian</option>
-            @foreach($pertanians as $p)
-                <option value="{{ $p->id }}" {{ $selectedPertanianId == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
-            @endforeach
-        </select>
-
-        <!-- Jenis Transaksi Filter -->
-        <select name="type" class="form-select form-select-sm form-select-solid w-160px" onchange="this.form.submit()">
-            <option value="all" {{ $selectedType == 'all' ? 'selected' : '' }}>Semua Transaksi</option>
-            <option value="income" {{ $selectedType == 'income' ? 'selected' : '' }}>Pendapatan Saja</option>
-            <option value="purchase" {{ $selectedType == 'purchase' ? 'selected' : '' }}>Pembelian Saja</option>
-            <option value="worker_job" {{ $selectedType == 'worker_job' ? 'selected' : '' }}>Upah Pekerja Saja</option>
-        </select>
-
-        <!-- Date Range Filter -->
-        <input type="date" name="start_date" class="form-control form-control-sm form-control-solid w-130px" value="{{ $startDate }}" onchange="this.form.submit()" placeholder="Tgl Mulai">
-        <span class="text-muted fs-8">s/d</span>
-        <input type="date" name="end_date" class="form-control form-control-sm form-control-solid w-130px" value="{{ $endDate }}" onchange="this.form.submit()" placeholder="Tgl Selesai">
-
-        @if($selectedPertanianId != 'all' || $selectedType != 'all' || $startDate || $endDate)
-            <a href="{{ route('report.index') }}" class="btn btn-icon btn-sm btn-light-danger" data-bs-toggle="tooltip" title="Reset Filter">
-                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i>
-            </a>
-        @endif
-    </form>
+    <button type="button" id="btn-show-alert" class="btn btn-icon btn-secondary btn-sm me-3 d-none" data-bs-toggle="tooltip" title="Cara Penggunaan">
+        <i class="ki-duotone ki-information-5 fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+    </button>
 
     <div class="btn-group">
-        <a href="{{ route('report.export', request()->all()) }}" class="btn btn-icon btn-success btn-sm me-1" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
+        <button type="button" class="btn btn-icon btn-success btn-sm" onclick="document.getElementById('export-form').submit()" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
-        </a>
+        </button>
         <button type="button" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
             <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
         </button>
@@ -52,16 +26,32 @@
             <i class="ki-duotone ki-maximize fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
     </div>
+
+    <!-- Hidden form for export -->
+    <form id="export-form" action="{{ route('report.export') }}" method="GET" class="d-none">
+        @if(request('pertanian_id'))
+            <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+        @endif
+        @if(request('type'))
+            <input type="hidden" name="type" value="{{ request('type') }}">
+        @endif
+        @if(request('start_date'))
+            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+        @endif
+        @if(request('end_date'))
+            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+        @endif
+    </form>
 @endsection
 
 @section('content')
-<div class="alert alert-info d-flex align-items-center p-4 mb-4" id="usage-alert">
+<div class="alert alert-info d-flex align-items-center p-5 mb-5" id="usage-alert">
     <i class="ki-duotone ki-information fs-2hx text-info me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     <div class="d-flex flex-column flex-grow-1 pe-8">
-        <h5 class="mb-1 text-info">Laporan Gabungan (Pendapatan, Pembelian, & Upah Pekerja)</h5>
-        <span class="fs-8">Tampilan spreadsheet Excel interaktif. Gunakan filter di bagian atas untuk menyaring data atau klik tombol <b>Ekspor Excel (.xlsx)</b> untuk mengunduh berkas spreadsheet.</span>
+        <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Pendapatan, Pembelian, & Upah Pekerja)</h4>
+        <span>Tampilan spreadsheet Excel interaktif tanpa batas halaman (tanpa pagination). Klik **ikon corong (filter)** pada header kolom tabel untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
     </div>
-    <button type="button" class="btn btn-icon ms-auto" id="btn-close-alert">
+    <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" id="btn-close-alert">
         <i class="ki-duotone ki-cross fs-2x text-info"><span class="path1"></span><span class="path2"></span></i>
     </button>
 </div>
@@ -70,37 +60,62 @@
     <!-- Fullscreen Header -->
     <div class="spreadsheet-fs-header d-none">
         <div class="d-flex align-items-center">
-            <h5 class="m-0 fw-bold text-gray-800">Laporan Gabungan Transaksi</h5>
-            <span class="badge badge-light-primary fw-bold fs-8 ms-3">Mode Excel</span>
+            <h5 class="m-0 fw-bold text-gray-800">Laporan Gabungan Transaksi (Excel View)</h5>
+            <span class="badge badge-light-primary fw-bold fs-8 ms-3">Gabungan All-In-One</span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('report.export', request()->all()) }}" class="btn btn-sm btn-success fw-bold me-2">
-                <i class="ki-duotone ki-file-down fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Ekspor Excel (.xlsx)
-            </a>
-            <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
-                <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-icon btn-secondary" id="btn-exit-fullscreen" data-bs-toggle="tooltip" title="Keluar Fullscreen">
-                <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-icon btn-success" onclick="document.getElementById('export-form-fs').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
+                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary d-none" id="btn-global-reset-filter-fs" data-bs-toggle="tooltip" title="Reset Filter">
+                    <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
+                    <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-secondary" id="btn-exit-fullscreen" data-bs-toggle="tooltip" title="Keluar Fullscreen">
+                    <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+            </div>
+            <!-- Hidden form for export fs -->
+            <form id="export-form-fs" action="{{ route('report.export') }}" method="GET" class="d-none">
+                @if(request('pertanian_id'))
+                    <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
+                @endif
+                @if(request('type'))
+                    <input type="hidden" name="type" value="{{ request('type') }}">
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Filters Display Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div id="active-filters-display" class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Filter badges will be injected here dynamically -->
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-light-danger d-none" id="btn-global-reset-filter">
+                <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i> Reset Semua Filter
             </button>
         </div>
     </div>
 
-    <!-- Main Spreadsheet Container -->
+    <!-- Spreadsheet Mount Element -->
     <div id="spreadsheet" class="w-100 overflow-auto"></div>
 
-    <!-- Footer Summary Bar -->
+    <!-- Footer Summary Totals Bar -->
     <div class="d-flex flex-wrap align-items-center justify-content-between p-4 bg-light border-top sticky-bottom z-index-1 gap-3" id="spreadsheet-footer" style="bottom: 0;">
-        <div class="d-flex flex-wrap align-items-center gap-4">
-            <span class="fs-7 fw-semibold text-gray-700">Total Pendapatan: <span class="text-success fw-bolder fs-6">Rp {{ number_format($totalIncome, 0, ',', '.') }}</span></span>
-            <span class="text-gray-300">|</span>
-            <span class="fs-7 fw-semibold text-gray-700">Total Pembelian: <span class="text-danger fw-bolder fs-6">Rp {{ number_format($totalPurchase, 0, ',', '.') }}</span></span>
-            <span class="text-gray-300">|</span>
-            <span class="fs-7 fw-semibold text-gray-700">Total Upah: <span class="text-warning fw-bolder fs-6">Rp {{ number_format($totalWorker, 0, ',', '.') }}</span></span>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <h5 class="m-0 text-gray-800 fs-7">Total Pendapatan: <span id="total-income-amount" class="text-success fw-bolder ms-1 fs-6">Rp {{ number_format($totalIncome, 0, ',', '.') }}</span></h5>
+            <span class="text-gray-400">|</span>
+            <h5 class="m-0 text-gray-800 fs-7">Total Pembelian: <span id="total-purchase-amount" class="text-danger fw-bolder ms-1 fs-6">Rp {{ number_format($totalPurchase, 0, ',', '.') }}</span></h5>
+            <span class="text-gray-400">|</span>
+            <h5 class="m-0 text-gray-800 fs-7">Total Upah: <span id="total-worker-amount" class="text-warning fw-bolder ms-1 fs-6">Rp {{ number_format($totalWorker, 0, ',', '.') }}</span></h5>
         </div>
-        <div>
-            <span class="fs-7 fw-bold text-gray-800 me-3">Arus Kas Bersih: <span class="{{ $netCashflow >= 0 ? 'text-primary' : 'text-danger' }} fw-bolder fs-5">Rp {{ number_format($netCashflow, 0, ',', '.') }}</span></span>
-            <span class="badge badge-light-dark fs-8 fw-bold">{{ $totalRows }} Baris</span>
+        <div class="d-flex align-items-center gap-3">
+            <h4 class="m-0 text-gray-800 fs-6">Arus Kas Bersih: <span id="total-net-amount" class="{{ $netCashflow >= 0 ? 'text-primary' : 'text-danger' }} fw-bolder ms-1 fs-5">Rp {{ number_format($netCashflow, 0, ',', '.') }}</span></h4>
         </div>
     </div>
 </div>
@@ -113,6 +128,48 @@
         <div>Rata-rata: <span class="fw-bold text-info sum-val-avg">0</span></div>
         <div class="border-end border-gray-700 h-15px"></div>
         <div>Jumlah: <span class="fw-bold text-success sum-val-sum">0</span></div>
+    </div>
+</div>
+
+<!-- Modal Universal Filter -->
+<div class="modal fade" id="universalFilterModal" tabindex="-1" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered mw-400px">
+        <div class="modal-content">
+            <div class="modal-header pb-0 border-0 justify-content-end">
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body scroll-y pt-0 pb-15 px-5 px-xl-15">
+                <div class="mb-13 text-center">
+                    <h1 class="mb-3" id="filter-modal-title">Filter Kolom</h1>
+                    <div class="text-muted fw-semibold fs-5">Pilih nilai untuk memfilter data tabel</div>
+                </div>
+                
+                <input type="hidden" id="current-filter-col" value="">
+                
+                <div class="d-flex flex-column mb-8 filter-container d-none" id="filter-date-container">
+                    <label class="fs-6 fw-semibold mb-2">Pilih Rentang Waktu</label>
+                    <input class="form-control form-control-solid" placeholder="Pilih tanggal" id="filter-date-picker"/>
+                </div>
+
+                <div class="d-flex flex-column mb-8 filter-container d-none" id="filter-select-container">
+                    <label class="fs-6 fw-semibold mb-2">Pilih Data</label>
+                    <select class="form-select form-select-solid" id="filter-select-input" multiple="multiple" data-placeholder="Pilih satu atau lebih...">
+                    </select>
+                </div>
+
+                <div class="d-flex flex-column mb-8 filter-container d-none" id="filter-text-container">
+                    <label class="fs-6 fw-semibold mb-2">Cari Teks</label>
+                    <input type="text" class="form-control form-control-solid" id="filter-text-input" placeholder="Masukkan kata kunci..."/>
+                </div>
+
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-sm btn-light me-3" id="btn-reset-filter">Reset Filter</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="btn-apply-filter">Terapkan</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -174,6 +231,12 @@
         }
         #spreadsheet-wrapper.fullscreen-mode #spreadsheet-footer {
             flex-shrink: 0;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #btn-toggle-fullscreen {
+            display: none !important;
+        }
+        #spreadsheet-wrapper.fullscreen-mode #btn-global-reset-filter {
+            display: none !important;
         }
 
         .jexcel > thead > tr:first-child > td {
@@ -245,55 +308,305 @@
 
     <script>
         $(document).ready(function() {
+            $('[data-bs-target="#columnVisibilityModal"]').tooltip();
+
             $('#btn-close-alert').click(function() {
                 $('#usage-alert').fadeOut();
             });
 
-            var rawData = @json($reportData);
+            @php
+                $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
+                $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'url' => $p->url])->toArray() : [];
 
-            // Format initial rows for Jspreadsheet
-            var spreadsheetData = rawData.map(function(item) {
-                return [
-                    item.id,
-                    item.type_label,
-                    item.date,
-                    item.pertanian_name,
-                    item.item_name,
-                    item.party_name,
-                    item.qty,
-                    item.unit,
-                    item.unit_price,
-                    item.total,
-                    item.proof_url ? item.proof_url : '',
-                    item.notes
-                ];
+                $initialData = $reportData->map(function($item) {
+                    return [
+                        $item['id'],
+                        $item['type_label'],
+                        $item['date'],
+                        $item['pertanian_id'],
+                        $item['item_name'],
+                        $item['party_name'],
+                        (float) $item['qty'],
+                        $item['unit'],
+                        (float) $item['unit_price'],
+                        (float) $item['total'],
+                        $item['proof_url'] ? $item['proof_url'] : null,
+                        $item['notes']
+                    ];
+                })->toArray();
+            @endphp
+
+            const pertanians = @json($pertanianData);
+            const proofsData = @json($proofsData);
+            const proofs = proofsData;
+            const proofUrls = {};
+            proofs.forEach(function(p) {
+                proofUrls[p.id] = p.url;
             });
 
+            const transactionTypes = [
+                { id: 'Pendapatan', name: 'Pendapatan' },
+                { id: 'Pembelian Material', name: 'Pembelian Material' },
+                { id: 'Upah Pekerja', name: 'Upah Pekerja' }
+            ];
+
+            const initialData = @json($initialData);
+
+            // Add 10 empty rows at bottom for easy entry / viewing
+            for (let i = 0; i < 10; i++) {
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '', '']);
+            }
+
+            var activeFilters = {};
+            try {
+                let savedFilters = localStorage.getItem('report_filters');
+                if (savedFilters) activeFilters = JSON.parse(savedFilters);
+            } catch(e) {
+                console.error('Failed to load activeFilters:', e);
+            }
+
+            var universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
+            var datePicker = flatpickr("#filter-date-picker", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                inline: true
+            });
+
+            window.openUniversalFilter = function(e, colIndex) {
+                e.stopPropagation();
+                $('#current-filter-col').val(colIndex);
+
+                var column = spreadsheet.options.columns[colIndex];
+                var cleanTitle = column.title.replace(/<[^>]*>?/gm, '').trim();
+                $('#filter-modal-title').html('Filter ' + cleanTitle);
+
+                $('.filter-container').addClass('d-none');
+                let currentVal = activeFilters[colIndex] || null;
+
+                if (column.type === 'calendar') {
+                    $('#filter-date-container').removeClass('d-none');
+                    if (currentVal) datePicker.setDate(currentVal);
+                    else datePicker.clear();
+                } else if (column.type === 'dropdown') {
+                    $('#filter-select-container').removeClass('d-none');
+                    var select = $('#filter-select-input');
+                    select.empty();
+
+                    var source = column.source;
+                    if (source) {
+                        source.forEach(function(item) {
+                            var id = typeof item === 'object' ? item.id : item;
+                            var name = typeof item === 'object' ? item.name : item;
+                            select.append(new Option(name, id));
+                        });
+                    }
+                    select.val(currentVal || []).trigger('change');
+                    select.select2({
+                        dropdownParent: $('#universalFilterModal'),
+                        allowClear: true
+                    });
+                } else {
+                    $('#filter-text-container').removeClass('d-none');
+                    $('#filter-text-input').val(currentVal || '');
+                }
+
+                universalFilterModal.show();
+            };
+
+            $('#btn-reset-filter').click(function() {
+                var colIndex = $('#current-filter-col').val();
+                delete activeFilters[colIndex];
+                applyAllFilters();
+                universalFilterModal.hide();
+            });
+
+            $('#btn-apply-filter').click(function() {
+                var colIndex = $('#current-filter-col').val();
+                var column = spreadsheet.options.columns[colIndex];
+
+                if (column.type === 'calendar') {
+                    let selectedDates = datePicker.selectedDates;
+                    if (selectedDates.length === 2) activeFilters[colIndex] = [selectedDates[0], selectedDates[1]];
+                    else if (selectedDates.length === 1) activeFilters[colIndex] = [selectedDates[0], selectedDates[0]];
+                    else delete activeFilters[colIndex];
+                } else if (column.type === 'dropdown') {
+                    var val = $('#filter-select-input').val();
+                    if (val && val.length > 0) activeFilters[colIndex] = val;
+                    else delete activeFilters[colIndex];
+                } else {
+                    var val = $('#filter-text-input').val();
+                    if (val) activeFilters[colIndex] = val;
+                    else delete activeFilters[colIndex];
+                }
+
+                applyAllFilters();
+                universalFilterModal.hide();
+            });
+
+            $('#btn-global-reset-filter, #btn-global-reset-filter-fs').click(function() {
+                activeFilters = {};
+                if (datePicker) datePicker.clear();
+                applyAllFilters();
+            });
+
+            window.removeFilter = function(colIndex) {
+                delete activeFilters[colIndex];
+                applyAllFilters();
+            };
+
+            function applyAllFilters() {
+                try {
+                    localStorage.setItem('report_filters', JSON.stringify(activeFilters));
+                } catch(e) {
+                    console.error('Failed to save activeFilters:', e);
+                }
+
+                let data = spreadsheet.getData();
+
+                if (Object.keys(activeFilters).length > 0) {
+                    $('#btn-global-reset-filter, #btn-global-reset-filter-fs').removeClass('d-none');
+                } else {
+                    $('#btn-global-reset-filter, #btn-global-reset-filter-fs').addClass('d-none');
+                }
+
+                let activeFilterHtml = '';
+                $('#spreadsheet .custom-filter-icon').each(function() {
+                    var cIdx = $(this).attr('data-col');
+                    if (activeFilters[cIdx]) {
+                        $(this).removeClass('text-gray-500').addClass('text-success');
+
+                        let colTitle = spreadsheet.options.columns[cIdx].title.replace(/<[^>]*>?/gm, '').trim();
+                        let filterVal = activeFilters[cIdx];
+                        let filterText = '';
+
+                        if (spreadsheet.options.columns[cIdx].type === 'calendar') {
+                            let start = new Date(filterVal[0]);
+                            let end = new Date(filterVal[1]);
+                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
+                            let names = [];
+                            let source = spreadsheet.options.columns[cIdx].source;
+                            for (let k = 0; k < filterVal.length; k++) {
+                                let match = source.find(s => (s.id || s) == filterVal[k]);
+                                if (match) names.push(match.name || match);
+                                else names.push(filterVal[k]);
+                            }
+                            filterText = names.join(', ');
+                        } else {
+                            filterText = filterVal;
+                        }
+
+                        activeFilterHtml += '<span class="badge badge-light-primary fw-bold px-3 py-2 border border-primary d-inline-flex align-items-center"><span class="text-gray-600 me-2">' + colTitle + ':</span> <span>' + filterText + '</span><i class="ki-duotone ki-cross fs-2 ms-2 cursor-pointer text-hover-danger" onclick="removeFilter(' + cIdx + ')" title="Hapus Filter"><span class="path1"></span><span class="path2"></span></i></span>';
+                    } else {
+                        $(this).removeClass('text-success').addClass('text-gray-500');
+                    }
+                });
+
+                if (activeFilterHtml !== '') {
+                    $('#active-filters-display').html('<span class="text-muted fw-semibold fs-7 me-1">Filter Aktif:</span>' + activeFilterHtml);
+                    $('#active-filters-display').removeClass('d-none');
+                } else {
+                    $('#active-filters-display').addClass('d-none');
+                }
+
+                let sumIncome = 0;
+                let sumPurchase = 0;
+                let sumWorker = 0;
+
+                for (let i = 0; i < data.length; i++) {
+                    let rowData = data[i];
+
+                    let isEmpty = true;
+                    for (let j = 1; j <= 11; j++) {
+                        if (rowData[j]) { isEmpty = false; break; }
+                    }
+                    if (isEmpty) {
+                        spreadsheet.showRow(i);
+                        continue;
+                    }
+
+                    let match = true;
+                    for (let colIndex in activeFilters) {
+                        let filterVal = activeFilters[colIndex];
+                        let cellVal = rowData[colIndex];
+                        let colType = spreadsheet.options.columns[colIndex].type;
+
+                        if (cellVal === null || cellVal === undefined || cellVal === '') {
+                            match = false;
+                            break;
+                        }
+
+                        if (colType === 'calendar') {
+                            let rowDate = new Date(cellVal);
+                            rowDate.setHours(0,0,0,0);
+                            let start = new Date(filterVal[0]); start.setHours(0,0,0,0);
+                            let end = new Date(filterVal[1]); end.setHours(0,0,0,0);
+                            if (rowDate < start || rowDate > end) {
+                                match = false;
+                                break;
+                            }
+                        } else if (colType === 'dropdown') {
+                            let found = false;
+                            for (let k = 0; k < filterVal.length; k++) {
+                                if (cellVal == filterVal[k]) { found = true; break; }
+                            }
+                            if (!found) { match = false; break; }
+                        } else {
+                            if (String(cellVal).toLowerCase().indexOf(String(filterVal).toLowerCase()) === -1) {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (match) {
+                        spreadsheet.showRow(i);
+                        var typeVal = rowData[1];
+                        var totalVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0;
+                        if (typeVal === 'Pendapatan') sumIncome += totalVal;
+                        else if (typeVal === 'Pembelian Material') sumPurchase += totalVal;
+                        else if (typeVal === 'Upah Pekerja') sumWorker += totalVal;
+                    } else {
+                        spreadsheet.hideRow(i);
+                    }
+                }
+
+                var netCash = sumIncome - (sumPurchase + sumWorker);
+                $('#total-income-amount').text('Rp ' + Math.round(sumIncome).toLocaleString('id-ID'));
+                $('#total-purchase-amount').text('Rp ' + Math.round(sumPurchase).toLocaleString('id-ID'));
+                $('#total-worker-amount').text('Rp ' + Math.round(sumWorker).toLocaleString('id-ID'));
+                $('#total-net-amount').text('Rp ' + Math.round(netCash).toLocaleString('id-ID'));
+                if (netCash < 0) $('#total-net-amount').removeClass('text-primary').addClass('text-danger');
+                else $('#total-net-amount').removeClass('text-danger').addClass('text-primary');
+            }
+
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
-                data: spreadsheetData,
-                columns: [
-                    { type: 'text', title: 'Ref ID', width: 90, readOnly: true },
-                    { type: 'text', title: 'Jenis Transaksi', width: 140, readOnly: true },
-                    { type: 'calendar', title: 'Tanggal', width: 110, options: { format: 'YYYY-MM-DD' }, readOnly: true },
-                    { type: 'text', title: 'Proyek Pertanian', width: 220, readOnly: true },
-                    { type: 'text', title: 'Kategori / Item', width: 200, readOnly: true },
-                    { type: 'text', title: 'Pihak Terkait', width: 180, readOnly: true },
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00', readOnly: true },
-                    { type: 'text', title: 'Satuan', width: 80, readOnly: true },
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
-                    { type: 'numeric', title: 'Total Nominal (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
-                    { type: 'html', title: 'Bukti Transaksi', width: 130, readOnly: true },
-                    { type: 'text', title: 'Catatan', width: 250, readOnly: true }
-                ],
+                data: initialData,
+                tableOverflow: true,
                 tableHeight: '70vh',
                 tableWidth: '100%',
-                search: true,
-                pagination: 50,
-                columnSorting: true,
-                contextMenu: true,
+                search: false,
+                columns: [
+                    { type: 'hidden', title: 'ID' },
+                    { type: 'dropdown', title: 'Jenis Transaksi <span class="text-danger">*</span>', width: 160, source: transactionTypes, autocomplete: true },
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true },
+                    { type: 'text', title: 'Kategori / Item', width: 200 },
+                    { type: 'text', title: 'Pihak Terkait', width: 180 },
+                    { type: 'numeric', title: 'Qty', width: 90, mask: '#,##0.00' },
+                    { type: 'text', title: 'Satuan', width: 90 },
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true },
+                    { type: 'text', title: 'Catatan', width: 250 }
+                ],
+                onselection: function(instance, x1, y1, x2, y2) {
+                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                    handleSelection(sheetInstance, x1, y1, x2, y2);
+                },
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    // Col 1: Jenis Transaksi Badges
-                    if (col === 1) {
+                    // Col 1: Jenis Transaksi Badge
+                    if (col == 1 && val) {
                         if (val === 'Pendapatan') {
                             cell.innerHTML = '<span class="badge badge-light-success fw-bold fs-8 px-2 py-1">Pendapatan</span>';
                         } else if (val === 'Upah Pekerja') {
@@ -304,7 +617,7 @@
                     }
 
                     // Col 9: Total Nominal styling
-                    if (col === 9) {
+                    if (col == 9 && val) {
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                         var typeVal = sheetInstance.getValueFromCoords(1, row);
                         if (typeVal === 'Pendapatan') {
@@ -316,22 +629,53 @@
                         }
                     }
 
-                    // Col 10: Bukti Transaksi Lightbox link
-                    if (col === 10 && val && val.trim() !== '') {
-                        cell.innerHTML = `<a href="${val}" data-fslightbox="report_proofs" class="btn btn-xs btn-light-primary py-1 px-2 fs-9 fw-bold"><i class="ki-duotone ki-eye fs-8 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Bukti</a>`;
+                    // Col 10: Bukti Transaksi
+                    if (col == 10 && val) {
+                        if (proofUrls[val]) {
+                            cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
+                        } else if (val.startsWith('http')) {
+                            cell.innerHTML = '<a href="' + val + '" data-fslightbox="report_proofs" class="btn btn-xs btn-light-primary py-1 px-2 fs-9 fw-bold"><i class="ki-duotone ki-eye fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Bukti</a>';
+                        }
                     }
                 },
-                onselection: function(instance, x1, y1, x2, y2) {
-                    var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                    handleSelection(sheetInstance, x1, y1, x2, y2);
+                onload: function() {
+                    setTimeout(function() {
+                        var headers = $('#spreadsheet .jexcel > thead > tr:first-child > td:not(.jexcel_selectall)');
+                        headers.each(function(index) {
+                            if (index >= 0 && index < spreadsheet.options.columns.length) {
+                                var colIndex = index;
+                                if (colIndex > 0) {
+                                    var originalTitle = spreadsheet.options.columns[colIndex].title;
+                                    var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+colIndex+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+colIndex+')"><span class="path1"></span><span class="path2"></span></i>';
+                                    $(this).html(originalTitle + iconHtml);
+                                }
+                            }
+                        });
+                        applyAllFilters();
+                        initColumnVisibilityModal();
+                    }, 100);
                 },
-                minDimensions: [12, Math.max(20, spreadsheetData.length)],
+                minDimensions: [12, Math.max(30, initialData.length)],
                 defaultColAlign: 'left',
-                allowInsertRow: false,
-                allowDeleteRow: false
+                allowInsertRow: true,
+                allowDeleteRow: true
             });
 
-            // Floating Selection Summary Handler
+            window.openLightbox = function(e, url) {
+                e.stopPropagation();
+                if (typeof refreshFsLightbox === 'function') {
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.setAttribute('data-fslightbox', 'dynamic_gallery');
+                    document.body.appendChild(a);
+                    refreshFsLightbox();
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    window.open(url, '_blank');
+                }
+            };
+
             function handleSelection(sheetInstance, x1, y1, x2, y2) {
                 var minX = Math.min(x1, x2);
                 var maxX = Math.max(x1, x2);
@@ -344,9 +688,7 @@
 
                 for (var r = minY; r <= maxY; r++) {
                     var tr = sheetInstance.tbody.children[r];
-                    if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
-                        continue;
-                    }
+                    if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) continue;
 
                     for (var c = minX; c <= maxX; c++) {
                         count++;
@@ -399,12 +741,12 @@
                 if (!$(e.target).closest('#spreadsheet').length) hideFloatingSummary();
             });
 
-            // Column Visibility Modal Logic
             function initColumnVisibilityModal() {
                 var modalList = $('#column-visibility-list');
                 modalList.empty();
 
                 spreadsheet.options.columns.forEach(function(col, index) {
+                    if (index === 0) return;
                     var isChecked = (col.type !== 'hidden');
                     var itemHtml = `
                         <div class="form-check form-check-custom form-check-solid mb-3">
@@ -417,7 +759,7 @@
                     modalList.append(itemHtml);
                 });
 
-                $('.col-toggle-checkbox').on('change', function() {
+                $('.col-toggle-checkbox').off('change').on('change', function() {
                     var colIndex = parseInt($(this).val());
                     if (this.checked) {
                         spreadsheet.showColumn(colIndex);
@@ -427,9 +769,7 @@
                 });
             }
 
-            initColumnVisibilityModal();
-
-            // Fullscreen toggle logic
+            // Fullscreen mode logic
             var savedTableHeight = null;
             var wrapperPlaceholder = $('<div id="spreadsheet-placeholder" style="display:none;"></div>');
 
