@@ -57,13 +57,13 @@ class ReportController extends Controller
                     'pertanian_name' => $income->pertanian->name ?? '-',
                     'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                     'party_name' => $income->tengkulak->name ?? '-',
+                    'notes' => $income->description ?? '-',
                     'qty' => (float) ($income->qty ?? 1),
                     'unit_price' => (float) ($income->unit_price ?? $income->amount),
                     'konsumsi' => 0.0,
                     'total' => (float) $income->amount,
                     'proof_id' => $income->transaction_proof_id,
                     'proof_url' => $income->transactionProof ? $income->transactionProof->url : '',
-                    'notes' => $income->description ?? '-',
                 ]);
             }
         }
@@ -91,13 +91,13 @@ class ReportController extends Controller
                     'pertanian_name' => $job->pertanian->name ?? '-',
                     'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                     'party_name' => $job->worker->name ?? 'Pekerja',
+                    'notes' => $job->description ?? '-',
                     'qty' => 1.0,
                     'unit_price' => (float) $job->wage,
                     'konsumsi' => (float) ($job->konsumsi ?? 0),
                     'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
                     'proof_id' => $job->transaction_proof_id,
                     'proof_url' => $job->transactionProof ? $job->transactionProof->url : '',
-                    'notes' => $job->description ?? '-',
                 ]);
             }
         }
@@ -126,13 +126,13 @@ class ReportController extends Controller
                     'pertanian_name' => $item->purchase->pertanian->name ?? '-',
                     'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                     'party_name' => $item->purchase->store->name ?? 'Toko',
+                    'notes' => $item->description ?? '-',
                     'qty' => (float) ($item->qty ?? 1),
                     'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                     'konsumsi' => 0.0,
                     'total' => (float) $item->total_price,
                     'proof_id' => $item->transaction_proof_id,
                     'proof_url' => $item->transactionProof ? $item->transactionProof->url : '',
-                    'notes' => $item->description ?? '-',
                 ]);
             }
         }
@@ -202,12 +202,12 @@ class ReportController extends Controller
                     'pertanian_name' => $income->pertanian->name ?? '-',
                     'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                     'party_name' => $income->tengkulak->name ?? '-',
+                    'notes' => $income->description ?? '-',
                     'qty' => (float) ($income->qty ?? 1),
                     'unit_price' => (float) ($income->unit_price ?? $income->amount),
                     'konsumsi' => 0.0,
                     'total' => (float) $income->amount,
                     'proof_name' => $income->transactionProof ? $income->transactionProof->name : '-',
-                    'notes' => $income->description ?? '-',
                 ]);
             }
         }
@@ -227,12 +227,12 @@ class ReportController extends Controller
                     'pertanian_name' => $job->pertanian->name ?? '-',
                     'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                     'party_name' => $job->worker->name ?? 'Pekerja',
+                    'notes' => $job->description ?? '-',
                     'qty' => 1.0,
                     'unit_price' => (float) $job->wage,
                     'konsumsi' => (float) ($job->konsumsi ?? 0),
                     'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
                     'proof_name' => $job->transactionProof ? $job->transactionProof->name : '-',
-                    'notes' => $job->description ?? '-',
                 ]);
             }
         }
@@ -253,12 +253,12 @@ class ReportController extends Controller
                     'pertanian_name' => $item->purchase->pertanian->name ?? '-',
                     'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                     'party_name' => $item->purchase->store->name ?? 'Toko',
+                    'notes' => $item->description ?? '-',
                     'qty' => (float) ($item->qty ?? 1),
                     'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                     'konsumsi' => 0.0,
                     'total' => (float) $item->total_price,
                     'proof_name' => $item->transactionProof ? $item->transactionProof->name : '-',
-                    'notes' => $item->description ?? '-',
                 ]);
             }
         }
@@ -282,8 +282,8 @@ class ReportController extends Controller
             ],
         ];
 
-        // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi, Catatan
-        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Bukti Transaksi', 'Catatan'];
+        // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi
+        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Bukti Transaksi'];
         $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
         foreach ($headers as $index => $headerText) {
@@ -302,18 +302,18 @@ class ReportController extends Controller
             $sheet->setCellValue('D' . $rowNum, $row['pertanian_name']);
             $sheet->setCellValue('E' . $rowNum, $row['item_name']);
             $sheet->setCellValue('F' . $rowNum, $row['party_name']);
-            $sheet->setCellValue('G' . $rowNum, $row['qty']);
-            $sheet->setCellValue('H' . $rowNum, $row['unit_price']);
-            $sheet->setCellValue('I' . $rowNum, $row['konsumsi']);
-            $sheet->setCellValue('J' . $rowNum, $row['total']);
-            $sheet->setCellValue('K' . $rowNum, $row['proof_name']);
-            $sheet->setCellValue('L' . $rowNum, $row['notes']);
+            $sheet->setCellValue('G' . $rowNum, $row['notes']);
+            $sheet->setCellValue('H' . $rowNum, $row['qty']);
+            $sheet->setCellValue('I' . $rowNum, $row['unit_price']);
+            $sheet->setCellValue('J' . $rowNum, $row['konsumsi']);
+            $sheet->setCellValue('K' . $rowNum, $row['total']);
+            $sheet->setCellValue('L' . $rowNum, $row['proof_name']);
 
             // Format numbers
-            $sheet->getStyle('G' . $rowNum)->getNumberFormat()->setFormatCode('#,##0.00');
-            $sheet->getStyle('H' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
+            $sheet->getStyle('H' . $rowNum)->getNumberFormat()->setFormatCode('#,##0.00');
             $sheet->getStyle('I' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
             $sheet->getStyle('J' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
+            $sheet->getStyle('K' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
 
             $rowNum++;
         }

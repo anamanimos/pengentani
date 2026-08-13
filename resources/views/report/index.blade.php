@@ -45,14 +45,14 @@
 @endsection
 
 @section('content')
-<div class="alert alert-info d-flex align-items-center p-5 mb-5" id="usage-alert">
+<div class="alert alert-info d-flex align-items-center p-5 mb-5 position-relative" id="usage-alert">
     <i class="ki-duotone ki-information fs-2hx text-info me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     <div class="d-flex flex-column flex-grow-1 pe-8">
         <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Pendapatan, Pembelian, & Upah Pekerja)</h4>
-        <span>Urutan kolom tabel: **Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi**. Klik ikon corong pada header kolom untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
+        <span>Urutan kolom tabel: **Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi**. Klik ikon corong pada header kolom untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
     </div>
-    <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" id="btn-close-alert">
-        <i class="ki-duotone ki-cross fs-2x text-info"><span class="path1"></span><span class="path2"></span></i>
+    <button type="button" class="btn btn-icon btn-sm btn-active-light-info position-absolute top-0 end-0 m-3" id="btn-close-alert" onclick="document.getElementById('usage-alert').style.display='none';">
+        <i class="ki-duotone ki-cross fs-1 text-info"><span class="path1"></span><span class="path2"></span></i>
     </button>
 </div>
 
@@ -312,8 +312,9 @@
         $(document).ready(function() {
             $('[data-bs-target="#columnVisibilityModal"]').tooltip();
 
-            $('#btn-close-alert').click(function() {
-                $('#usage-alert').fadeOut();
+            $(document).on('click', '#btn-close-alert', function(e) {
+                e.preventDefault();
+                $('#usage-alert').slideUp(200);
             });
 
             @php
@@ -328,12 +329,12 @@
                         $item['pertanian_id'],
                         $item['item_name'],
                         $item['party_name'],
+                        $item['notes'],
                         (float) $item['qty'],
                         (float) $item['unit_price'],
                         (float) $item['konsumsi'],
                         (float) $item['total'],
-                        $item['proof_id'],
-                        $item['notes']
+                        $item['proof_id']
                     ];
                 })->toArray();
             @endphp
@@ -565,8 +566,8 @@
                     if (match) {
                         spreadsheet.showRow(i);
                         var typeVal = rowData[2]; // Col 2 is Jenis Transaksi
-                        var totalVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Total
-                        var konsumsiVal = parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0; // Col 8 is Konsumsi
+                        var totalVal = parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0; // Col 10 is Total
+                        var konsumsiVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Konsumsi
 
                         if (typeVal === 'Pendapatan') {
                             sumIncome += totalVal;
@@ -591,7 +592,7 @@
                 else $('#total-net-amount').removeClass('text-danger').addClass('text-primary');
             }
 
-            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi, Catatan
+            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                 data: initialData,
                 tableOverflow: true,
@@ -605,12 +606,12 @@
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true },
                     { type: 'text', title: 'Kategori', width: 180 },
                     { type: 'text', title: 'Pihak Terkait', width: 180 },
+                    { type: 'text', title: 'Catatan', width: 220 },
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00' },
                     { type: 'numeric', title: 'Satuan / Upah (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true },
-                    { type: 'text', title: 'Catatan', width: 250 }
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true }
                 ],
                 onselection: function(instance, x1, y1, x2, y2) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
@@ -628,8 +629,8 @@
                         }
                     }
 
-                    // Col 9: Total Nominal styling
-                    if (col == 9 && val) {
+                    // Col 10: Total Nominal styling
+                    if (col == 10 && val) {
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                         var typeVal = sheetInstance.getValueFromCoords(2, row);
                         if (typeVal === 'Pendapatan') {
@@ -641,11 +642,11 @@
                         }
                     }
 
-                    // Col 10: Bukti Transaksi
-                    if (col == 10 && val) {
+                    // Col 11: Bukti Transaksi
+                    if (col == 11 && val) {
                         if (proofUrls[val]) {
                             cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
-                        } else if (val.startsWith('http')) {
+                        } else if (String(val).startsWith('http')) {
                             cell.innerHTML = '<a href="' + val + '" data-fslightbox="report_proofs" class="btn btn-xs btn-light-primary py-1 px-2 fs-9 fw-bold"><i class="ki-duotone ki-eye fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Bukti</a>';
                         }
                     }
