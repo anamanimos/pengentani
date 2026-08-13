@@ -49,7 +49,7 @@
     <i class="ki-duotone ki-information fs-2hx text-info me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     <div class="d-flex flex-column flex-grow-1 pe-8">
         <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Pendapatan, Pembelian, & Upah Pekerja)</h4>
-        <span>Tampilan spreadsheet Excel interaktif tanpa batas halaman (tanpa pagination). Klik **ikon corong (filter)** pada header kolom tabel untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
+        <span>Urutan kolom tabel: **Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi**. Klik ikon corong pada header kolom untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
     </div>
     <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" id="btn-close-alert">
         <i class="ki-duotone ki-cross fs-2x text-info"><span class="path1"></span><span class="path2"></span></i>
@@ -113,6 +113,8 @@
             <h5 class="m-0 text-gray-800 fs-7">Total Pembelian: <span id="total-purchase-amount" class="text-danger fw-bolder ms-1 fs-6">Rp {{ number_format($totalPurchase, 0, ',', '.') }}</span></h5>
             <span class="text-gray-400">|</span>
             <h5 class="m-0 text-gray-800 fs-7">Total Upah: <span id="total-worker-amount" class="text-warning fw-bolder ms-1 fs-6">Rp {{ number_format($totalWorker, 0, ',', '.') }}</span></h5>
+            <span class="text-gray-400">|</span>
+            <h5 class="m-0 text-gray-800 fs-7">Total Konsumsi: <span id="total-konsumsi-amount" class="text-warning fw-bolder ms-1 fs-6">Rp {{ number_format($totalKonsumsi, 0, ',', '.') }}</span></h5>
         </div>
         <div class="d-flex align-items-center gap-3">
             <h4 class="m-0 text-gray-800 fs-6">Arus Kas Bersih: <span id="total-net-amount" class="{{ $netCashflow >= 0 ? 'text-primary' : 'text-danger' }} fw-bolder ms-1 fs-5">Rp {{ number_format($netCashflow, 0, ',', '.') }}</span></h4>
@@ -321,16 +323,16 @@
                 $initialData = $reportData->map(function($item) {
                     return [
                         $item['id'],
-                        $item['type_label'],
                         $item['date'],
+                        $item['type_label'],
                         $item['pertanian_id'],
                         $item['item_name'],
                         $item['party_name'],
                         (float) $item['qty'],
-                        $item['unit'],
                         (float) $item['unit_price'],
+                        (float) $item['konsumsi'],
                         (float) $item['total'],
-                        $item['proof_url'] ? $item['proof_url'] : null,
+                        $item['proof_id'],
                         $item['notes']
                     ];
                 })->toArray();
@@ -512,6 +514,7 @@
                 let sumIncome = 0;
                 let sumPurchase = 0;
                 let sumWorker = 0;
+                let sumKonsumsi = 0;
 
                 for (let i = 0; i < data.length; i++) {
                     let rowData = data[i];
@@ -561,11 +564,18 @@
 
                     if (match) {
                         spreadsheet.showRow(i);
-                        var typeVal = rowData[1];
-                        var totalVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0;
-                        if (typeVal === 'Pendapatan') sumIncome += totalVal;
-                        else if (typeVal === 'Pembelian Material') sumPurchase += totalVal;
-                        else if (typeVal === 'Upah Pekerja') sumWorker += totalVal;
+                        var typeVal = rowData[2]; // Col 2 is Jenis Transaksi
+                        var totalVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Total
+                        var konsumsiVal = parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0; // Col 8 is Konsumsi
+
+                        if (typeVal === 'Pendapatan') {
+                            sumIncome += totalVal;
+                        } else if (typeVal === 'Pembelian Material') {
+                            sumPurchase += totalVal;
+                        } else if (typeVal === 'Upah Pekerja') {
+                            sumWorker += totalVal;
+                            sumKonsumsi += konsumsiVal;
+                        }
                     } else {
                         spreadsheet.hideRow(i);
                     }
@@ -575,11 +585,13 @@
                 $('#total-income-amount').text('Rp ' + Math.round(sumIncome).toLocaleString('id-ID'));
                 $('#total-purchase-amount').text('Rp ' + Math.round(sumPurchase).toLocaleString('id-ID'));
                 $('#total-worker-amount').text('Rp ' + Math.round(sumWorker).toLocaleString('id-ID'));
+                $('#total-konsumsi-amount').text('Rp ' + Math.round(sumKonsumsi).toLocaleString('id-ID'));
                 $('#total-net-amount').text('Rp ' + Math.round(netCash).toLocaleString('id-ID'));
                 if (netCash < 0) $('#total-net-amount').removeClass('text-primary').addClass('text-danger');
                 else $('#total-net-amount').removeClass('text-danger').addClass('text-primary');
             }
 
+            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi, Catatan
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                 data: initialData,
                 tableOverflow: true,
@@ -588,14 +600,14 @@
                 search: false,
                 columns: [
                     { type: 'hidden', title: 'ID' },
-                    { type: 'dropdown', title: 'Jenis Transaksi <span class="text-danger">*</span>', width: 160, source: transactionTypes, autocomplete: true },
                     { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
+                    { type: 'dropdown', title: 'Jenis Transaksi <span class="text-danger">*</span>', width: 160, source: transactionTypes, autocomplete: true },
                     { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true },
-                    { type: 'text', title: 'Kategori / Item', width: 200 },
+                    { type: 'text', title: 'Kategori', width: 180 },
                     { type: 'text', title: 'Pihak Terkait', width: 180 },
-                    { type: 'numeric', title: 'Qty', width: 90, mask: '#,##0.00' },
-                    { type: 'text', title: 'Satuan', width: 90 },
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00' },
+                    { type: 'numeric', title: 'Satuan / Upah (Rp)', width: 150, mask: 'Rp #,##0' },
+                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true },
                     { type: 'text', title: 'Catatan', width: 250 }
@@ -605,8 +617,8 @@
                     handleSelection(sheetInstance, x1, y1, x2, y2);
                 },
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    // Col 1: Jenis Transaksi Badge
-                    if (col == 1 && val) {
+                    // Col 2: Jenis Transaksi Badge
+                    if (col == 2 && val) {
                         if (val === 'Pendapatan') {
                             cell.innerHTML = '<span class="badge badge-light-success fw-bold fs-8 px-2 py-1">Pendapatan</span>';
                         } else if (val === 'Upah Pekerja') {
@@ -619,7 +631,7 @@
                     // Col 9: Total Nominal styling
                     if (col == 9 && val) {
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
-                        var typeVal = sheetInstance.getValueFromCoords(1, row);
+                        var typeVal = sheetInstance.getValueFromCoords(2, row);
                         if (typeVal === 'Pendapatan') {
                             cell.style.color = '#50cd89';
                             cell.style.fontWeight = 'bold';
