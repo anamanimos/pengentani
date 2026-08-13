@@ -28,6 +28,10 @@ Route::get('/login/whatsapp/{user}', [\App\Http\Controllers\WhatsappLoginControl
 Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\ConsoleDashboardController::class, 'index'])->name('console.dashboard');
 
+    // Combined Report (Excel View)
+    Route::get('/report', [\App\Http\Controllers\ReportController::class, 'index'])->name('report.index');
+    Route::get('/report/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('report.export');
+
     // SETTINGS ROUTES
     Route::redirect('/settings', '/console/settings/general')->name('settings.index');
     Route::get('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'index'])->name('settings.general.index');
