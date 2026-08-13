@@ -178,98 +178,121 @@ class ReportController extends Controller
 
     public function export(Request $request)
     {
-        $userPertanians = Pertanian::where('user_id', Auth::id())->get();
-        $userPertanianIds = $userPertanians->pluck('id')->toArray();
-
-        $selectedPertanianId = $request->get('pertanian_id');
-        $selectedType = $request->get('type', 'all');
-        $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
-
-        $targetPertanianIds = $userPertanians->pluck('id')->toArray();
-        if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
-            $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
-        }
-
         $reportData = collect();
 
-        // Fetch Incomes
-        if (in_array($selectedType, ['all', 'income'])) {
-            $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak'])
-                ->whereIn('pertanian_id', $targetPertanianIds);
-
-            if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
-            if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
-
-            foreach ($incomeQuery->get() as $income) {
-                $reportData->push([
-                    'date' => $income->date ? $income->date->format('Y-m-d') : '',
-                    'type_label' => 'Pendapatan',
-                    'pertanian_name' => $income->pertanian->name ?? '-',
-                    'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
-                    'party_name' => $income->tengkulak->name ?? '-',
-                    'notes' => $income->description ?? '-',
-                    'qty' => (float) ($income->qty ?? 1),
-                    'unit_price' => (float) ($income->unit_price ?? $income->amount),
-                    'konsumsi' => 0.0,
-                    'total' => (float) $income->amount,
-                    'proof_name' => $income->transactionProof ? $income->transactionProof->name : '-',
-                ]);
+        if ($request->filled('filtered_data')) {
+            $clientData = json_decode($request->get('filtered_data'), true);
+            if (is_array($clientData)) {
+                foreach ($clientData as $item) {
+                    $reportData->push([
+                        'date' => $item['date'] ?? '',
+                        'type_label' => $item['type_label'] ?? 'Transaksi',
+                        'pertanian_name' => $item['pertanian_name'] ?? '-',
+                        'item_name' => $item['item_name'] ?? '-',
+                        'party_name' => $item['party_name'] ?? '-',
+                        'notes' => $item['notes'] ?? '-',
+                        'qty' => (float) ($item['qty'] ?? 1),
+                        'unit_price' => (float) ($item['unit_price'] ?? 0),
+                        'konsumsi' => (float) ($item['konsumsi'] ?? 0),
+                        'total' => (float) ($item['total'] ?? 0),
+                        'proof_name' => !empty($item['proof_url']) ? 'Ada Bukti' : '-',
+                    ]);
+                }
             }
         }
 
-        // Fetch Upah Pekerja
-        if (in_array($selectedType, ['all', 'worker_job'])) {
-            $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
-                ->whereIn('pertanian_id', $targetPertanianIds);
+        if ($reportData->isEmpty()) {
+            $userPertanians = Pertanian::where('user_id', Auth::id())->get();
+            $userPertanianIds = $userPertanians->pluck('id')->toArray();
 
-            if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
-            if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
+            $selectedPertanianId = $request->get('pertanian_id');
+            $selectedType = $request->get('type', 'all');
+            $startDate = $request->get('start_date');
+            $endDate = $request->get('end_date');
 
-            foreach ($workerQuery->get() as $job) {
-                $reportData->push([
-                    'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
-                    'type_label' => 'Upah Pekerja',
-                    'pertanian_name' => $job->pertanian->name ?? '-',
-                    'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
-                    'party_name' => $job->worker->name ?? 'Pekerja',
-                    'notes' => $job->description ?? '-',
-                    'qty' => 1.0,
-                    'unit_price' => (float) $job->wage,
-                    'konsumsi' => (float) ($job->konsumsi ?? 0),
-                    'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
-                    'proof_name' => $job->transactionProof ? $job->transactionProof->name : '-',
-                ]);
+            $targetPertanianIds = $userPertanians->pluck('id')->toArray();
+            if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
+                $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
             }
-        }
 
-        // Fetch Pembelian
-        if (in_array($selectedType, ['all', 'purchase'])) {
-            $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
-                ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
-                    $q->whereIn('pertanian_id', $targetPertanianIds);
-                    if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
-                    if (!empty($endDate)) $q->whereDate('date', '<=', $endDate);
-                });
+            // Fetch Incomes
+            if (in_array($selectedType, ['all', 'income'])) {
+                $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak'])
+                    ->whereIn('pertanian_id', $targetPertanianIds);
 
-            foreach ($purchaseItemQuery->get() as $item) {
-                $reportData->push([
-                    'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
-                    'type_label' => 'Pembelian Material',
-                    'pertanian_name' => $item->purchase->pertanian->name ?? '-',
-                    'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
-                    'party_name' => $item->purchase->store->name ?? 'Toko',
-                    'notes' => $item->description ?? '-',
-                    'qty' => (float) ($item->qty ?? 1),
-                    'unit_price' => (float) ($item->unit_price ?? $item->total_price),
-                    'konsumsi' => 0.0,
-                    'total' => (float) $item->total_price,
-                    'proof_name' => $item->transactionProof ? $item->transactionProof->name : '-',
-                ]);
+                if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
+                if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
+
+                foreach ($incomeQuery->get() as $income) {
+                    $reportData->push([
+                        'date' => $income->date ? $income->date->format('Y-m-d') : '',
+                        'type_label' => 'Pendapatan',
+                        'pertanian_name' => $income->pertanian->name ?? '-',
+                        'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
+                        'party_name' => $income->tengkulak->name ?? '-',
+                        'notes' => $income->description ?? '-',
+                        'qty' => (float) ($income->qty ?? 1),
+                        'unit_price' => (float) ($income->unit_price ?? $income->amount),
+                        'konsumsi' => 0.0,
+                        'total' => (float) $income->amount,
+                        'proof_name' => $income->transactionProof ? $income->transactionProof->name : '-',
+                    ]);
+                }
             }
-        }
 
-        $reportData = $reportData->sortByDesc('date')->values();
+            // Fetch Upah Pekerja
+            if (in_array($selectedType, ['all', 'worker_job'])) {
+                $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+                    ->whereIn('pertanian_id', $targetPertanianIds);
+
+                if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
+                if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
+
+                foreach ($workerQuery->get() as $job) {
+                    $reportData->push([
+                        'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
+                        'type_label' => 'Upah Pekerja',
+                        'pertanian_name' => $job->pertanian->name ?? '-',
+                        'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
+                        'party_name' => $job->worker->name ?? 'Pekerja',
+                        'notes' => $job->description ?? '-',
+                        'qty' => 1.0,
+                        'unit_price' => (float) $job->wage,
+                        'konsumsi' => (float) ($job->konsumsi ?? 0),
+                        'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
+                        'proof_name' => $job->transactionProof ? $job->transactionProof->name : '-',
+                    ]);
+                }
+            }
+
+            // Fetch Pembelian
+            if (in_array($selectedType, ['all', 'purchase'])) {
+                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+                    ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
+                        $q->whereIn('pertanian_id', $targetPertanianIds);
+                        if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
+                        if (!empty($endDate)) $q->whereDate('date', '<=', $endDate);
+                    });
+
+                foreach ($purchaseItemQuery->get() as $item) {
+                    $reportData->push([
+                        'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
+                        'type_label' => 'Pembelian Material',
+                        'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                        'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
+                        'party_name' => $item->purchase->store->name ?? 'Toko',
+                        'notes' => $item->description ?? '-',
+                        'qty' => (float) ($item->qty ?? 1),
+                        'unit_price' => (float) ($item->unit_price ?? $item->total_price),
+                        'konsumsi' => 0.0,
+                        'total' => (float) $item->total_price,
+                        'proof_name' => $item->transactionProof ? $item->transactionProof->name : '-',
+                    ]);
+                }
+            }
+
+            $reportData = $reportData->sortByDesc('date')->values();
+        }
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -288,7 +311,6 @@ class ReportController extends Controller
             ],
         ];
 
-        // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi
         $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Bukti Transaksi'];
         $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
@@ -345,106 +367,142 @@ class ReportController extends Controller
         @ini_set('memory_limit', '512M');
         @ini_set('max_execution_time', '300');
 
-        $userPertanians = Pertanian::where('user_id', Auth::id())->get();
-        $userPertanianIds = $userPertanians->pluck('id')->toArray();
-
-        $selectedPertanianId = $request->get('pertanian_id');
-        $selectedType = $request->get('type', 'all');
-        $startDate = $request->filled('start_date') ? $request->get('start_date') : now()->startOfMonth()->format('Y-m-d');
-        $endDate = $request->filled('end_date') ? $request->get('end_date') : now()->endOfMonth()->format('Y-m-d');
-
-        $targetPertanianIds = $userPertanianIds;
-        if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
-            $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
-        }
-
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
         $reportData = collect();
 
-        $formatProofUrl = function($proof) {
-            if (!$proof || empty($proof->url)) return '';
-            $url = $proof->url;
-            if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
-                return $url;
-            }
-            return url($url);
-        };
+        // 1. Check if client sent visible filtered table rows directly
+        if ($request->filled('filtered_data')) {
+            $clientData = json_decode($request->get('filtered_data'), true);
+            if (is_array($clientData)) {
+                foreach ($clientData as $item) {
+                    $typeLabel = $item['type_label'] ?? 'Transaksi';
+                    $typeCode = 'purchase';
+                    if (str_contains(strtolower($typeLabel), 'pendapatan')) {
+                        $typeCode = 'income';
+                    } else if (str_contains(strtolower($typeLabel), 'upah')) {
+                        $typeCode = 'worker_job';
+                    }
 
-        // Fetch Incomes
-        if (in_array($selectedType, ['all', 'income'])) {
-            $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
-                ->whereIn('pertanian_id', $targetPertanianIds);
-
-            if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
-            if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
-
-            foreach ($incomeQuery->get() as $income) {
-                $reportData->push([
-                    'type_code' => 'income',
-                    'type_label' => 'Pendapatan',
-                    'date' => $income->date ? $income->date->format('Y-m-d') : '',
-                    'pertanian_name' => $income->pertanian->name ?? '-',
-                    'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
-                    'party_name' => $income->tengkulak->name ?? '-',
-                    'notes' => $income->description ?? '-',
-                    'qty' => (float) ($income->qty ?? 1),
-                    'unit_price' => (float) ($income->unit_price ?? $income->amount),
-                    'konsumsi' => 0.0,
-                    'total' => (float) $income->amount,
-                    'proof_url' => $formatProofUrl($income->transactionProof),
-                ]);
+                    $reportData->push([
+                        'type_code' => $typeCode,
+                        'type_label' => $typeLabel,
+                        'date' => $item['date'] ?? '',
+                        'pertanian_name' => $item['pertanian_name'] ?? '-',
+                        'item_name' => $item['item_name'] ?? '-',
+                        'party_name' => $item['party_name'] ?? '-',
+                        'notes' => $item['notes'] ?? '-',
+                        'qty' => (float) ($item['qty'] ?? 1),
+                        'unit_price' => (float) ($item['unit_price'] ?? 0),
+                        'konsumsi' => (float) ($item['konsumsi'] ?? 0),
+                        'total' => (float) ($item['total'] ?? 0),
+                        'proof_url' => $item['proof_url'] ?? '',
+                    ]);
+                }
             }
         }
 
-        // Fetch Upah Pekerja
-        if (in_array($selectedType, ['all', 'worker_job'])) {
-            $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
-                ->whereIn('pertanian_id', $targetPertanianIds);
+        // Fallback: If no client filtered data sent, query database
+        if ($reportData->isEmpty()) {
+            $userPertanians = Pertanian::where('user_id', Auth::id())->get();
+            $userPertanianIds = $userPertanians->pluck('id')->toArray();
 
-            if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
-            if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
+            $selectedPertanianId = $request->get('pertanian_id');
+            $selectedType = $request->get('type', 'all');
+            $startDate = $request->filled('start_date') ? $request->get('start_date') : now()->startOfMonth()->format('Y-m-d');
+            $endDate = $request->filled('end_date') ? $request->get('end_date') : now()->endOfMonth()->format('Y-m-d');
 
-            foreach ($workerQuery->get() as $job) {
-                $reportData->push([
-                    'type_code' => 'worker_job',
-                    'type_label' => 'Upah Pekerja',
-                    'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
-                    'pertanian_name' => $job->pertanian->name ?? '-',
-                    'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
-                    'party_name' => $job->worker->name ?? 'Pekerja',
-                    'notes' => $job->description ?? '-',
-                    'qty' => 1.0,
-                    'unit_price' => (float) $job->wage,
-                    'konsumsi' => (float) ($job->konsumsi ?? 0),
-                    'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
-                    'proof_url' => $formatProofUrl($job->transactionProof),
-                ]);
+            $targetPertanianIds = $userPertanians->pluck('id')->toArray();
+            if (!empty($selectedPertanianId) && $selectedPertanianId !== 'all') {
+                $targetPertanianIds = array_intersect([$selectedPertanianId], $userPertanianIds);
             }
-        }
 
-        // Fetch Pembelian
-        if (in_array($selectedType, ['all', 'purchase'])) {
-            $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
-                ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
-                    $q->whereIn('pertanian_id', $targetPertanianIds);
-                    if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
-                    if (!empty($endDate)) $q->whereDate('date', '<=', $endDate);
-                });
+            $formatProofUrl = function($proof) {
+                if (!$proof || empty($proof->url)) return '';
+                $url = $proof->url;
+                if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+                    return $url;
+                }
+                return url($url);
+            };
 
-            foreach ($purchaseItemQuery->get() as $item) {
-                $reportData->push([
-                    'type_code' => 'purchase',
-                    'type_label' => 'Pembelian Material',
-                    'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
-                    'pertanian_name' => $item->purchase->pertanian->name ?? '-',
-                    'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
-                    'party_name' => $item->purchase->store->name ?? 'Toko',
-                    'notes' => $item->description ?? '-',
-                    'qty' => (float) ($item->qty ?? 1),
-                    'unit_price' => (float) ($item->unit_price ?? $item->total_price),
-                    'konsumsi' => 0.0,
-                    'total' => (float) $item->total_price,
-                    'proof_url' => $formatProofUrl($item->transactionProof),
-                ]);
+            // Fetch Incomes
+            if (in_array($selectedType, ['all', 'income'])) {
+                $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
+                    ->whereIn('pertanian_id', $targetPertanianIds);
+
+                if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
+                if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
+
+                foreach ($incomeQuery->get() as $income) {
+                    $reportData->push([
+                        'type_code' => 'income',
+                        'type_label' => 'Pendapatan',
+                        'date' => $income->date ? $income->date->format('Y-m-d') : '',
+                        'pertanian_name' => $income->pertanian->name ?? '-',
+                        'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
+                        'party_name' => $income->tengkulak->name ?? '-',
+                        'notes' => $income->description ?? '-',
+                        'qty' => (float) ($income->qty ?? 1),
+                        'unit_price' => (float) ($income->unit_price ?? $income->amount),
+                        'konsumsi' => 0.0,
+                        'total' => (float) $income->amount,
+                        'proof_url' => $formatProofUrl($income->transactionProof),
+                    ]);
+                }
+            }
+
+            // Fetch Upah Pekerja
+            if (in_array($selectedType, ['all', 'worker_job'])) {
+                $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+                    ->whereIn('pertanian_id', $targetPertanianIds);
+
+                if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
+                if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
+
+                foreach ($workerQuery->get() as $job) {
+                    $reportData->push([
+                        'type_code' => 'worker_job',
+                        'type_label' => 'Upah Pekerja',
+                        'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
+                        'pertanian_name' => $job->pertanian->name ?? '-',
+                        'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
+                        'party_name' => $job->worker->name ?? 'Pekerja',
+                        'notes' => $job->description ?? '-',
+                        'qty' => 1.0,
+                        'unit_price' => (float) $job->wage,
+                        'konsumsi' => (float) ($job->konsumsi ?? 0),
+                        'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
+                        'proof_url' => $formatProofUrl($job->transactionProof),
+                    ]);
+                }
+            }
+
+            // Fetch Pembelian
+            if (in_array($selectedType, ['all', 'purchase'])) {
+                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+                    ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
+                        $q->whereIn('pertanian_id', $targetPertanianIds);
+                        if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
+                        if (!empty($endDate)) $q->whereDate('date', '<=', $endDate);
+                    });
+
+                foreach ($purchaseItemQuery->get() as $item) {
+                    $reportData->push([
+                        'type_code' => 'purchase',
+                        'type_label' => 'Pembelian Material',
+                        'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
+                        'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                        'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
+                        'party_name' => $item->purchase->store->name ?? 'Toko',
+                        'notes' => $item->description ?? '-',
+                        'qty' => (float) ($item->qty ?? 1),
+                        'unit_price' => (float) ($item->unit_price ?? $item->total_price),
+                        'konsumsi' => 0.0,
+                        'total' => (float) $item->total_price,
+                        'proof_url' => $formatProofUrl($item->transactionProof),
+                    ]);
+                }
             }
         }
 
@@ -480,7 +538,7 @@ class ReportController extends Controller
             \Illuminate\Support\Facades\Log::error('PDF Export Error: ' . $e->getMessage());
         }
 
-        // Fallback: render printable HTML view if DomPDF fails or GD extension is pending installation
+        // Fallback: render printable HTML view
         return view('report.pdf', compact(
             'reportData',
             'startDate',

@@ -16,10 +16,10 @@
     </button>
 
     <div class="btn-group me-2">
-        <button type="button" class="btn btn-icon btn-success btn-sm" onclick="document.getElementById('export-form').submit()" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
+        <button type="button" class="btn btn-icon btn-success btn-sm" onclick="submitExportExcel()" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
-        <button type="button" class="btn btn-icon btn-danger btn-sm" onclick="document.getElementById('export-pdf-form').submit()" data-bs-toggle="tooltip" title="Ekspor PDF (.pdf)">
+        <button type="button" class="btn btn-icon btn-danger btn-sm" onclick="submitExportPdf()" data-bs-toggle="tooltip" title="Ekspor PDF (.pdf)">
             <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
         </button>
     </div>
@@ -34,7 +34,9 @@
     </div>
 
     <!-- Hidden form for Excel export -->
-    <form id="export-form" action="{{ route('report.export') }}" method="GET" class="d-none">
+    <form id="export-form" action="{{ route('report.export') }}" method="POST" class="d-none">
+        @csrf
+        <input type="hidden" name="filtered_data" id="export-excel-data-input">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
@@ -50,7 +52,9 @@
     </form>
 
     <!-- Hidden form for PDF export -->
-    <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="GET" target="_blank" class="d-none">
+    <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="POST" target="_blank" class="d-none">
+        @csrf
+        <input type="hidden" name="filtered_data" id="export-pdf-data-input">
         @if(request('pertanian_id'))
             <input type="hidden" name="pertanian_id" value="{{ request('pertanian_id') }}">
         @endif
@@ -788,6 +792,55 @@
                 }
                 if (!url) return;
                 window.open(url, '_blank');
+            };
+
+            window.getVisibleTableData = function() {
+                let visibleRows = [];
+                if (typeof spreadsheet !== 'undefined' && spreadsheet.tbody) {
+                    let data = spreadsheet.getData();
+                    for (let i = 0; i < data.length; i++) {
+                        let tr = spreadsheet.tbody.children[i];
+                        if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
+                            continue;
+                        }
+                        let rowData = data[i];
+                        let isEmpty = true;
+                        for (let j = 1; j <= 11; j++) {
+                            if (rowData[j]) { isEmpty = false; break; }
+                        }
+                        if (isEmpty) continue;
+
+                        let rawProof = rowData[11] || '';
+                        let targetProofUrl = (typeof proofUrls !== 'undefined' && proofUrls[rawProof]) ? proofUrls[rawProof] : (String(rawProof).startsWith('http') ? rawProof : '');
+
+                        visibleRows.push({
+                            date: rowData[1] || '',
+                            type_label: rowData[2] || '',
+                            pertanian_name: rowData[3] || '',
+                            item_name: rowData[4] || '',
+                            party_name: rowData[5] || '',
+                            notes: rowData[6] || '',
+                            qty: parseFloat(String(rowData[7]).replace(/[^0-9.-]/g, '')) || 0,
+                            unit_price: parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0,
+                            konsumsi: parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0,
+                            total: parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0,
+                            proof_url: targetProofUrl
+                        });
+                    }
+                }
+                return visibleRows;
+            };
+
+            window.submitExportPdf = function() {
+                let visibleData = getVisibleTableData();
+                $('#export-pdf-data-input').val(JSON.stringify(visibleData));
+                document.getElementById('export-pdf-form').submit();
+            };
+
+            window.submitExportExcel = function() {
+                let visibleData = getVisibleTableData();
+                $('#export-excel-data-input').val(JSON.stringify(visibleData));
+                document.getElementById('export-form').submit();
             };
 
             function handleSelection(sheetInstance, x1, y1, x2, y2) {

@@ -30,8 +30,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
 
     // Combined Report (Excel & PDF View)
     Route::get('/report', [\App\Http\Controllers\ReportController::class, 'index'])->name('report.index');
-    Route::get('/report/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('report.export');
-    Route::get('/report/export-pdf', [\App\Http\Controllers\ReportController::class, 'exportPdf'])->name('report.export-pdf');
+    Route::match(['get', 'post'], '/report/export', [\App\Http\Controllers\ReportController::class, 'export'])->name('report.export');
+    Route::match(['get', 'post'], '/report/export-pdf', [\App\Http\Controllers\ReportController::class, 'exportPdf'])->name('report.export-pdf');
 
     // SETTINGS ROUTES
     Route::redirect('/settings', '/console/settings/general')->name('settings.index');
