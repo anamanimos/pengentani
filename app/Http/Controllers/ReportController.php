@@ -36,7 +36,7 @@ class ReportController extends Controller
 
         // 1. Fetch Incomes
         if (in_array($selectedType, ['all', 'income'])) {
-            $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
+            $incomeQuery = Income::with(['pertanian.kebun', 'category', 'tengkulak', 'transactionProof'])
                 ->whereIn('pertanian_id', $targetPertanianIds);
 
             if (!empty($startDate)) {
@@ -47,6 +47,7 @@ class ReportController extends Controller
             }
 
             foreach ($incomeQuery->get() as $income) {
+                $pName = $income->pertanian ? ('[' . ($income->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $income->pertanian->name) : '-';
                 $reportData->push([
                     'id' => 'INC-' . $income->id,
                     'raw_id' => $income->id,
@@ -54,7 +55,7 @@ class ReportController extends Controller
                     'type_label' => 'Pendapatan',
                     'date' => $income->date ? $income->date->format('Y-m-d') : '',
                     'pertanian_id' => $income->pertanian_id,
-                    'pertanian_name' => $income->pertanian->name ?? '-',
+                    'pertanian_name' => $pName,
                     'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                     'party_name' => $income->tengkulak->name ?? '-',
                     'notes' => $income->description ?? '-',
@@ -70,7 +71,7 @@ class ReportController extends Controller
 
         // 2. Fetch Upah Pekerja
         if (in_array($selectedType, ['all', 'worker_job'])) {
-            $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+            $workerQuery = WorkerJob::with(['pertanian.kebun', 'worker', 'category', 'transactionProof'])
                 ->whereIn('pertanian_id', $targetPertanianIds);
 
             if (!empty($startDate)) {
@@ -81,6 +82,7 @@ class ReportController extends Controller
             }
 
             foreach ($workerQuery->get() as $job) {
+                $pName = $job->pertanian ? ('[' . ($job->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $job->pertanian->name) : '-';
                 $reportData->push([
                     'id' => 'JOB-' . $job->id,
                     'raw_id' => $job->id,
@@ -88,7 +90,7 @@ class ReportController extends Controller
                     'type_label' => 'Upah Pekerja',
                     'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
                     'pertanian_id' => $job->pertanian_id,
-                    'pertanian_name' => $job->pertanian->name ?? '-',
+                    'pertanian_name' => $pName,
                     'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                     'party_name' => $job->worker->name ?? 'Pekerja',
                     'notes' => $job->description ?? '-',
@@ -104,7 +106,7 @@ class ReportController extends Controller
 
         // 3. Fetch Pembelian
         if (in_array($selectedType, ['all', 'purchase'])) {
-            $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+            $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian.kebun', 'purchase.store', 'purchaseCategory', 'transactionProof'])
                 ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
                     $q->whereIn('pertanian_id', $targetPertanianIds);
                     if (!empty($startDate)) {
@@ -116,6 +118,7 @@ class ReportController extends Controller
                 });
 
             foreach ($purchaseItemQuery->get() as $item) {
+                $pName = ($item->purchase && $item->purchase->pertanian) ? ('[' . ($item->purchase->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $item->purchase->pertanian->name) : '-';
                 $reportData->push([
                     'id' => 'PUR-' . $item->id,
                     'raw_id' => $item->id,
@@ -123,7 +126,7 @@ class ReportController extends Controller
                     'type_label' => 'Pembelian Material',
                     'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
                     'pertanian_id' => $item->purchase->pertanian_id ?? null,
-                    'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                    'pertanian_name' => $pName,
                     'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                     'party_name' => $item->purchase->store->name ?? 'Toko',
                     'notes' => $item->description ?? '-',
@@ -183,7 +186,10 @@ class ReportController extends Controller
         if ($request->filled('filtered_data')) {
             $clientData = json_decode($request->get('filtered_data'), true);
             if (is_array($clientData)) {
-                $pertanianMap = Pertanian::pluck('name', 'id')->toArray();
+                $pertanianMap = Pertanian::with('kebun')->get()->mapWithKeys(function($p) {
+                    $kebunName = $p->kebun->name ?? 'Tanpa Kebun';
+                    return [$p->id => '[' . $kebunName . '] - ' . $p->name];
+                })->toArray();
                 foreach ($clientData as $item) {
                     $pName = $item['pertanian_name'] ?? '-';
                     if (is_numeric($pName) && isset($pertanianMap[$pName])) {
@@ -223,17 +229,18 @@ class ReportController extends Controller
 
             // Fetch Incomes
             if (in_array($selectedType, ['all', 'income'])) {
-                $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak'])
+                $incomeQuery = Income::with(['pertanian.kebun', 'category', 'tengkulak'])
                     ->whereIn('pertanian_id', $targetPertanianIds);
 
                 if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
                 if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
 
                 foreach ($incomeQuery->get() as $income) {
+                    $pName = $income->pertanian ? ('[' . ($income->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $income->pertanian->name) : '-';
                     $reportData->push([
                         'date' => $income->date ? $income->date->format('Y-m-d') : '',
                         'type_label' => 'Pendapatan',
-                        'pertanian_name' => $income->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                         'party_name' => $income->tengkulak->name ?? '-',
                         'notes' => $income->description ?? '-',
@@ -248,17 +255,18 @@ class ReportController extends Controller
 
             // Fetch Upah Pekerja
             if (in_array($selectedType, ['all', 'worker_job'])) {
-                $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+                $workerQuery = WorkerJob::with(['pertanian.kebun', 'worker', 'category', 'transactionProof'])
                     ->whereIn('pertanian_id', $targetPertanianIds);
 
                 if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
                 if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
 
                 foreach ($workerQuery->get() as $job) {
+                    $pName = $job->pertanian ? ('[' . ($job->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $job->pertanian->name) : '-';
                     $reportData->push([
                         'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
                         'type_label' => 'Upah Pekerja',
-                        'pertanian_name' => $job->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                         'party_name' => $job->worker->name ?? 'Pekerja',
                         'notes' => $job->description ?? '-',
@@ -273,7 +281,7 @@ class ReportController extends Controller
 
             // Fetch Pembelian
             if (in_array($selectedType, ['all', 'purchase'])) {
-                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian.kebun', 'purchase.store', 'purchaseCategory', 'transactionProof'])
                     ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
                         $q->whereIn('pertanian_id', $targetPertanianIds);
                         if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
@@ -281,10 +289,11 @@ class ReportController extends Controller
                     });
 
                 foreach ($purchaseItemQuery->get() as $item) {
+                    $pName = ($item->purchase && $item->purchase->pertanian) ? ('[' . ($item->purchase->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $item->purchase->pertanian->name) : '-';
                     $reportData->push([
                         'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
                         'type_label' => 'Pembelian Material',
-                        'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                         'party_name' => $item->purchase->store->name ?? 'Toko',
                         'notes' => $item->description ?? '-',
@@ -381,7 +390,10 @@ class ReportController extends Controller
         if ($request->filled('filtered_data')) {
             $clientData = json_decode($request->get('filtered_data'), true);
             if (is_array($clientData)) {
-                $pertanianMap = Pertanian::pluck('name', 'id')->toArray();
+                $pertanianMap = Pertanian::with('kebun')->get()->mapWithKeys(function($p) {
+                    $kebunName = $p->kebun->name ?? 'Tanpa Kebun';
+                    return [$p->id => '[' . $kebunName . '] - ' . $p->name];
+                })->toArray();
                 foreach ($clientData as $item) {
                     $typeLabel = $item['type_label'] ?? 'Transaksi';
                     $typeCode = 'purchase';
@@ -440,18 +452,19 @@ class ReportController extends Controller
 
             // Fetch Incomes
             if (in_array($selectedType, ['all', 'income'])) {
-                $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
+                $incomeQuery = Income::with(['pertanian.kebun', 'category', 'tengkulak', 'transactionProof'])
                     ->whereIn('pertanian_id', $targetPertanianIds);
 
                 if (!empty($startDate)) $incomeQuery->whereDate('date', '>=', $startDate);
                 if (!empty($endDate)) $incomeQuery->whereDate('date', '<=', $endDate);
 
                 foreach ($incomeQuery->get() as $income) {
+                    $pName = $income->pertanian ? ('[' . ($income->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $income->pertanian->name) : '-';
                     $reportData->push([
                         'type_code' => 'income',
                         'type_label' => 'Pendapatan',
                         'date' => $income->date ? $income->date->format('Y-m-d') : '',
-                        'pertanian_name' => $income->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                         'party_name' => $income->tengkulak->name ?? '-',
                         'notes' => $income->description ?? '-',
@@ -466,18 +479,19 @@ class ReportController extends Controller
 
             // Fetch Upah Pekerja
             if (in_array($selectedType, ['all', 'worker_job'])) {
-                $workerQuery = WorkerJob::with(['pertanian', 'worker', 'category', 'transactionProof'])
+                $workerQuery = WorkerJob::with(['pertanian.kebun', 'worker', 'category', 'transactionProof'])
                     ->whereIn('pertanian_id', $targetPertanianIds);
 
                 if (!empty($startDate)) $workerQuery->whereDate('date', '>=', $startDate);
                 if (!empty($endDate)) $workerQuery->whereDate('date', '<=', $endDate);
 
                 foreach ($workerQuery->get() as $job) {
+                    $pName = $job->pertanian ? ('[' . ($job->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $job->pertanian->name) : '-';
                     $reportData->push([
                         'type_code' => 'worker_job',
                         'type_label' => 'Upah Pekerja',
                         'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('Y-m-d') : '',
-                        'pertanian_name' => $job->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                         'party_name' => $job->worker->name ?? 'Pekerja',
                         'notes' => $job->description ?? '-',
@@ -492,7 +506,7 @@ class ReportController extends Controller
 
             // Fetch Pembelian
             if (in_array($selectedType, ['all', 'purchase'])) {
-                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian', 'purchase.store', 'purchaseCategory', 'transactionProof'])
+                $purchaseItemQuery = PurchaseItem::with(['purchase.pertanian.kebun', 'purchase.store', 'purchaseCategory', 'transactionProof'])
                     ->whereHas('purchase', function ($q) use ($targetPertanianIds, $startDate, $endDate) {
                         $q->whereIn('pertanian_id', $targetPertanianIds);
                         if (!empty($startDate)) $q->whereDate('date', '>=', $startDate);
@@ -500,11 +514,12 @@ class ReportController extends Controller
                     });
 
                 foreach ($purchaseItemQuery->get() as $item) {
+                    $pName = ($item->purchase && $item->purchase->pertanian) ? ('[' . ($item->purchase->pertanian->kebun->name ?? 'Tanpa Kebun') . '] - ' . $item->purchase->pertanian->name) : '-';
                     $reportData->push([
                         'type_code' => 'purchase',
                         'type_label' => 'Pembelian Material',
                         'date' => ($item->purchase && $item->purchase->date) ? $item->purchase->date->format('Y-m-d') : '',
-                        'pertanian_name' => $item->purchase->pertanian->name ?? '-',
+                        'pertanian_name' => $pName,
                         'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                         'party_name' => $item->purchase->store->name ?? 'Toko',
                         'notes' => $item->description ?? '-',
