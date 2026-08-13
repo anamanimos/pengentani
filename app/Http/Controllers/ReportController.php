@@ -360,6 +360,15 @@ class ReportController extends Controller
 
         $reportData = collect();
 
+        $formatProofUrl = function($proof) {
+            if (!$proof || empty($proof->url)) return '';
+            $url = $proof->url;
+            if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+                return $url;
+            }
+            return url($url);
+        };
+
         // Fetch Incomes
         if (in_array($selectedType, ['all', 'income'])) {
             $incomeQuery = Income::with(['pertanian', 'category', 'tengkulak', 'transactionProof'])
@@ -381,7 +390,7 @@ class ReportController extends Controller
                     'unit_price' => (float) ($income->unit_price ?? $income->amount),
                     'konsumsi' => 0.0,
                     'total' => (float) $income->amount,
-                    'proof_url' => $income->transactionProof ? $income->transactionProof->url : '',
+                    'proof_url' => $formatProofUrl($income->transactionProof),
                 ]);
             }
         }
@@ -407,7 +416,7 @@ class ReportController extends Controller
                     'unit_price' => (float) $job->wage,
                     'konsumsi' => (float) ($job->konsumsi ?? 0),
                     'total' => (float) ($job->wage + ($job->konsumsi ?? 0)),
-                    'proof_url' => $job->transactionProof ? $job->transactionProof->url : '',
+                    'proof_url' => $formatProofUrl($job->transactionProof),
                 ]);
             }
         }
@@ -434,7 +443,7 @@ class ReportController extends Controller
                     'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                     'konsumsi' => 0.0,
                     'total' => (float) $item->total_price,
-                    'proof_url' => $item->transactionProof ? $item->transactionProof->url : '',
+                    'proof_url' => $formatProofUrl($item->transactionProof),
                 ]);
             }
         }

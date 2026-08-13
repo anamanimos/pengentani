@@ -212,9 +212,9 @@
                     </td>
                     <td class="text-center">
                         @if(!empty($row['proof_url']))
-                            Ada Bukti
+                            <a href="{{ $row['proof_url'] }}" target="_blank" style="color: #009ef7; font-weight: bold; text-decoration: underline;">Lihat Bukti</a>
                         @else
-                            -
+                            <span style="color: #a1a5b7;">-</span>
                         @endif
                     </td>
                 </tr>
