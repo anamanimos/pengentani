@@ -72,14 +72,17 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-icon btn-success" onclick="document.getElementById('export-form-fs').submit()" data-bs-toggle="tooltip" title="Ekspor Excel">
+                <button type="button" class="btn btn-sm btn-icon btn-success" onclick="submitExportExcel()" data-bs-toggle="tooltip" title="Ekspor Excel (.xlsx)">
+                    <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-danger" onclick="submitExportPdf()" data-bs-toggle="tooltip" title="Ekspor PDF (.pdf)">
                     <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-icon btn-secondary d-none" id="btn-global-reset-filter-fs" data-bs-toggle="tooltip" title="Reset Filter">
                     <i class="ki-duotone ki-cross fs-2"><span class="path1"></span><span class="path2"></span></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-icon btn-secondary" data-bs-toggle="modal" data-bs-target="#columnVisibilityModal" title="Tampilkan/Sembunyikan Kolom">
-                    <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    <i class="ki-duotone ki-eye fs-2"><span class="path1"></span><span class="path2"></span></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-icon btn-secondary" id="btn-exit-fullscreen" data-bs-toggle="tooltip" title="Keluar Fullscreen">
                     <i class="ki-duotone ki-arrow-down-left fs-2"><span class="path1"></span><span class="path2"></span></i>
@@ -194,6 +197,92 @@
             </div>
             <div class="modal-body scroll-y pt-5 pb-5 px-5 px-xl-10" id="column-visibility-list">
                 <!-- Checkboxes will be injected here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Opsi Ekspor & Sorting -->
+<div class="modal fade" id="exportOptionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-450px">
+        <div class="modal-content">
+            <div class="modal-header pb-0 border-0 justify-content-between">
+                <h2 class="fw-bold modal-title d-flex align-items-center gap-2">
+                    <i class="ki-duotone ki-file-down fs-1 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                    <span>Opsi Ekspor Laporan</span>
+                </h2>
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+            <div class="modal-body scroll-y pt-4 pb-8 px-5 px-xl-10">
+                <input type="hidden" id="export-target-format" value="pdf">
+
+                <!-- Format Selection -->
+                <div class="mb-5">
+                    <label class="form-label fw-semibold fs-6 mb-2">Pilih Format File:</label>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <input class="btn-check" type="radio" name="export_format_radio" id="format_pdf" value="pdf" checked>
+                            <label class="btn btn-outline btn-outline-dashed btn-active-light-danger d-flex align-items-center justify-content-center p-3 w-100" for="format_pdf">
+                                <i class="ki-duotone ki-file-added fs-2x text-danger me-2"><span class="path1"></span><span class="path2"></span></i>
+                                <span class="fw-bold">PDF (.pdf)</span>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input class="btn-check" type="radio" name="export_format_radio" id="format_excel" value="excel">
+                            <label class="btn btn-outline btn-outline-dashed btn-active-light-success d-flex align-items-center justify-content-center p-3 w-100" for="format_excel">
+                                <i class="ki-duotone ki-file-sheet fs-2x text-success me-2"><span class="path1"></span><span class="path2"></span></i>
+                                <span class="fw-bold">Excel (.xlsx)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sort By Selection -->
+                <div class="mb-5">
+                    <label class="form-label fw-semibold fs-6 mb-2">Urutkan Data Berdasarkan:</label>
+                    <select class="form-select form-select-solid" id="export-sort-by">
+                        <option value="date" selected>📅 Tanggal Transaksi</option>
+                        <option value="total">💰 Nilai / Nominal Total</option>
+                        <option value="type_label">🏷️ Jenis Transaksi</option>
+                        <option value="pertanian_name">🌱 Proyek Pertanian</option>
+                        <option value="item_name">📂 Kategori</option>
+                    </select>
+                </div>
+
+                <!-- Sort Direction Selection -->
+                <div class="mb-5">
+                    <label class="form-label fw-semibold fs-6 mb-2">Arah Urutan (Sorting):</label>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="form-check form-check-custom form-check-solid">
+                            <input class="form-check-input" type="radio" name="export_sort_dir" id="sort_dir_desc" value="desc" checked>
+                            <label class="form-check-label fw-semibold text-gray-800" for="sort_dir_desc" id="sort-desc-label">
+                                Terbaru ke Terlama / Z - A (Descending)
+                            </label>
+                        </div>
+                        <div class="form-check form-check-custom form-check-solid">
+                            <input class="form-check-input" type="radio" name="export_sort_dir" id="sort_dir_asc" value="asc">
+                            <label class="form-check-label fw-semibold text-gray-800" for="sort_dir_asc" id="sort-asc-label">
+                                Terlama ke Terbaru / A - Z (Ascending)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-light-primary d-flex align-items-center p-3 mb-0">
+                    <i class="ki-duotone ki-information-5 fs-2x text-primary me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    <div class="fs-7 text-gray-700">
+                        Kolom <b>Saldo Kas</b> akan otomatis dihitung ulang secara akurat mengikuti urutan data yang Anda pilih.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-6">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btn-execute-export">
+                        <i class="ki-duotone ki-file-down fs-2"><span class="path1"></span><span class="path2"></span></i> Download Laporan
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1034,27 +1123,99 @@
                 return summary;
             };
 
+            var exportModal = new bootstrap.Modal(document.getElementById('exportOptionsModal'));
+
             window.submitExportPdf = function() {
-                let visibleData = getVisibleTableData();
-                let filterSummary = getActiveFilterSummary();
-                $('#export-pdf-data-input').val(JSON.stringify(visibleData));
-                $('#export-pdf-filters-input').val(JSON.stringify(filterSummary));
-                if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
-                    $('#export-pdf-start-date').val(activeFilters[1][0]);
-                    $('#export-pdf-end-date').val(activeFilters[1][1]);
-                }
-                document.getElementById('export-pdf-form').submit();
+                $('#export-target-format').val('pdf');
+                $('#format_pdf').prop('checked', true);
+                exportModal.show();
             };
 
             window.submitExportExcel = function() {
-                let visibleData = getVisibleTableData();
-                $('#export-excel-data-input').val(JSON.stringify(visibleData));
-                if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
-                    $('#export-excel-start-date').val(activeFilters[1][0]);
-                    $('#export-excel-end-date').val(activeFilters[1][1]);
-                }
-                document.getElementById('export-form').submit();
+                $('#export-target-format').val('excel');
+                $('#format_excel').prop('checked', true);
+                exportModal.show();
             };
+
+            $('input[name="export_format_radio"]').on('change', function() {
+                $('#export-target-format').val($(this).val());
+            });
+
+            $('#export-sort-by').on('change', function() {
+                let field = $(this).val();
+                if (field === 'date') {
+                    $('#sort-desc-label').text('Terbaru ke Terlama (Descending)');
+                    $('#sort-asc-label').text('Terlama ke Terbaru (Ascending)');
+                } else if (field === 'total') {
+                    $('#sort-desc-label').text('Terbesar ke Terkecil / Z - A (Descending)');
+                    $('#sort-asc-label').text('Terkecil ke Terbesar / A - Z (Ascending)');
+                } else {
+                    $('#sort-desc-label').text('Z - A (Descending)');
+                    $('#sort-asc-label').text('A - Z (Ascending)');
+                }
+            });
+
+            $('#btn-execute-export').on('click', function() {
+                let format = $('input[name="export_format_radio"]:checked').val() || $('#export-target-format').val() || 'pdf';
+                let sortBy = $('#export-sort-by').val() || 'date';
+                let sortDir = $('input[name="export_sort_dir"]:checked').val() || 'desc';
+
+                let visibleData = getVisibleTableData();
+
+                // Sort visibleData according to user's choice
+                visibleData.sort(function(a, b) {
+                    let valA = a[sortBy] !== undefined && a[sortBy] !== null ? a[sortBy] : '';
+                    let valB = b[sortBy] !== undefined && b[sortBy] !== null ? b[sortBy] : '';
+
+                    if (sortBy === 'total') {
+                        valA = parseFloat(valA) || 0;
+                        valB = parseFloat(valB) || 0;
+                        return sortDir === 'asc' ? valA - valB : valB - valA;
+                    } else if (sortBy === 'date') {
+                        let dateA = new Date(valA).getTime() || 0;
+                        let dateB = new Date(valB).getTime() || 0;
+                        return sortDir === 'asc' ? dateA - dateB : dateB - dateA;
+                    } else {
+                        valA = String(valA).toLowerCase();
+                        valB = String(valB).toLowerCase();
+                        let cmp = valA.localeCompare(valB, 'id-ID', { numeric: true, sensitivity: 'base' });
+                        return sortDir === 'asc' ? cmp : -cmp;
+                    }
+                });
+
+                // Recalculate running balance sequentially for the newly sorted rows
+                let running = 0;
+                for (let r = 0; r < visibleData.length; r++) {
+                    let item = visibleData[r];
+                    if (item.type_label === 'Pendapatan' || item.type_code === 'income') {
+                        running += item.total;
+                    } else {
+                        running -= item.total;
+                    }
+                    item.saldo = running;
+                }
+
+                exportModal.hide();
+
+                let filterSummary = getActiveFilterSummary();
+
+                if (format === 'pdf') {
+                    $('#export-pdf-data-input').val(JSON.stringify(visibleData));
+                    $('#export-pdf-filters-input').val(JSON.stringify(filterSummary));
+                    if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
+                        $('#export-pdf-start-date').val(activeFilters[1][0]);
+                        $('#export-pdf-end-date').val(activeFilters[1][1]);
+                    }
+                    document.getElementById('export-pdf-form').submit();
+                } else {
+                    $('#export-excel-data-input').val(JSON.stringify(visibleData));
+                    if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
+                        $('#export-excel-start-date').val(activeFilters[1][0]);
+                        $('#export-excel-end-date').val(activeFilters[1][1]);
+                    }
+                    document.getElementById('export-form').submit();
+                }
+            });
 
             function handleSelection(sheetInstance, x1, y1, x2, y2) {
                 var minX = Math.min(x1, x2);

@@ -329,7 +329,13 @@ class ReportController extends Controller
                 }
             }
 
-            $reportData = $reportData->sortByDesc('date')->values();
+            $sortBy = $request->get('sort_by', 'date');
+            $sortDirection = $request->get('sort_direction', 'desc');
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy($sortBy)->values();
+            } else {
+                $reportData = $reportData->sortByDesc($sortBy)->values();
+            }
 
             $runningSaldo = 0;
             $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
@@ -571,7 +577,13 @@ class ReportController extends Controller
             }
         }
 
-        $reportData = $reportData->sortByDesc('date')->values();
+        $sortBy = $request->get('sort_by', 'date');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        if ($sortDirection === 'asc') {
+            $reportData = $reportData->sortBy($sortBy)->values();
+        } else {
+            $reportData = $reportData->sortByDesc($sortBy)->values();
+        }
 
         $runningSaldo = 0;
         $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
