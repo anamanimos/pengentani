@@ -371,6 +371,9 @@
                 })->toArray();
             @endphp
 
+            const defaultStartDate = '{{ $startDate }}';
+            const defaultEndDate = '{{ $endDate }}';
+
             const pertanians = @json($pertanianData);
             const proofsData = @json($proofsData);
             const proofs = proofsData;
@@ -391,29 +394,38 @@
             try {
                 let savedFilters = localStorage.getItem('report_filters');
                 if (savedFilters && Object.keys(JSON.parse(savedFilters)).length > 0) {
-                    activeFilters = JSON.parse(savedFilters);
-                } else {
-                    @if($startDate && $endDate)
-                        activeFilters['1'] = ['{{ $startDate }}', '{{ $endDate }}'];
-                    @else
-                        activeFilters['1'] = [defaultStartDate, defaultEndDate];
-                    @endif
-                    @if($selectedPertanianId && $selectedPertanianId !== 'all')
-                        activeFilters['3'] = ['{{ $selectedPertanianId }}'];
-                    @endif
-                    @if($selectedType && $selectedType !== 'all')
-                        @if($selectedType === 'income')
-                            activeFilters['2'] = ['Pendapatan'];
-                        @elseif($selectedType === 'purchase')
-                            activeFilters['2'] = ['Pembelian Material'];
-                        @elseif($selectedType === 'worker_job')
-                            activeFilters['2'] = ['Upah Pekerja'];
-                        @endif
-                    @endif
+                    let parsed = JSON.parse(savedFilters);
+                    if (parsed && typeof parsed === 'object') {
+                        activeFilters = parsed;
+                    }
                 }
             } catch(e) {
-                console.error('Failed to load activeFilters:', e);
+                activeFilters = {};
             }
+
+            // Always ensure activeFilters['1'] has a valid date array
+            if (!activeFilters['1'] || !Array.isArray(activeFilters['1']) || !activeFilters['1'][0] || !activeFilters['1'][1]) {
+                activeFilters['1'] = [defaultStartDate, defaultEndDate];
+            } else {
+                let d1 = new Date(activeFilters['1'][0]);
+                let d2 = new Date(activeFilters['1'][1]);
+                if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
+                }
+            }
+
+            @if($selectedPertanianId && $selectedPertanianId !== 'all')
+                activeFilters['3'] = ['{{ $selectedPertanianId }}'];
+            @endif
+            @if($selectedType && $selectedType !== 'all')
+                @if($selectedType === 'income')
+                    activeFilters['2'] = ['Pendapatan'];
+                @elseif($selectedType === 'purchase')
+                    activeFilters['2'] = ['Pembelian Material'];
+                @elseif($selectedType === 'worker_job')
+                    activeFilters['2'] = ['Upah Pekerja'];
+                @endif
+            @endif
 
             var universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
             var datePicker = flatpickr("#filter-date-picker", {
@@ -462,9 +474,6 @@
 
                 universalFilterModal.show();
             };
-
-            const defaultStartDate = '{{ $startDate }}';
-            const defaultEndDate = '{{ $endDate }}';
 
             $('#btn-reset-filter').click(function() {
                 var colIndex = $('#current-filter-col').val();
@@ -570,9 +579,15 @@
                     let filterText = '';
 
                     if (spreadsheet.options.columns[cIdx].type === 'calendar') {
-                        let start = new Date(filterVal[0]);
-                        let end = new Date(filterVal[1]);
-                        filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        let startVal = filterVal[0];
+                        let endVal = filterVal[1];
+                        let start = (startVal instanceof Date) ? startVal : new Date(startVal);
+                        let end = (endVal instanceof Date) ? endVal : new Date(endVal);
+                        if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                            filterText = start.toLocaleDateString('id-ID') + ' - ' + end.toLocaleDateString('id-ID');
+                        } else {
+                            filterText = defaultStartDate + ' - ' + defaultEndDate;
+                        }
                     } else if (spreadsheet.options.columns[cIdx].type === 'dropdown') {
                         let names = [];
                         let source = spreadsheet.options.columns[cIdx].source;
@@ -629,8 +644,10 @@
                         if (colType === 'calendar') {
                             let rowDate = new Date(cellVal);
                             rowDate.setHours(0,0,0,0);
-                            let start = new Date(filterVal[0]); start.setHours(0,0,0,0);
-                            let end = new Date(filterVal[1]); end.setHours(0,0,0,0);
+                            let start = (filterVal[0] instanceof Date) ? new Date(filterVal[0]) : new Date(filterVal[0]);
+                            start.setHours(0,0,0,0);
+                            let end = (filterVal[1] instanceof Date) ? new Date(filterVal[1]) : new Date(filterVal[1]);
+                            end.setHours(0,0,0,0);
                             if (rowDate < start || rowDate > end) {
                                 match = false;
                                 break;
@@ -668,7 +685,18 @@
                             runningSaldo -= totalVal;
                         }
 
-                        spreadsheet.setValueFromCoords(11, i, runningSaldo, true);
+                        rowData[11] = runningSaldo;
+                        if (spreadsheet.records && spreadsheet.records[i] && spreadsheet.records[i][11]) {
+                            var saldoTd = spreadsheet.records[i][11];
+                            saldoTd.innerText = 'Rp ' + Math.round(runningSaldo).toLocaleString('id-ID');
+                            if (runningSaldo >= 0) {
+                                saldoTd.style.color = '#50cd89';
+                                saldoTd.style.fontWeight = 'bold';
+                            } else {
+                                saldoTd.style.color = '#f1416c';
+                                saldoTd.style.fontWeight = 'bold';
+                            }
+                        }
                     } else {
                         spreadsheet.hideRow(i);
                     }

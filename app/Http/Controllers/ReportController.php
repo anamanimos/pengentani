@@ -23,8 +23,17 @@ class ReportController extends Controller
 
         $selectedPertanianId = $request->get('pertanian_id');
         $selectedType = $request->get('type', 'all');
-        $startDate = $request->get('start_date');
-        $endDate = $request->get('end_date');
+
+        $defaultStartDate = now()->startOfMonth()->format('Y-m-d');
+        $defaultEndDate = now()->endOfMonth()->format('Y-m-d');
+
+        $startDate = $request->filled('start_date') ? $request->get('start_date') : $defaultStartDate;
+        $endDate = $request->filled('end_date') ? $request->get('end_date') : $defaultEndDate;
+
+        if ($startDate === 'all') {
+            $startDate = null;
+            $endDate = null;
+        }
 
         // Target Pertanian IDs filter
         $targetPertanianIds = $userPertanians->pluck('id')->toArray();
