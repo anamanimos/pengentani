@@ -648,6 +648,7 @@
                         spreadsheet.showRow(i);
                         var typeVal = rowData[2]; // Col 2 is Jenis Transaksi
                         var totalVal = parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0; // Col 10 is Total
+                        var unitPriceVal = parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0; // Col 8 is Satuan / Upah
                         var konsumsiVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Konsumsi
 
                         if (typeVal === 'Pendapatan') {
@@ -655,7 +656,7 @@
                         } else if (typeVal === 'Pembelian Material') {
                             sumPurchase += totalVal;
                         } else if (typeVal === 'Upah Pekerja') {
-                            sumWorker += totalVal;
+                            sumWorker += unitPriceVal;
                             sumKonsumsi += konsumsiVal;
                         }
                     } else {
@@ -663,7 +664,7 @@
                     }
                 }
 
-                var netCash = sumIncome - (sumPurchase + sumWorker);
+                var netCash = sumIncome - (sumPurchase + sumWorker + sumKonsumsi);
                 $('#total-income-amount').text('Rp ' + Math.round(sumIncome).toLocaleString('id-ID'));
                 $('#total-purchase-amount').text('Rp ' + Math.round(sumPurchase).toLocaleString('id-ID'));
                 $('#total-worker-amount').text('Rp ' + Math.round(sumWorker).toLocaleString('id-ID'));

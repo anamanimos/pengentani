@@ -149,10 +149,10 @@ class ReportController extends Controller
 
         // Calculate Totals
         $totalIncome = $reportData->where('type_code', 'income')->sum('total');
-        $totalWorker = $reportData->where('type_code', 'worker_job')->sum('total');
+        $totalWorker = $reportData->where('type_code', 'worker_job')->sum('unit_price');
         $totalKonsumsi = $reportData->sum('konsumsi');
         $totalPurchase = $reportData->where('type_code', 'purchase')->sum('total');
-        $totalExpense = $totalWorker + $totalPurchase;
+        $totalExpense = $totalWorker + $totalKonsumsi + $totalPurchase;
         $netCashflow = $totalIncome - $totalExpense;
         $totalRows = $reportData->count();
 
@@ -544,10 +544,10 @@ class ReportController extends Controller
         }
 
         $totalIncome = $reportData->where('type_code', 'income')->sum('total');
-        $totalWorker = $reportData->where('type_code', 'worker_job')->sum('total');
+        $totalWorker = $reportData->where('type_code', 'worker_job')->sum('unit_price');
         $totalKonsumsi = $reportData->sum('konsumsi');
         $totalPurchase = $reportData->where('type_code', 'purchase')->sum('total');
-        $totalExpense = $totalWorker + $totalPurchase;
+        $totalExpense = $totalWorker + $totalKonsumsi + $totalPurchase;
         $netCashflow = $totalIncome - $totalExpense;
 
         $activeFilterSummary = [];
