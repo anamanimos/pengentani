@@ -575,15 +575,13 @@ class ReportController extends Controller
 
         $runningSaldo = 0;
         $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
-            if (!isset($item['saldo'])) {
-                $total = (float) ($item['total'] ?? 0);
-                if (($item['type_code'] ?? '') === 'income' || ($item['type_label'] ?? '') === 'Pendapatan') {
-                    $runningSaldo += $total;
-                } else {
-                    $runningSaldo -= $total;
-                }
-                $item['saldo'] = $runningSaldo;
+            $total = (float) ($item['total'] ?? 0);
+            if (($item['type_code'] ?? '') === 'income' || ($item['type_label'] ?? '') === 'Pendapatan') {
+                $runningSaldo += $total;
+            } else {
+                $runningSaldo -= $total;
             }
+            $item['saldo'] = $runningSaldo;
             return $item;
         });
 

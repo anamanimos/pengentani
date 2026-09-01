@@ -735,6 +735,9 @@
                         }
 
                         rowData[11] = runningSaldo;
+                        if (spreadsheet.options && spreadsheet.options.data && spreadsheet.options.data[i]) {
+                            spreadsheet.options.data[i][11] = runningSaldo;
+                        }
                         if (spreadsheet.records && spreadsheet.records[i] && spreadsheet.records[i][11]) {
                             var saldoTd = spreadsheet.records[i][11];
                             saldoTd.innerText = 'Rp ' + Math.round(runningSaldo).toLocaleString('id-ID');
@@ -972,11 +975,24 @@
                             unit_price: parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0,
                             konsumsi: parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0,
                             total: parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0,
-                            saldo: parseFloat(String(rowData[11]).replace(/[^0-9.-]/g, '')) || 0,
+                            saldo: 0,
                             proof_url: targetProofUrl
                         });
                     }
                 }
+
+                // Recalculate running balance sequentially for visible rows
+                let running = 0;
+                for (let r = 0; r < visibleRows.length; r++) {
+                    let item = visibleRows[r];
+                    if (item.type_label === 'Pendapatan') {
+                        running += item.total;
+                    } else {
+                        running -= item.total;
+                    }
+                    item.saldo = running;
+                }
+
                 return visibleRows;
             };
 
