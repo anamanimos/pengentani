@@ -328,27 +328,42 @@ class ReportController extends Controller
                     ]);
                 }
             }
-
-            $sortBy = $request->get('sort_by', 'date');
-            $sortDirection = $request->get('sort_direction', 'desc');
-            if ($sortDirection === 'asc') {
-                $reportData = $reportData->sortBy($sortBy)->values();
-            } else {
-                $reportData = $reportData->sortByDesc($sortBy)->values();
-            }
-
-            $runningSaldo = 0;
-            $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
-                $total = (float) ($item['total'] ?? 0);
-                if (($item['type_label'] ?? '') === 'Pendapatan') {
-                    $runningSaldo += $total;
-                } else {
-                    $runningSaldo -= $total;
-                }
-                $item['saldo'] = $runningSaldo;
-                return $item;
-            });
         }
+
+        $sortBy = $request->get('sort_by', 'date');
+        $sortDirection = $request->get('sort_direction', 'desc');
+
+        if ($sortBy === 'total' || $sortBy === 'qty' || $sortBy === 'unit_price' || $sortBy === 'konsumsi') {
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => (float) ($x[$sortBy] ?? 0))->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => (float) ($x[$sortBy] ?? 0))->values();
+            }
+        } else if ($sortBy === 'date') {
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => $x['date'] ?? '')->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => $x['date'] ?? '')->values();
+            }
+        } else {
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => strtolower($x[$sortBy] ?? ''), SORT_NATURAL | SORT_FLAG_CASE)->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => strtolower($x[$sortBy] ?? ''), SORT_NATURAL | SORT_FLAG_CASE)->values();
+            }
+        }
+
+        $runningSaldo = 0;
+        $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
+            $total = (float) ($item['total'] ?? 0);
+            if (($item['type_label'] ?? '') === 'Pendapatan' || ($item['type_code'] ?? '') === 'income') {
+                $runningSaldo += $total;
+            } else {
+                $runningSaldo -= $total;
+            }
+            $item['saldo'] = $runningSaldo;
+            return $item;
+        });
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -579,10 +594,25 @@ class ReportController extends Controller
 
         $sortBy = $request->get('sort_by', 'date');
         $sortDirection = $request->get('sort_direction', 'desc');
-        if ($sortDirection === 'asc') {
-            $reportData = $reportData->sortBy($sortBy)->values();
+
+        if ($sortBy === 'total' || $sortBy === 'qty' || $sortBy === 'unit_price' || $sortBy === 'konsumsi') {
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => (float) ($x[$sortBy] ?? 0))->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => (float) ($x[$sortBy] ?? 0))->values();
+            }
+        } else if ($sortBy === 'date') {
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => $x['date'] ?? '')->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => $x['date'] ?? '')->values();
+            }
         } else {
-            $reportData = $reportData->sortByDesc($sortBy)->values();
+            if ($sortDirection === 'asc') {
+                $reportData = $reportData->sortBy(fn($x) => strtolower($x[$sortBy] ?? ''), SORT_NATURAL | SORT_FLAG_CASE)->values();
+            } else {
+                $reportData = $reportData->sortByDesc(fn($x) => strtolower($x[$sortBy] ?? ''), SORT_NATURAL | SORT_FLAG_CASE)->values();
+            }
         }
 
         $runningSaldo = 0;

@@ -37,8 +37,11 @@
     <form id="export-form" action="{{ route('report.export') }}" method="POST" class="d-none">
         @csrf
         <input type="hidden" name="filtered_data" id="export-excel-data-input">
+        <input type="hidden" name="active_filter_summary" id="export-excel-filters-input">
         <input type="hidden" name="start_date" id="export-excel-start-date">
         <input type="hidden" name="end_date" id="export-excel-end-date">
+        <input type="hidden" name="sort_by" id="export-excel-sort-by">
+        <input type="hidden" name="sort_direction" id="export-excel-sort-direction">
     </form>
 
     <!-- Hidden form for PDF export -->
@@ -48,6 +51,8 @@
         <input type="hidden" name="active_filter_summary" id="export-pdf-filters-input">
         <input type="hidden" name="start_date" id="export-pdf-start-date">
         <input type="hidden" name="end_date" id="export-pdf-end-date">
+        <input type="hidden" name="sort_by" id="export-pdf-sort-by">
+        <input type="hidden" name="sort_direction" id="export-pdf-sort-direction">
     </form>
 @endsection
 
@@ -1202,6 +1207,8 @@
                 if (format === 'pdf') {
                     $('#export-pdf-data-input').val(JSON.stringify(visibleData));
                     $('#export-pdf-filters-input').val(JSON.stringify(filterSummary));
+                    $('#export-pdf-sort-by').val(sortBy);
+                    $('#export-pdf-sort-direction').val(sortDir);
                     if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
                         $('#export-pdf-start-date').val(activeFilters[1][0]);
                         $('#export-pdf-end-date').val(activeFilters[1][1]);
@@ -1209,6 +1216,9 @@
                     document.getElementById('export-pdf-form').submit();
                 } else {
                     $('#export-excel-data-input').val(JSON.stringify(visibleData));
+                    $('#export-excel-filters-input').val(JSON.stringify(filterSummary));
+                    $('#export-excel-sort-by').val(sortBy);
+                    $('#export-excel-sort-direction').val(sortDir);
                     if (typeof activeFilters !== 'undefined' && activeFilters[1] && activeFilters[1].length === 2) {
                         $('#export-excel-start-date').val(activeFilters[1][0]);
                         $('#export-excel-end-date').val(activeFilters[1][1]);
