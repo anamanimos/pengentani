@@ -204,16 +204,17 @@
             <tr>
                 <th width="3%" class="text-center">No</th>
                 <th width="8%">Tanggal</th>
-                <th width="12%">Jenis Transaksi</th>
-                <th width="14%">Pertanian</th>
-                <th width="12%">Kategori</th>
-                <th width="11%">Pihak Terkait</th>
-                <th width="12%">Catatan</th>
+                <th width="10%">Jenis Transaksi</th>
+                <th width="13%">Pertanian</th>
+                <th width="11%">Kategori</th>
+                <th width="10%">Pihak Terkait</th>
+                <th width="11%">Catatan</th>
                 <th width="5%" class="text-right">Qty</th>
-                <th width="9%" class="text-right">Satuan / Upah</th>
+                <th width="8%" class="text-right">Satuan / Upah</th>
                 <th width="7%" class="text-right">Konsumsi</th>
-                <th width="9%" class="text-right">Total</th>
-                <th width="8%" class="text-center">Bukti</th>
+                <th width="8%" class="text-right">Total</th>
+                <th width="9%" class="text-right">Saldo Kas</th>
+                <th width="7%" class="text-center">Bukti</th>
             </tr>
         </thead>
         <tbody>
@@ -240,6 +241,9 @@
                     <td class="text-right fw-bold {{ $row['type_code'] === 'income' ? 'text-success' : 'text-danger' }}">
                         Rp {{ number_format($row['total'], 0, ',', '.') }}
                     </td>
+                    <td class="text-right fw-bold {{ ($row['saldo'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
+                        Rp {{ number_format($row['saldo'] ?? 0, 0, ',', '.') }}
+                    </td>
                     <td class="text-center">
                         @if(!empty($row['proof_url']))
                             <a href="{{ $row['proof_url'] }}" target="_blank" style="color: #009ef7; font-weight: bold; text-decoration: underline;">Lihat Bukti</a>
@@ -250,7 +254,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="text-center" style="padding: 20px; color: #a1a5b7;">
+                    <td colspan="13" class="text-center" style="padding: 20px; color: #a1a5b7;">
                         Tidak ada data transaksi yang ditemukan untuk filter ini.
                     </td>
                 </tr>

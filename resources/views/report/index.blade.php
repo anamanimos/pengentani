@@ -4,8 +4,8 @@
 @section('page_title')
     <div class="d-flex align-items-center flex-row">
         Laporan Gabungan Transaksi
-        <span class="badge badge-light-primary fw-bold fs-7 ms-3">
-            <i class="ki-duotone ki-file-sheet text-primary fs-6 me-1"><span class="path1"></span><span class="path2"></span></i> Mode Excel
+        <span class="badge badge-light-dark fw-bold fs-7 ms-3">
+            <i class="ki-duotone ki-lock text-gray-700 fs-6 me-1"><span class="path1"></span><span class="path2"></span></i> Read-Only / Jurnal
         </span>
     </div>
 @endsection
@@ -45,6 +45,7 @@
     <form id="export-pdf-form" action="{{ route('report.export-pdf') }}" method="POST" target="_blank" class="d-none">
         @csrf
         <input type="hidden" name="filtered_data" id="export-pdf-data-input">
+        <input type="hidden" name="active_filter_summary" id="export-pdf-filters-input">
         <input type="hidden" name="start_date" id="export-pdf-start-date">
         <input type="hidden" name="end_date" id="export-pdf-end-date">
     </form>
@@ -54,8 +55,8 @@
 <div class="alert alert-info d-flex align-items-center p-5 mb-5 position-relative" id="usage-alert">
     <i class="ki-duotone ki-information fs-2hx text-info me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
     <div class="d-flex flex-column flex-grow-1 pe-8">
-        <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Pendapatan, Pembelian, & Upah Pekerja)</h4>
-        <span>Urutan kolom tabel: **Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi**. Klik ikon corong pada header kolom untuk menyaring data atau klik tombol **Ekspor Excel** untuk mengunduh laporan.</span>
+        <h4 class="mb-1 text-info">Laporan Gabungan Transaksi (Jurnal Kas)</h4>
+        <span>Tabel ini menampilkan jurnal transaksi gabungan (Pendapatan, Pembelian Material, & Upah Pekerja). Data dalam mode baca (read-only) dengan kolom <b>Saldo Kas</b> yang menghitung akumulasi saldo berjalan secara otomatis. Gunakan filter pada header untuk menyaring data atau tombol ekspor untuk mengunduh laporan.</span>
     </div>
     <button type="button" class="btn btn-icon btn-sm btn-active-light-info position-absolute top-0 end-0 m-3" id="btn-close-alert">
         <i class="ki-duotone ki-cross fs-1 text-info"><span class="path1"></span><span class="path2"></span></i>
@@ -344,7 +345,14 @@
                 $pertanianData = $pertanians->map(fn($p) => ['id' => $p->id, 'name' => '[' . ($p->kebun->name ?? 'Tanpa Kebun') . '] - ' . $p->name])->toArray();
                 $proofsData = isset($proofs) ? $proofs->map(fn($p) => ['id' => $p->id, 'name' => ($p->name ?: ($p->original_filename ?: ('Bukti #' . $p->id))), 'url' => $p->url])->toArray() : [];
 
-                $initialData = $reportData->map(function($item) {
+                $runningSaldo = 0;
+                $initialData = $reportData->map(function($item) use (&$runningSaldo) {
+                    $total = (float) $item['total'];
+                    if (($item['type_code'] ?? '') === 'income' || ($item['type_label'] ?? '') === 'Pendapatan') {
+                        $runningSaldo += $total;
+                    } else {
+                        $runningSaldo -= $total;
+                    }
                     return [
                         $item['id'],
                         $item['date'],
@@ -357,6 +365,7 @@
                         (float) $item['unit_price'],
                         (float) $item['konsumsi'],
                         (float) $item['total'],
+                        (float) $runningSaldo,
                         $item['proof_id']
                     ];
                 })->toArray();
@@ -377,11 +386,6 @@
             ];
 
             const initialData = @json($initialData);
-
-            // Add 10 empty rows at bottom for easy entry / viewing
-            for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '', '', '']);
-            }
 
             var activeFilters = {};
             try {
@@ -597,12 +601,13 @@
                 let sumPurchase = 0;
                 let sumWorker = 0;
                 let sumKonsumsi = 0;
+                let runningSaldo = 0;
 
                 for (let i = 0; i < data.length; i++) {
                     let rowData = data[i];
 
                     let isEmpty = true;
-                    for (let j = 1; j <= 11; j++) {
+                    for (let j = 1; j <= 10; j++) {
                         if (rowData[j]) { isEmpty = false; break; }
                     }
                     if (isEmpty) {
@@ -653,12 +658,17 @@
 
                         if (typeVal === 'Pendapatan') {
                             sumIncome += totalVal;
+                            runningSaldo += totalVal;
                         } else if (typeVal === 'Pembelian Material') {
                             sumPurchase += totalVal;
+                            runningSaldo -= totalVal;
                         } else if (typeVal === 'Upah Pekerja') {
                             sumWorker += unitPriceVal;
                             sumKonsumsi += konsumsiVal;
+                            runningSaldo -= totalVal;
                         }
+
+                        spreadsheet.setValueFromCoords(11, i, runningSaldo, true);
                     } else {
                         spreadsheet.hideRow(i);
                     }
@@ -674,26 +684,34 @@
                 else $('#total-net-amount').removeClass('text-danger').addClass('text-primary');
             }
 
-            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Bukti Transaksi
+            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Saldo Kas, Bukti Transaksi
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                 data: initialData,
                 tableOverflow: true,
                 tableHeight: '70vh',
                 tableWidth: '100%',
                 search: false,
+                editable: false,
+                allowInsertRow: false,
+                allowDeleteRow: false,
+                allowInsertColumn: false,
+                allowDeleteColumn: false,
+                allowManualInsertRow: false,
+                allowManualInsertColumn: false,
                 columns: [
-                    { type: 'hidden', title: 'ID' },
-                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Jenis Transaksi <span class="text-danger">*</span>', width: 160, source: transactionTypes, autocomplete: true },
-                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true },
-                    { type: 'text', title: 'Kategori', width: 180 },
-                    { type: 'text', title: 'Pihak Terkait', width: 180 },
-                    { type: 'text', title: 'Catatan', width: 220 },
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00' },
-                    { type: 'numeric', title: 'Satuan / Upah (Rp)', width: 150, mask: 'Rp #,##0' },
-                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: 'Rp #,##0' },
+                    { type: 'hidden', title: 'ID', readOnly: true },
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 120, options: { format: 'YYYY-MM-DD' }, readOnly: true },
+                    { type: 'dropdown', title: 'Jenis Transaksi <span class="text-danger">*</span>', width: 160, source: transactionTypes, autocomplete: true, readOnly: true },
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 220, source: pertanians, autocomplete: true, readOnly: true },
+                    { type: 'text', title: 'Kategori', width: 180, readOnly: true },
+                    { type: 'text', title: 'Pihak Terkait', width: 180, readOnly: true },
+                    { type: 'text', title: 'Catatan', width: 220, readOnly: true },
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00', readOnly: true },
+                    { type: 'numeric', title: 'Satuan / Upah (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
+                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: 'Rp #,##0', readOnly: true },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true }
+                    { type: 'numeric', title: 'Saldo Kas (Rp)', width: 160, mask: 'Rp #,##0', readOnly: true },
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 220, source: proofs, autocomplete: true, readOnly: true }
                 ],
                 onselection: function(instance, x1, y1, x2, y2) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
@@ -724,8 +742,20 @@
                         }
                     }
 
-                    // Col 11: Bukti Transaksi
-                    if (col == 11 && val) {
+                    // Col 11: Saldo Kas styling
+                    if (col == 11 && (val || val === 0)) {
+                        var numericVal = parseFloat(String(val).replace(/[^0-9.-]/g, '')) || 0;
+                        if (numericVal >= 0) {
+                            cell.style.color = '#50cd89';
+                            cell.style.fontWeight = 'bold';
+                        } else {
+                            cell.style.color = '#f1416c';
+                            cell.style.fontWeight = 'bold';
+                        }
+                    }
+
+                    // Col 12: Bukti Transaksi
+                    if (col == 12 && val) {
                         var targetUrl = proofUrls[val] || (String(val).startsWith('http') ? val : null);
                         if (targetUrl) {
                             cell.innerHTML = '<span onmousedown="event.stopPropagation();" onclick="openLightbox(event, \'' + targetUrl + '\')" class="cursor-pointer me-2 p-1 rounded hover-bg-light custom-proof-eye" data-url="' + targetUrl + '" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + (label || '');
@@ -749,10 +779,10 @@
                         initColumnVisibilityModal();
                     }, 100);
                 },
-                minDimensions: [12, Math.max(30, initialData.length)],
+                minDimensions: [13, Math.max(30, initialData.length)],
                 defaultColAlign: 'left',
-                allowInsertRow: true,
-                allowDeleteRow: true
+                allowInsertRow: false,
+                allowDeleteRow: false
             });
 
             $(document).on('mousedown click', '#spreadsheet .custom-proof-eye', function(e) {
@@ -850,7 +880,7 @@
                         }
                         if (!match) continue;
 
-                        let rawProof = rowData[11] || '';
+                        let rawProof = rowData[12] || '';
                         let targetProofUrl = (typeof proofUrls !== 'undefined' && proofUrls[rawProof]) ? proofUrls[rawProof] : (String(rawProof).startsWith('http') ? rawProof : '');
                         let resolvedPertanianName = getDropdownLabel(3, rowData[3]);
 
@@ -865,6 +895,7 @@
                             unit_price: parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0,
                             konsumsi: parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0,
                             total: parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0,
+                            saldo: parseFloat(String(rowData[11]).replace(/[^0-9.-]/g, '')) || 0,
                             proof_url: targetProofUrl
                         });
                     }

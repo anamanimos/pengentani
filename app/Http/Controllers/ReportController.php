@@ -143,6 +143,19 @@ class ReportController extends Controller
         // Sort Data by Date Descending
         $reportData = $reportData->sortByDesc('date')->values();
 
+        // Calculate running balance (saldo)
+        $runningSaldo = 0;
+        $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
+            $total = (float) ($item['total'] ?? 0);
+            if (($item['type_code'] ?? '') === 'income' || ($item['type_label'] ?? '') === 'Pendapatan') {
+                $runningSaldo += $total;
+            } else {
+                $runningSaldo -= $total;
+            }
+            $item['saldo'] = $runningSaldo;
+            return $item;
+        });
+
         // Default current month start & end dates for frontend filtering
         $defaultStartDate = now()->startOfMonth()->format('Y-m-d');
         $defaultEndDate = now()->endOfMonth()->format('Y-m-d');
@@ -207,6 +220,7 @@ class ReportController extends Controller
                         'unit_price' => (float) ($item['unit_price'] ?? 0),
                         'konsumsi' => (float) ($item['konsumsi'] ?? 0),
                         'total' => (float) ($item['total'] ?? 0),
+                        'saldo' => (float) ($item['saldo'] ?? 0),
                         'proof_name' => !empty($item['proof_url']) ? 'Ada Bukti' : '-',
                     ]);
                 }
@@ -307,6 +321,18 @@ class ReportController extends Controller
             }
 
             $reportData = $reportData->sortByDesc('date')->values();
+
+            $runningSaldo = 0;
+            $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
+                $total = (float) ($item['total'] ?? 0);
+                if (($item['type_label'] ?? '') === 'Pendapatan') {
+                    $runningSaldo += $total;
+                } else {
+                    $runningSaldo -= $total;
+                }
+                $item['saldo'] = $runningSaldo;
+                return $item;
+            });
         }
 
         $spreadsheet = new Spreadsheet();
@@ -326,14 +352,14 @@ class ReportController extends Controller
             ],
         ];
 
-        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Bukti Transaksi'];
-        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Saldo Kas (Rp)', 'Bukti Transaksi'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
 
         foreach ($headers as $index => $headerText) {
             $colLetter = $cols[$index];
             $sheet->setCellValue($colLetter . '1', $headerText);
         }
-        $sheet->getStyle('A1:L1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
         $sheet->getRowDimension(1)->setRowHeight(25);
 
         // Data Rows
@@ -350,13 +376,15 @@ class ReportController extends Controller
             $sheet->setCellValue('I' . $rowNum, $row['unit_price']);
             $sheet->setCellValue('J' . $rowNum, $row['konsumsi']);
             $sheet->setCellValue('K' . $rowNum, $row['total']);
-            $sheet->setCellValue('L' . $rowNum, $row['proof_name']);
+            $sheet->setCellValue('L' . $rowNum, $row['saldo'] ?? 0);
+            $sheet->setCellValue('M' . $rowNum, $row['proof_name']);
 
             // Format numbers
             $sheet->getStyle('H' . $rowNum)->getNumberFormat()->setFormatCode('#,##0.00');
             $sheet->getStyle('I' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
             $sheet->getStyle('J' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
             $sheet->getStyle('K' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
+            $sheet->getStyle('L' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
 
             $rowNum++;
         }
@@ -420,6 +448,7 @@ class ReportController extends Controller
                         'unit_price' => (float) ($item['unit_price'] ?? 0),
                         'konsumsi' => (float) ($item['konsumsi'] ?? 0),
                         'total' => (float) ($item['total'] ?? 0),
+                        'saldo' => (float) ($item['saldo'] ?? 0),
                         'proof_url' => $item['proof_url'] ?? '',
                     ]);
                 }
@@ -534,6 +563,20 @@ class ReportController extends Controller
         }
 
         $reportData = $reportData->sortByDesc('date')->values();
+
+        $runningSaldo = 0;
+        $reportData = $reportData->map(function ($item) use (&$runningSaldo) {
+            if (!isset($item['saldo'])) {
+                $total = (float) ($item['total'] ?? 0);
+                if (($item['type_code'] ?? '') === 'income' || ($item['type_label'] ?? '') === 'Pendapatan') {
+                    $runningSaldo += $total;
+                } else {
+                    $runningSaldo -= $total;
+                }
+                $item['saldo'] = $runningSaldo;
+            }
+            return $item;
+        });
 
         if ($reportData->isNotEmpty()) {
             $dates = $reportData->pluck('date')->filter()->sort()->values();
