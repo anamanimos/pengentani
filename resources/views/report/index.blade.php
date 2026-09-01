@@ -390,9 +390,23 @@
 
             const initialData = @json($initialData);
 
+            function formatYMD(d) {
+                if (!d) return '';
+                if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+                let dt = (d instanceof Date) ? d : new Date(d);
+                if (isNaN(dt.getTime())) return '';
+                let year = dt.getFullYear();
+                let month = String(dt.getMonth() + 1).padStart(2, '0');
+                let day = String(dt.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // Clear legacy v1 filter storage to avoid stale column index mismatch
+            try { localStorage.removeItem('report_filters'); } catch(e) {}
+
             var activeFilters = {};
             try {
-                let savedFilters = localStorage.getItem('report_filters');
+                let savedFilters = localStorage.getItem('report_filters_v2');
                 if (savedFilters && Object.keys(JSON.parse(savedFilters)).length > 0) {
                     let parsed = JSON.parse(savedFilters);
                     if (parsed && typeof parsed === 'object') {
@@ -403,16 +417,8 @@
                 activeFilters = {};
             }
 
-            // Always ensure activeFilters['1'] has a valid date array
-            if (!activeFilters['1'] || !Array.isArray(activeFilters['1']) || !activeFilters['1'][0] || !activeFilters['1'][1]) {
-                activeFilters['1'] = [defaultStartDate, defaultEndDate];
-            } else {
-                let d1 = new Date(activeFilters['1'][0]);
-                let d2 = new Date(activeFilters['1'][1]);
-                if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
-                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
-                }
-            }
+            // Always sync active date filter with the current server-rendered date range
+            activeFilters['1'] = ['{{ $startDate }}', '{{ $endDate }}'];
 
             @if($selectedPertanianId && $selectedPertanianId !== 'all')
                 activeFilters['3'] = ['{{ $selectedPertanianId }}'];
@@ -431,7 +437,8 @@
             var datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
                 dateFormat: "Y-m-d",
-                inline: true
+                inline: true,
+                defaultDate: ['{{ $startDate }}', '{{ $endDate }}']
             });
 
             window.openUniversalFilter = function(e, colIndex) {
@@ -448,7 +455,7 @@
                 if (column.type === 'calendar') {
                     $('#filter-date-container').removeClass('d-none');
                     if (currentVal) datePicker.setDate(currentVal);
-                    else datePicker.clear();
+                    else datePicker.setDate(['{{ $startDate }}', '{{ $endDate }}']);
                 } else if (column.type === 'dropdown') {
                     $('#filter-select-container').removeClass('d-none');
                     var select = $('#filter-select-input');
@@ -478,8 +485,15 @@
             $('#btn-reset-filter').click(function() {
                 var colIndex = $('#current-filter-col').val();
                 if (colIndex == 1) {
-                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
-                    if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
+                    let url = new URL(window.location.href);
+                    url.searchParams.delete('start_date');
+                    url.searchParams.delete('end_date');
+                    try {
+                        delete activeFilters['1'];
+                        localStorage.setItem('report_filters_v2', JSON.stringify(activeFilters));
+                    } catch(e) {}
+                    window.location.href = url.toString();
+                    return;
                 } else {
                     delete activeFilters[colIndex];
                 }
@@ -491,11 +505,34 @@
                 var colIndex = $('#current-filter-col').val();
                 var column = spreadsheet.options.columns[colIndex];
 
-                if (column.type === 'calendar') {
+                if (colIndex == 1 || column.type === 'calendar') {
                     let selectedDates = datePicker.selectedDates;
-                    if (selectedDates.length === 2) activeFilters[colIndex] = [selectedDates[0], selectedDates[1]];
-                    else if (selectedDates.length === 1) activeFilters[colIndex] = [selectedDates[0], selectedDates[0]];
-                    else activeFilters[colIndex] = [defaultStartDate, defaultEndDate];
+                    let s = '', e = '';
+                    if (selectedDates.length === 2) {
+                        s = formatYMD(selectedDates[0]);
+                        e = formatYMD(selectedDates[1]);
+                    } else if (selectedDates.length === 1) {
+                        s = formatYMD(selectedDates[0]);
+                        e = formatYMD(selectedDates[0]);
+                    } else {
+                        s = defaultStartDate;
+                        e = defaultEndDate;
+                    }
+
+                    if (s && e) {
+                        activeFilters['1'] = [s, e];
+                        try {
+                            localStorage.setItem('report_filters_v2', JSON.stringify(activeFilters));
+                        } catch(err) {}
+
+                        if (s !== '{{ $startDate }}' || e !== '{{ $endDate }}') {
+                            let url = new URL(window.location.href);
+                            url.searchParams.set('start_date', s);
+                            url.searchParams.set('end_date', e);
+                            window.location.href = url.toString();
+                            return;
+                        }
+                    }
                 } else if (column.type === 'dropdown') {
                     var val = $('#filter-select-input').val();
                     if (val && val.length > 0) activeFilters[colIndex] = val;
@@ -511,17 +548,24 @@
             });
 
             $('#btn-global-reset-filter, #btn-global-reset-filter-fs').click(function() {
-                activeFilters = {
-                    '1': [defaultStartDate, defaultEndDate]
-                };
-                if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
-                applyAllFilters();
+                try {
+                    localStorage.removeItem('report_filters');
+                    localStorage.removeItem('report_filters_v2');
+                } catch(e) {}
+                window.location.href = '{{ route('report.index') }}';
             });
 
             window.removeFilter = function(colIndex) {
                 if (colIndex == 1) {
-                    activeFilters['1'] = [defaultStartDate, defaultEndDate];
-                    if (datePicker) datePicker.setDate([defaultStartDate, defaultEndDate]);
+                    let url = new URL(window.location.href);
+                    url.searchParams.delete('start_date');
+                    url.searchParams.delete('end_date');
+                    try {
+                        delete activeFilters['1'];
+                        localStorage.setItem('report_filters_v2', JSON.stringify(activeFilters));
+                    } catch(e) {}
+                    window.location.href = url.toString();
+                    return;
                 } else {
                     delete activeFilters[colIndex];
                 }
@@ -534,8 +578,8 @@
                 if (keys.length === 1 && keys[0] === '1') {
                     let dateVal = activeFilters['1'];
                     if (Array.isArray(dateVal) && dateVal.length === 2) {
-                        let s = typeof dateVal[0] === 'string' ? dateVal[0] : (dateVal[0] ? dateVal[0].toISOString().split('T')[0] : '');
-                        let e = typeof dateVal[1] === 'string' ? dateVal[1] : (dateVal[1] ? dateVal[1].toISOString().split('T')[0] : '');
+                        let s = formatYMD(dateVal[0]);
+                        let e = formatYMD(dateVal[1]);
                         if (s === defaultStartDate && e === defaultEndDate) {
                             return false;
                         }
@@ -546,7 +590,7 @@
 
             function applyAllFilters() {
                 try {
-                    localStorage.setItem('report_filters', JSON.stringify(activeFilters));
+                    localStorage.setItem('report_filters_v2', JSON.stringify(activeFilters));
                 } catch(e) {
                     console.error('Failed to save activeFilters:', e);
                 }
@@ -634,14 +678,11 @@
                     for (let colIndex in activeFilters) {
                         let filterVal = activeFilters[colIndex];
                         let cellVal = rowData[colIndex];
+                        if (!spreadsheet.options.columns[colIndex]) continue;
                         let colType = spreadsheet.options.columns[colIndex].type;
 
-                        if (cellVal === null || cellVal === undefined || cellVal === '') {
-                            match = false;
-                            break;
-                        }
-
                         if (colType === 'calendar') {
+                            if (!cellVal) { match = false; break; }
                             let rowDate = new Date(cellVal);
                             rowDate.setHours(0,0,0,0);
                             let start = (filterVal[0] instanceof Date) ? new Date(filterVal[0]) : new Date(filterVal[0]);
@@ -653,13 +694,21 @@
                                 break;
                             }
                         } else if (colType === 'dropdown') {
+                            if (cellVal === null || cellVal === undefined || cellVal === '') {
+                                match = false;
+                                break;
+                            }
                             let found = false;
-                            for (let k = 0; k < filterVal.length; k++) {
-                                if (cellVal == filterVal[k]) { found = true; break; }
+                            let valArr = Array.isArray(filterVal) ? filterVal : [filterVal];
+                            for (let k = 0; k < valArr.length; k++) {
+                                if (String(cellVal).trim() == String(valArr[k]).trim()) {
+                                    found = true;
+                                    break;
+                                }
                             }
                             if (!found) { match = false; break; }
                         } else {
-                            if (String(cellVal).toLowerCase().indexOf(String(filterVal).toLowerCase()) === -1) {
+                            if (!cellVal || String(cellVal).toLowerCase().indexOf(String(filterVal).toLowerCase()) === -1) {
                                 match = false;
                                 break;
                             }
