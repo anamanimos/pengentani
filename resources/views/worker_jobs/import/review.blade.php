@@ -440,6 +440,20 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Menyimpan ke Sistem...',
+                            html: `
+                                <div class="py-4 text-center">
+                                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <div class="text-gray-800 fw-bold fs-6">Menyimpan ${checkedCount} catatan ke data pekerjaan & upah...</div>
+                                </div>
+                            `,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false
+                        });
                         commitForm.submit();
                     }
                 });

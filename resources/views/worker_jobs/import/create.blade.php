@@ -264,12 +264,42 @@
         }
 
         if (formPhoto && btnPhoto) {
-            formPhoto.addEventListener('submit', function() {
+            formPhoto.addEventListener('submit', function(e) {
+                // Ensure photo is selected
+                if (!photoInput.files || photoInput.files.length === 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Foto Belum Dipilih',
+                        text: 'Silakan pilih atau seret foto buku catatan terlebih dahulu.',
+                        customClass: { confirmButton: 'btn btn-primary' }
+                    });
+                    return false;
+                }
+
                 const label = btnPhoto.querySelector('.indicator-label');
                 const progress = btnPhoto.querySelector('.indicator-progress');
-                label.classList.add('d-none');
-                progress.classList.remove('d-none');
+                if (label) label.classList.add('d-none');
+                if (progress) progress.classList.remove('d-none');
                 btnPhoto.disabled = true;
+
+                // Show full loading modal
+                Swal.fire({
+                    title: 'Menganalisis Foto Catatan...',
+                    html: `
+                        <div class="py-4 text-center">
+                            <div class="spinner-border text-primary mb-4" style="width: 3.5rem; height: 3.5rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="text-gray-800 fw-bold fs-5 mb-2">Gemini AI sedang membaca tulisan tangan</div>
+                            <div class="text-muted fs-7 mb-3">Mengekstrak tanggal, nama pekerja, shift kerja, dan nominal upah...</div>
+                            <div class="badge badge-light-primary fs-8 py-2 px-4 rounded-pill">Mohon tunggu beberapa saat (5 - 15 detik)</div>
+                        </div>
+                    `,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false
+                });
             });
         }
 
@@ -365,12 +395,40 @@
         const formJson = document.getElementById('form-upload-json');
         const btnJson = document.getElementById('btn-submit-json');
         if (formJson && btnJson) {
-            formJson.addEventListener('submit', function() {
+            formJson.addEventListener('submit', function(e) {
+                const rawJson = document.getElementById('raw_json').value.trim();
+                if (!rawJson) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Teks JSON Kosong',
+                        text: 'Silakan tempel teks JSON hasil ekstraksi dari AI terlebih dahulu.',
+                        customClass: { confirmButton: 'btn btn-primary' }
+                    });
+                    return false;
+                }
+
                 const label = btnJson.querySelector('.indicator-label');
                 const progress = btnJson.querySelector('.indicator-progress');
-                label.classList.add('d-none');
-                progress.classList.remove('d-none');
+                if (label) label.classList.add('d-none');
+                if (progress) progress.classList.remove('d-none');
                 btnJson.disabled = true;
+
+                Swal.fire({
+                    title: 'Memvalidasi Data JSON...',
+                    html: `
+                        <div class="py-4 text-center">
+                            <div class="spinner-border text-primary mb-4" style="width: 3.5rem; height: 3.5rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="text-gray-800 fw-bold fs-5 mb-2">Memproses Format Data JSON</div>
+                            <div class="text-muted fs-7">Mencocokkan lahan, pekerja, dan kategori ke database...</div>
+                        </div>
+                    `,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false
+                });
             });
         }
     });
