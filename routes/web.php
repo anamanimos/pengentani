@@ -38,6 +38,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'index'])->name('settings.general.index');
     Route::post('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'update'])->name('settings.general.update');
     Route::post('/settings/general/test-gemini', [\App\Http\Controllers\GeneralSettingController::class, 'testGemini'])->name('settings.general.test-gemini');
+    Route::post('/settings/general/gemini-models', [\App\Http\Controllers\GeneralSettingController::class, 'getGeminiModels'])->name('settings.general.gemini-models');
 
     Route::redirect('/whatsapp', '/console/settings/whatsapp');
     Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');

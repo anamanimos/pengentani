@@ -21,7 +21,7 @@ class GeneralSettingController extends Controller
         $timezone = Setting::get('timezone', config('app.timezone', 'Asia/Jakarta'));
         $currencySymbol = Setting::get('currency_symbol', 'Rp');
         $geminiApiKey = Setting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
-        $geminiModel = Setting::get('gemini_model', 'gemini-2.0-flash');
+        $geminiModel = Setting::get('gemini_model', 'gemini-3.6-flash');
 
         return view('settings.general', compact(
             'appName',
@@ -68,7 +68,7 @@ class GeneralSettingController extends Controller
             Setting::set('gemini_api_key', trim($request->gemini_api_key ?? ''));
         }
         if ($request->has('gemini_model')) {
-            Setting::set('gemini_model', trim($request->gemini_model ?? 'gemini-2.0-flash'));
+            Setting::set('gemini_model', trim($request->gemini_model ?? 'gemini-3.6-flash'));
         }
 
         return redirect()->back()->with('success', 'Pengaturan Umum & Integrasi Gemini berhasil diperbarui.');
@@ -83,6 +83,17 @@ class GeneralSettingController extends Controller
         $model = $request->input('model');
 
         $result = \App\Services\GeminiVisionService::testConnection($apiKey, $model);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Fetch available models from Gemini API via AJAX.
+     */
+    public function getGeminiModels(Request $request)
+    {
+        $apiKey = $request->input('api_key');
+        $result = \App\Services\GeminiVisionService::getAvailableModels($apiKey);
 
         return response()->json($result);
     }

@@ -26,7 +26,72 @@ class GeminiVisionService
      */
     public static function getModel(): string
     {
-        return Setting::get('gemini_model', 'gemini-2.0-flash');
+        return Setting::get('gemini_model', 'gemini-3.6-flash');
+    }
+
+    /**
+     * Normalize model string so it is prefixed with models/ if needed.
+     */
+    public static function normalizeModel(string $model): string
+    {
+        $clean = ltrim(trim($model), '/');
+        if (!str_starts_with($clean, 'models/')) {
+            $clean = 'models/' . $clean;
+        }
+        return $clean;
+    }
+
+    /**
+     * Fetch available models from Gemini API that support content generation.
+     */
+    public static function getAvailableModels(?string $apiKey = null): array
+    {
+        $apiKey = $apiKey ?: self::getApiKey();
+
+        if (empty($apiKey)) {
+            return [
+                'success' => false,
+                'message' => 'API Key Gemini belum diisi. Silakan masukkan API Key terlebih dahulu.',
+            ];
+        }
+
+        try {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}";
+            $response = Http::timeout(15)->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $models = [];
+                foreach ($data['models'] ?? [] as $m) {
+                    $methods = $m['supportedGenerationMethods'] ?? [];
+                    if (in_array('generateContent', $methods)) {
+                        $id = str_replace('models/', '', $m['name']);
+                        $models[] = [
+                            'id' => $id,
+                            'name' => $m['displayName'] ?? $id,
+                            'description' => $m['description'] ?? '',
+                        ];
+                    }
+                }
+
+                return [
+                    'success' => true,
+                    'models' => $models,
+                ];
+            }
+
+            $errorData = $response->json();
+            $msg = $errorData['error']['message'] ?? ('HTTP Status: ' . $response->status());
+            return [
+                'success' => false,
+                'message' => "Gagal mengambil daftar model: {$msg}",
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memuat daftar model: ' . $e->getMessage(),
+            ];
+        }
     }
 
     /**
@@ -45,8 +110,8 @@ class GeminiVisionService
         }
 
         try {
-            // Test call using generateContent with short prompt
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+            $normalizedModel = self::normalizeModel($model);
+            $url = "https://generativelanguage.googleapis.com/v1beta/{$normalizedModel}:generateContent?key={$apiKey}";
 
             $response = Http::timeout(15)->post($url, [
                 'contents' => [
@@ -120,7 +185,8 @@ class GeminiVisionService
 
         $prompt = self::getExtractionPrompt();
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $normalizedModel = self::normalizeModel($model);
+        $url = "https://generativelanguage.googleapis.com/v1beta/{$normalizedModel}:generateContent?key={$apiKey}";
 
         $payload = [
             'contents' => [

@@ -190,11 +190,18 @@
 
                                 <!-- Gemini Model -->
                                 <div class="col-md-4 mb-2">
-                                    <label class="form-label fw-bold text-gray-700 fs-7">Model Gemini AI:</label>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <label class="form-label fw-bold text-gray-700 fs-7 mb-1">Model Gemini AI:</label>
+                                        <button type="button" id="btn-fetch-models" class="btn btn-link btn-color-primary btn-active-color-primary p-0 fs-9 fw-bold" title="Ambil daftar model yang aktif di akun Anda">
+                                            <i class="ki-duotone ki-arrows-circle fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Muat dari Akun
+                                        </button>
+                                    </div>
                                     <select name="gemini_model" id="gemini_model" class="form-select form-select-solid fs-7">
-                                        <option value="gemini-2.0-flash" {{ old('gemini_model', $geminiModel) == 'gemini-2.0-flash' ? 'selected' : '' }}>gemini-2.0-flash (Direkomendasikan - Cepat & Akurat)</option>
-                                        <option value="gemini-1.5-flash" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-flash' ? 'selected' : '' }}>gemini-1.5-flash (Versi Ringan & Cepat)</option>
-                                        <option value="gemini-1.5-pro" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-pro' ? 'selected' : '' }}>gemini-1.5-pro (Penalaran Kompleks)</option>
+                                        <option value="gemini-3.6-flash" {{ old('gemini_model', $geminiModel) == 'gemini-3.6-flash' ? 'selected' : '' }}>gemini-3.6-flash (Terbaru & Direkomendasikan)</option>
+                                        <option value="gemini-2.5-flash" {{ old('gemini_model', $geminiModel) == 'gemini-2.5-flash' ? 'selected' : '' }}>gemini-2.5-flash</option>
+                                        <option value="gemini-2.5-pro" {{ old('gemini_model', $geminiModel) == 'gemini-2.5-pro' ? 'selected' : '' }}>gemini-2.5-pro</option>
+                                        <option value="gemini-1.5-flash" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-flash' ? 'selected' : '' }}>gemini-1.5-flash</option>
+                                        <option value="gemini-1.5-pro" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-pro' ? 'selected' : '' }}>gemini-1.5-pro</option>
                                     </select>
                                     <div class="form-text fs-9 text-gray-500">Pilih model multimodal yang aktif di akun Anda.</div>
                                 </div>
@@ -232,6 +239,78 @@
                     eyeIcon.classList.remove('ki-eye-slash');
                     eyeIcon.classList.add('ki-eye');
                 }
+            });
+        }
+
+        // Fetch Models from Account
+        const fetchModelsBtn = document.getElementById('btn-fetch-models');
+        const modelSelect = document.getElementById('gemini_model');
+        if (fetchModelsBtn && modelSelect) {
+            fetchModelsBtn.addEventListener('click', function() {
+                const apiKey = document.getElementById('gemini_api_key').value.trim();
+                if (!apiKey) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'API Key Kosong',
+                        text: 'Silakan isi Gemini API Key terlebih dahulu untuk memuat daftar model dari akun Anda.',
+                        customClass: { confirmButton: 'btn btn-primary' }
+                    });
+                    return;
+                }
+
+                fetchModelsBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memuat...';
+                fetchModelsBtn.disabled = true;
+
+                $.ajax({
+                    url: '{{ route("settings.general.gemini-models") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        api_key: apiKey
+                    },
+                    success: function(res) {
+                        if (res.success && res.models && res.models.length > 0) {
+                            const currentVal = modelSelect.value;
+                            modelSelect.innerHTML = '';
+                            res.models.forEach(function(m) {
+                                const opt = document.createElement('option');
+                                opt.value = m.id;
+                                opt.textContent = m.name ? `${m.name} (${m.id})` : m.id;
+                                if (m.id === currentVal || m.id === 'gemini-3.6-flash') {
+                                    opt.selected = true;
+                                }
+                                modelSelect.appendChild(opt);
+                            });
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Model Berhasil Dimuat!',
+                                text: `Ditemukan ${res.models.length} model aktif dari akun Anda.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Memuat Model',
+                                text: res.message || 'Tidak ada model yang ditemukan.',
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Kesalahan Server',
+                            text: xhr.responseJSON?.message || 'Gagal menghubungi server.',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
+                    },
+                    complete: function() {
+                        fetchModelsBtn.innerHTML = '<i class="ki-duotone ki-arrows-circle fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Muat dari Akun';
+                        fetchModelsBtn.disabled = false;
+                    }
+                });
             });
         }
 
@@ -276,12 +355,33 @@
                                 customClass: { confirmButton: 'btn btn-primary' }
                             });
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Koneksi Gagal',
-                                text: response.message,
-                                customClass: { confirmButton: 'btn btn-primary' }
-                            });
+                            // If model is outdated, suggest switching to gemini-3.6-flash
+                            if (response.message.includes('gemini-3.6-flash') || response.message.includes('no longer available')) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Model Perlu Diperbarui',
+                                    text: response.message + ' Ingin ganti model ke gemini-3.6-flash sekarang?',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Ya, Gunakan gemini-3.6-flash',
+                                    cancelButtonText: 'Tutup',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary',
+                                        cancelButton: 'btn btn-light'
+                                    }
+                                }).then((r) => {
+                                    if (r.isConfirmed) {
+                                        modelSelect.value = 'gemini-3.6-flash';
+                                        testBtn.click();
+                                    }
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Koneksi Gagal',
+                                    text: response.message,
+                                    customClass: { confirmButton: 'btn btn-primary' }
+                                });
+                            }
                         }
                     },
                     error: function(xhr) {
