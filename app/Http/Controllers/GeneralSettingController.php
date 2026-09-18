@@ -20,6 +20,8 @@ class GeneralSettingController extends Controller
         $address = Setting::get('address', 'Indonesia');
         $timezone = Setting::get('timezone', config('app.timezone', 'Asia/Jakarta'));
         $currencySymbol = Setting::get('currency_symbol', 'Rp');
+        $geminiApiKey = Setting::get('gemini_api_key', config('services.gemini.api_key', env('GEMINI_API_KEY', '')));
+        $geminiModel = Setting::get('gemini_model', 'gemini-2.0-flash');
 
         return view('settings.general', compact(
             'appName',
@@ -29,7 +31,9 @@ class GeneralSettingController extends Controller
             'contactPhone',
             'address',
             'timezone',
-            'currencySymbol'
+            'currencySymbol',
+            'geminiApiKey',
+            'geminiModel'
         ));
     }
 
@@ -47,6 +51,8 @@ class GeneralSettingController extends Controller
             'address' => 'nullable|string|max:500',
             'timezone' => 'required|string|max:100',
             'currency_symbol' => 'required|string|max:10',
+            'gemini_api_key' => 'nullable|string|max:255',
+            'gemini_model' => 'nullable|string|max:100',
         ]);
 
         Setting::set('app_name', trim($request->app_name));
@@ -58,6 +64,26 @@ class GeneralSettingController extends Controller
         Setting::set('timezone', trim($request->timezone));
         Setting::set('currency_symbol', trim($request->currency_symbol));
 
-        return redirect()->back()->with('success', 'Pengaturan Umum berhasil diperbarui.');
+        if ($request->has('gemini_api_key')) {
+            Setting::set('gemini_api_key', trim($request->gemini_api_key ?? ''));
+        }
+        if ($request->has('gemini_model')) {
+            Setting::set('gemini_model', trim($request->gemini_model ?? 'gemini-2.0-flash'));
+        }
+
+        return redirect()->back()->with('success', 'Pengaturan Umum & Integrasi Gemini berhasil diperbarui.');
+    }
+
+    /**
+     * Test Google Gemini API connection via AJAX.
+     */
+    public function testGemini(Request $request)
+    {
+        $apiKey = $request->input('api_key');
+        $model = $request->input('model');
+
+        $result = \App\Services\GeminiVisionService::testConnection($apiKey, $model);
+
+        return response()->json($result);
     }
 }

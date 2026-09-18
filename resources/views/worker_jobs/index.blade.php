@@ -27,6 +27,10 @@
         <i class="fas fa-save me-1"></i> Simpan
     </button>
 
+    <a href="{{ route('worker-jobs.import.create') }}" class="btn btn-primary btn-sm me-3 shadow-xs" data-bs-toggle="tooltip" title="Scan & Import Foto Catatan Lapangan Buruh Tani (AI)">
+        <i class="ki-duotone ki-scan-barcode fs-2 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span><span class="path7"></span><span class="path8"></span></i> Import Catatan (AI)
+    </a>
+
     <div class="btn-group">
         <a href="{{ route('job-categories.index') }}" class="btn btn-icon btn-secondary btn-sm" data-bs-toggle="tooltip" title="Kelola Kategori">
             <i class="ki-duotone ki-category fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>

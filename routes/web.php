@@ -37,6 +37,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::redirect('/settings', '/console/settings/general')->name('settings.index');
     Route::get('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'index'])->name('settings.general.index');
     Route::post('/settings/general', [\App\Http\Controllers\GeneralSettingController::class, 'update'])->name('settings.general.update');
+    Route::post('/settings/general/test-gemini', [\App\Http\Controllers\GeneralSettingController::class, 'testGemini'])->name('settings.general.test-gemini');
 
     Route::redirect('/whatsapp', '/console/settings/whatsapp');
     Route::get('/settings/whatsapp', [\App\Http\Controllers\WhatsappSettingController::class, 'index'])->name('whatsapp.index');
@@ -111,6 +112,18 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('worker-jobs/ajax-worker', [\App\Http\Controllers\WorkerJobController::class, 'storeWorkerAjax'])->name('worker-jobs.ajax-worker');
     Route::post('worker-jobs/ajax-category', [\App\Http\Controllers\WorkerJobController::class, 'storeCategoryAjax'])->name('worker-jobs.ajax-category');
     Route::get('worker-jobs/export', [\App\Http\Controllers\WorkerJobController::class, 'export'])->name('worker-jobs.export');
+
+    // Import Pekerja dari Foto / JSON AI
+    Route::get('worker-jobs/import', [\App\Http\Controllers\JobImportController::class, 'index'])->name('worker-jobs.import.index');
+    Route::get('worker-jobs/import/create', [\App\Http\Controllers\JobImportController::class, 'create'])->name('worker-jobs.import.create');
+    Route::post('worker-jobs/import/photo', [\App\Http\Controllers\JobImportController::class, 'processPhoto'])->name('worker-jobs.import.process-photo');
+    Route::post('worker-jobs/import/json', [\App\Http\Controllers\JobImportController::class, 'processJson'])->name('worker-jobs.import.process-json');
+    Route::get('worker-jobs/import/{importLog}/review', [\App\Http\Controllers\JobImportController::class, 'review'])->name('worker-jobs.import.review');
+    Route::post('worker-jobs/import/{importLog}/rows/{row}', [\App\Http\Controllers\JobImportController::class, 'updateRow'])->name('worker-jobs.import.update-row');
+    Route::delete('worker-jobs/import/{importLog}/rows/{row}', [\App\Http\Controllers\JobImportController::class, 'deleteRow'])->name('worker-jobs.import.delete-row');
+    Route::post('worker-jobs/import/{importLog}/commit', [\App\Http\Controllers\JobImportController::class, 'commit'])->name('worker-jobs.import.commit');
+    Route::delete('worker-jobs/import/{importLog}', [\App\Http\Controllers\JobImportController::class, 'destroy'])->name('worker-jobs.import.destroy');
+
     Route::resource('worker-jobs/categories', \App\Http\Controllers\JobCategoryController::class)->names('job-categories')->parameters(['categories' => 'job_category']);
     Route::resource('worker-jobs', \App\Http\Controllers\WorkerJobController::class)->except(['create', 'show', 'edit', 'update']);
 

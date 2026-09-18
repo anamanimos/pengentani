@@ -152,6 +152,53 @@
                                     <textarea name="address" class="form-control form-control-solid fs-7" rows="2" placeholder="Alamat lengkap lokasi kantor / kebun utama">{{ old('address', $address) }}</textarea>
                                 </div>
                             </div>
+
+                            <div class="separator separator-dashed my-8"></div>
+
+                            <!-- Google Gemini AI Section -->
+                            <div class="d-flex align-items-center mb-6">
+                                <div class="symbol symbol-45px symbol-circle bg-light-primary me-3">
+                                    <i class="ki-duotone ki-technology-4 fs-2 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <h4 class="fw-bold text-gray-800 mb-0">Integrasi Google Gemini AI</h4>
+                                    <span class="fs-8 text-muted">Dibutuhkan untuk ekstraksi otomatis foto buku catatan buruh tani ke data pekerjaan (Vision AI)</span>
+                                </div>
+                            </div>
+
+                            <div class="row g-5">
+                                <!-- Gemini API Key -->
+                                <div class="col-md-8 mb-2">
+                                    <label class="form-label fw-bold text-gray-700 fs-7">
+                                        Gemini API Key:
+                                        <span class="badge badge-light-primary fs-9 ms-1">Google AI Studio</span>
+                                    </label>
+                                    <div class="input-group input-group-solid">
+                                        <input type="password" id="gemini_api_key" name="gemini_api_key" class="form-control form-control-solid fs-7" placeholder="AIzaSy..." value="{{ old('gemini_api_key', $geminiApiKey) }}" autocomplete="new-password">
+                                        <button class="btn btn-icon btn-light" type="button" id="toggle-gemini-key" title="Lihat/Sembunyikan Key">
+                                            <i class="ki-duotone ki-eye fs-3" id="icon-eye-gemini"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                        </button>
+                                        <button class="btn btn-light-primary fw-bold fs-7 px-4" type="button" id="btn-test-gemini">
+                                            <span class="indicator-label"><i class="ki-duotone ki-wifi fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Test Koneksi</span>
+                                            <span class="indicator-progress d-none"><span class="spinner-border spinner-border-sm align-middle me-1"></span> Menguji...</span>
+                                        </button>
+                                    </div>
+                                    <div class="form-text fs-9 text-gray-500">
+                                        Dapatkan API Key di <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary fw-semibold">Google AI Studio</a>. Digunakan untuk membaca tulisan tangan dari foto buku catatan pekerja.
+                                    </div>
+                                </div>
+
+                                <!-- Gemini Model -->
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label fw-bold text-gray-700 fs-7">Model Gemini AI:</label>
+                                    <select name="gemini_model" id="gemini_model" class="form-select form-select-solid fs-7">
+                                        <option value="gemini-2.0-flash" {{ old('gemini_model', $geminiModel) == 'gemini-2.0-flash' ? 'selected' : '' }}>gemini-2.0-flash (Direkomendasikan - Cepat & Akurat)</option>
+                                        <option value="gemini-1.5-flash" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-flash' ? 'selected' : '' }}>gemini-1.5-flash (Versi Ringan & Cepat)</option>
+                                        <option value="gemini-1.5-pro" {{ old('gemini_model', $geminiModel) == 'gemini-1.5-pro' ? 'selected' : '' }}>gemini-1.5-pro (Penalaran Kompleks)</option>
+                                    </select>
+                                    <div class="form-text fs-9 text-gray-500">Pilih model multimodal yang aktif di akun Anda.</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-end py-4 border-top mt-4">
                             <button type="submit" class="btn btn-primary fw-bold btn-sm rounded-pill px-6">
@@ -165,3 +212,94 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle Gemini Key Visibility
+        const toggleBtn = document.getElementById('toggle-gemini-key');
+        const keyInput = document.getElementById('gemini_api_key');
+        const eyeIcon = document.getElementById('icon-eye-gemini');
+
+        if (toggleBtn && keyInput) {
+            toggleBtn.addEventListener('click', function() {
+                if (keyInput.type === 'password') {
+                    keyInput.type = 'text';
+                    eyeIcon.classList.remove('ki-eye');
+                    eyeIcon.classList.add('ki-eye-slash');
+                } else {
+                    keyInput.type = 'password';
+                    eyeIcon.classList.remove('ki-eye-slash');
+                    eyeIcon.classList.add('ki-eye');
+                }
+            });
+        }
+
+        // Test Gemini Connection
+        const testBtn = document.getElementById('btn-test-gemini');
+        if (testBtn) {
+            testBtn.addEventListener('click', function() {
+                const apiKey = document.getElementById('gemini_api_key').value.trim();
+                const model = document.getElementById('gemini_model').value;
+
+                if (!apiKey) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'API Key Kosong',
+                        text: 'Silakan masukkan Gemini API Key terlebih dahulu sebelum menguji koneksi.',
+                        customClass: { confirmButton: 'btn btn-primary' }
+                    });
+                    return;
+                }
+
+                const label = testBtn.querySelector('.indicator-label');
+                const progress = testBtn.querySelector('.indicator-progress');
+
+                label.classList.add('d-none');
+                progress.classList.remove('d-none');
+                testBtn.disabled = true;
+
+                $.ajax({
+                    url: '{{ route("settings.general.test-gemini") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        api_key: apiKey,
+                        model: model
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Koneksi Berhasil!',
+                                text: response.message,
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Koneksi Gagal',
+                                text: response.message,
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Kesalahan Server',
+                            text: xhr.responseJSON?.message || 'Terjadi kesalahan saat memverifikasi API Key.',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
+                    },
+                    complete: function() {
+                        label.classList.remove('d-none');
+                        progress.classList.add('d-none');
+                        testBtn.disabled = false;
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endpush
