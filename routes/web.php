@@ -124,6 +124,9 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::delete('worker-jobs/import/{importLog}/rows/{row}', [\App\Http\Controllers\JobImportController::class, 'deleteRow'])->name('worker-jobs.import.delete-row');
     Route::post('worker-jobs/import/{importLog}/commit', [\App\Http\Controllers\JobImportController::class, 'commit'])->name('worker-jobs.import.commit');
     Route::delete('worker-jobs/import/{importLog}', [\App\Http\Controllers\JobImportController::class, 'destroy'])->name('worker-jobs.import.destroy');
+    Route::post('worker-jobs/import/save-mapping', [\App\Http\Controllers\JobImportController::class, 'saveMappingAjax'])->name('worker-jobs.import.save-mapping');
+    Route::get('worker-jobs/import/mappings', [\App\Http\Controllers\JobImportController::class, 'getMappingsAjax'])->name('worker-jobs.import.get-mappings');
+    Route::delete('worker-jobs/import/mappings/{id}', [\App\Http\Controllers\JobImportController::class, 'deleteMappingAjax'])->name('worker-jobs.import.delete-mapping');
 
     Route::resource('worker-jobs/categories', \App\Http\Controllers\JobCategoryController::class)->names('job-categories')->parameters(['categories' => 'job_category']);
     Route::resource('worker-jobs', \App\Http\Controllers\WorkerJobController::class)->except(['create', 'show', 'edit', 'update']);

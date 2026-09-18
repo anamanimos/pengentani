@@ -108,13 +108,60 @@ class JobImportController extends Controller
             $q->orderBy('date', 'asc')->orderBy('id', 'asc');
         }]);
 
-        $pertanians = Pertanian::orderBy('name', 'asc')->get();
+        $pertanians = Pertanian::with('kebun')->orderBy('name', 'asc')->get();
         $workers = User::where('role', 'pekerja')->orderBy('name', 'asc')->get();
         $categories = JobCategory::orderBy('name', 'asc')->get();
+        $mappings = \App\Models\ImportMapping::orderBy('type')->orderBy('raw_label')->get();
 
         $needsReviewCount = $importLog->stagingRows->where('status_baris', 'perlu_review')->count();
 
-        return view('worker_jobs.import.review', compact('importLog', 'pertanians', 'workers', 'categories', 'needsReviewCount'));
+        // Identify unmapped workers and categories for quick-add banners/buttons
+        $existingWorkerNames = $workers->pluck('name')->map(fn($n) => strtolower(trim($n)))->toArray();
+        $unregisteredWorkers = collect();
+        if ($importLog->detected_worker_name && !in_array(strtolower(trim($importLog->detected_worker_name)), $existingWorkerNames)) {
+            $unregisteredWorkers->push(trim($importLog->detected_worker_name));
+        }
+        foreach ($importLog->stagingRows as $row) {
+            if (empty($row->worker_id) && !empty($row->raw_worker_name)) {
+                $rawW = trim($row->raw_worker_name);
+                if (!in_array(strtolower($rawW), $existingWorkerNames)) {
+                    $unregisteredWorkers->push($rawW);
+                }
+            }
+        }
+        $unregisteredWorkers = $unregisteredWorkers->unique()->values();
+
+        $existingCatNames = $categories->pluck('name')->map(fn($n) => strtolower(trim($n)))->toArray();
+        $unregisteredCategories = collect();
+        foreach ($importLog->stagingRows as $row) {
+            if (empty($row->job_category_id) && !empty($row->raw_job_name)) {
+                $rawC = trim($row->raw_job_name);
+                if (!in_array(strtolower($rawC), $existingCatNames)) {
+                    $unregisteredCategories->push($rawC);
+                }
+            }
+        }
+        $unregisteredCategories = $unregisteredCategories->unique()->values();
+
+        $unmappedKebunCodes = collect();
+        foreach ($importLog->stagingRows as $row) {
+            if (empty($row->pertanian_id) && !empty($row->raw_kebun_code)) {
+                $unmappedKebunCodes->push(trim($row->raw_kebun_code));
+            }
+        }
+        $unmappedKebunCodes = $unmappedKebunCodes->unique()->values();
+
+        return view('worker_jobs.import.review', compact(
+            'importLog',
+            'pertanians',
+            'workers',
+            'categories',
+            'mappings',
+            'needsReviewCount',
+            'unregisteredWorkers',
+            'unregisteredCategories',
+            'unmappedKebunCodes'
+        ));
     }
 
     /**
@@ -222,5 +269,67 @@ class JobImportController extends Controller
 
         return redirect()->route('worker-jobs.import.index')
             ->with('success', 'Sesi import berhasil dihapus.');
+    }
+
+    /**
+     * Save/learn a mapping via AJAX (Auto-learning).
+     */
+    public function saveMappingAjax(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:pertanian,pekerja,kategori',
+            'raw_label' => 'required|string|max:255',
+            'target_id' => 'required|integer',
+            'target_name' => 'nullable|string|max:255',
+        ]);
+
+        $targetName = $request->target_name;
+        if (empty($targetName)) {
+            if ($request->type === 'pertanian') {
+                $p = Pertanian::with('kebun')->find($request->target_id);
+                $targetName = $p ? ($p->name . ($p->kebun ? ' (' . $p->kebun->name . ')' : '')) : null;
+            } elseif ($request->type === 'pekerja') {
+                $targetName = User::find($request->target_id)?->name;
+            } elseif ($request->type === 'kategori') {
+                $targetName = JobCategory::find($request->target_id)?->name;
+            }
+        }
+
+        $mapping = \App\Models\ImportMapping::register(
+            $request->type,
+            $request->raw_label,
+            $request->target_id,
+            $targetName
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Pemetaan '{$request->raw_label}' berhasil disimpan untuk auto-learning.",
+            'mapping' => $mapping
+        ]);
+    }
+
+    /**
+     * Get list of learned mappings via AJAX.
+     */
+    public function getMappingsAjax()
+    {
+        $mappings = \App\Models\ImportMapping::orderBy('type')->orderBy('raw_label')->get();
+        return response()->json(['success' => true, 'mappings' => $mappings]);
+    }
+
+    /**
+     * Delete a learned mapping via AJAX.
+     */
+    public function deleteMappingAjax($id)
+    {
+        $mapping = \App\Models\ImportMapping::findOrFail($id);
+        $label = $mapping->raw_label;
+        $mapping->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Pemetaan '{$label}' berhasil dihapus."
+        ]);
     }
 }
