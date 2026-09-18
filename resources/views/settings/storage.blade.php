@@ -71,6 +71,15 @@
                                     <span class="fs-9 text-muted">Monitoring & Cloud Storage</span>
                                 </div>
                             </a>
+
+                            <!-- Backup Database Menu Item -->
+                            <a href="{{ route('settings.backup.index') }}" class="nav-link d-flex align-items-center py-3 px-4 mb-2 rounded-3 text-gray-700 text-hover-primary fw-semibold fs-7 {{ request()->routeIs('settings.backup.*') ? 'active bg-light-primary text-primary fw-bold border border-primary border-opacity-25' : 'bg-hover-light' }}">
+                                <i class="ki-duotone ki-data fs-2 me-3 {{ request()->routeIs('settings.backup.*') ? 'text-primary' : 'text-gray-500' }}"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-7 fw-bold">Backup Database</span>
+                                    <span class="fs-9 text-muted">Gzip Dump & Telegram</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>

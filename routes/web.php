@@ -48,6 +48,14 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('/settings/storage/migrate', [\App\Http\Controllers\StorageSettingController::class, 'migrateLocalToR2'])->name('settings.storage.migrate');
     Route::post('/settings/storage/delete-migrated', [\App\Http\Controllers\StorageSettingController::class, 'deleteMigratedLocalFiles'])->name('settings.storage.delete-migrated');
 
+    Route::get('/settings/backup', [\App\Http\Controllers\BackupSettingController::class, 'index'])->name('settings.backup.index');
+    Route::post('/settings/backup/save-settings', [\App\Http\Controllers\BackupSettingController::class, 'saveSettings'])->name('settings.backup.save-settings');
+    Route::post('/settings/backup/create', [\App\Http\Controllers\BackupSettingController::class, 'create'])->name('settings.backup.create');
+    Route::get('/settings/backup/download/{filename}', [\App\Http\Controllers\BackupSettingController::class, 'download'])->name('settings.backup.download');
+    Route::post('/settings/backup/send-telegram/{filename}', [\App\Http\Controllers\BackupSettingController::class, 'sendTelegram'])->name('settings.backup.send-telegram');
+    Route::delete('/settings/backup/delete/{filename}', [\App\Http\Controllers\BackupSettingController::class, 'delete'])->name('settings.backup.delete');
+    Route::post('/settings/backup/test-telegram', [\App\Http\Controllers\BackupSettingController::class, 'testTelegram'])->name('settings.backup.test-telegram');
+
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
