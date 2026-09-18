@@ -21,7 +21,7 @@ class JobImportService
     /**
      * Create an import session from an uploaded notebook photo.
      */
-    public static function createFromPhoto(UploadedFile|string $file, ?int $userId = null): ImportLog
+    public static function createFromPhoto(UploadedFile|string $file, ?int $userId = null, ?string $model = null): ImportLog
     {
         $isUploaded = $file instanceof UploadedFile;
         $originalName = $isUploaded ? $file->getClientOriginalName() : basename($file);
@@ -55,7 +55,7 @@ class JobImportService
 
         try {
             // Call Gemini Vision Service
-            $extracted = GeminiVisionService::extractNotebookPhoto($destinationPath);
+            $extracted = GeminiVisionService::extractNotebookPhoto($destinationPath, null, $model);
 
             $log->update([
                 'raw_json' => json_encode($extracted, JSON_PRETTY_PRINT),

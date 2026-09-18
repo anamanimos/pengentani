@@ -106,6 +106,26 @@
                                 </div>
                             </div>
 
+                            <!-- Pilihan Model AI Vision -->
+                            <div class="row mt-4">
+                                <div class="col-md-6 col-lg-5">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <label class="form-label fw-bold text-gray-700 fs-7 mb-0">Model Gemini Vision AI:</label>
+                                        <button type="button" id="btn-import-fetch-models" class="btn btn-link btn-color-primary btn-active-color-primary p-0 fs-9 fw-bold" title="Ambil daftar model yang aktif di akun Anda">
+                                            <i class="ki-duotone ki-arrows-circle fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Muat dari Akun
+                                        </button>
+                                    </div>
+                                    <select name="model" id="import_gemini_model" class="form-select form-select-solid fs-7">
+                                        <option value="gemini-3.6-flash" {{ ($configuredModel ?? 'gemini-3.6-flash') == 'gemini-3.6-flash' ? 'selected' : '' }}>gemini-3.6-flash (Terbaru & Direkomendasikan)</option>
+                                        <option value="gemini-2.5-flash" {{ ($configuredModel ?? '') == 'gemini-2.5-flash' ? 'selected' : '' }}>gemini-2.5-flash</option>
+                                        <option value="gemini-2.5-pro" {{ ($configuredModel ?? '') == 'gemini-2.5-pro' ? 'selected' : '' }}>gemini-2.5-pro</option>
+                                        <option value="gemini-1.5-flash" {{ ($configuredModel ?? '') == 'gemini-1.5-flash' ? 'selected' : '' }}>gemini-1.5-flash</option>
+                                        <option value="gemini-1.5-pro" {{ ($configuredModel ?? '') == 'gemini-1.5-pro' ? 'selected' : '' }}>gemini-1.5-pro</option>
+                                    </select>
+                                    <div class="form-text fs-9 text-gray-500">Pilih model yang akan memproses foto ini. Default: <code>gemini-3.6-flash</code>.</div>
+                                </div>
+                            </div>
+
                             <div class="separator separator-dashed my-6"></div>
 
                             <div class="d-flex align-items-center justify-content-between">
@@ -250,6 +270,63 @@
                 label.classList.add('d-none');
                 progress.classList.remove('d-none');
                 btnPhoto.disabled = true;
+            });
+        }
+
+        // Fetch models from account on Import page
+        const btnImportFetch = document.getElementById('btn-import-fetch-models');
+        const importModelSelect = document.getElementById('import_gemini_model');
+        if (btnImportFetch && importModelSelect) {
+            btnImportFetch.addEventListener('click', function() {
+                btnImportFetch.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memuat...';
+                btnImportFetch.disabled = true;
+
+                $.ajax({
+                    url: '{{ route("settings.general.gemini-models") }}',
+                    type: 'POST',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function(res) {
+                        if (res.success && res.models && res.models.length > 0) {
+                            const currentVal = importModelSelect.value;
+                            importModelSelect.innerHTML = '';
+                            res.models.forEach(function(m) {
+                                const opt = document.createElement('option');
+                                opt.value = m.id;
+                                opt.textContent = m.name ? `${m.name} (${m.id})` : m.id;
+                                if (m.id === currentVal || m.id === 'gemini-3.6-flash') {
+                                    opt.selected = true;
+                                }
+                                importModelSelect.appendChild(opt);
+                            });
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Model Berhasil Dimuat!',
+                                text: `Ditemukan ${res.models.length} model aktif dari akun Anda.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Memuat Model',
+                                text: res.message || 'Tidak ada model yang ditemukan.',
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Kesalahan Server',
+                            text: xhr.responseJSON?.message || 'Gagal menghubungi server.',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
+                    },
+                    complete: function() {
+                        btnImportFetch.innerHTML = '<i class="ki-duotone ki-arrows-circle fs-8 me-1"><span class="path1"></span><span class="path2"></span></i> Muat dari Akun';
+                        btnImportFetch.disabled = false;
+                    }
+                });
             });
         }
 

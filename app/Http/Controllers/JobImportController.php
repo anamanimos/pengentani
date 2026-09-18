@@ -36,9 +36,10 @@ class JobImportController extends Controller
     {
         $apiKey = GeminiVisionService::getApiKey();
         $isGeminiConfigured = !empty($apiKey);
+        $configuredModel = GeminiVisionService::getModel();
         $promptTemplate = GeminiVisionService::getExtractionPrompt();
 
-        return view('worker_jobs.import.create', compact('isGeminiConfigured', 'promptTemplate'));
+        return view('worker_jobs.import.create', compact('isGeminiConfigured', 'configuredModel', 'promptTemplate'));
     }
 
     /**
@@ -48,6 +49,7 @@ class JobImportController extends Controller
     {
         $request->validate([
             'photo' => 'required|file|image|max:20480', // max 20MB
+            'model' => 'nullable|string|max:100',
         ], [
             'photo.required' => 'Silakan pilih foto buku catatan yang ingin diunggah.',
             'photo.image' => 'File harus berupa gambar (JPG, PNG, WEBP).',
@@ -62,7 +64,8 @@ class JobImportController extends Controller
         }
 
         try {
-            $log = JobImportService::createFromPhoto($request->file('photo'), auth()->id());
+            $model = $request->input('model') ?: GeminiVisionService::getModel();
+            $log = JobImportService::createFromPhoto($request->file('photo'), auth()->id(), $model);
 
             return redirect()->route('worker-jobs.import.review', $log->id)
                 ->with('success', 'Foto buku catatan berhasil dianalisis dengan Gemini AI. Silakan review dan sesuaikan data di bawah ini.');

@@ -26,7 +26,12 @@ class GeminiVisionService
      */
     public static function getModel(): string
     {
-        return Setting::get('gemini_model', 'gemini-3.6-flash');
+        $model = Setting::get('gemini_model');
+        if (empty($model) || str_contains($model, 'gemini-2.0')) {
+            $model = 'gemini-3.6-flash';
+            Setting::set('gemini_model', $model);
+        }
+        return $model;
     }
 
     /**
@@ -35,6 +40,9 @@ class GeminiVisionService
     public static function normalizeModel(string $model): string
     {
         $clean = ltrim(trim($model), '/');
+        if (empty($clean) || str_contains($clean, 'gemini-2.0')) {
+            $clean = 'gemini-3.6-flash';
+        }
         if (!str_starts_with($clean, 'models/')) {
             $clean = 'models/' . $clean;
         }
@@ -158,10 +166,14 @@ class GeminiVisionService
      * @return array Extracted structured array
      * @throws \Exception
      */
-    public static function extractNotebookPhoto(string $filePath, ?string $mimeType = null): array
+    public static function extractNotebookPhoto(string $filePath, ?string $mimeType = null, ?string $model = null): array
     {
         $apiKey = self::getApiKey();
-        $model = self::getModel();
+        $model = $model ?: self::getModel();
+
+        if (empty($model) || str_contains($model, 'gemini-2.0')) {
+            $model = 'gemini-3.6-flash';
+        }
 
         if (empty($apiKey)) {
             throw new \Exception('Gemini API Key belum dikonfigurasi di Pengaturan.');
@@ -214,8 +226,20 @@ class GeminiVisionService
         if (!$response->successful()) {
             $errorJson = $response->json();
             $msg = $errorJson['error']['message'] ?? ('HTTP ' . $response->status() . ': ' . $response->body());
-            Log::error("Gemini Vision API Error: {$msg}");
-            throw new \Exception("Gagal membaca foto dengan Gemini AI: {$msg}");
+
+            // Auto-fallback to gemini-3.6-flash if model deprecated or not available
+            if ((str_contains($msg, 'no longer available') || str_contains($msg, 'not found') || str_contains($msg, 'gemini-3.6-flash')) && $normalizedModel !== 'models/gemini-3.6-flash') {
+                Log::warning("Gemini model {$normalizedModel} failed, auto-retrying with models/gemini-3.6-flash");
+                $fallbackUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={$apiKey}";
+                $response = Http::timeout(60)->post($fallbackUrl, $payload);
+            }
+
+            if (!$response->successful()) {
+                $errorJson = $response->json();
+                $msg = $errorJson['error']['message'] ?? ('HTTP ' . $response->status() . ': ' . $response->body());
+                Log::error("Gemini Vision API Error: {$msg}");
+                throw new \Exception("Gagal membaca foto dengan Gemini AI: {$msg}");
+            }
         }
 
         $resData = $response->json();
