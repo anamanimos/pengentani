@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\WorkerJob;
 use App\Models\Pertanian;
 use App\Models\User;
 use App\Models\JobCategory;
+use App\Models\TransactionProof;
 
 class WorkerJobController extends Controller
 {
@@ -23,20 +28,20 @@ class WorkerJobController extends Controller
 
         // Removed month filter block as requested to rely on frontend date filter
         
-        // Limit to 500 rows to prevent browser crash if data grows
-        $jobs = $query->orderBy('id', 'asc')->take(500)->get();
-        $pertanians = Pertanian::with('kebun')->where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
-        $workers = User::where('role', 'pekerja')->orderBy('name')->get();
+        // Limit to 2000 rows to prevent browser crash if data grows
+        $jobs = $query->orderBy('date', 'asc')->orderBy('id', 'asc')->take(2000)->get();
+        $pertanians = Pertanian::with('kebun')->where('user_id', Auth::id())->orderBy('name')->get();
+        $workers = User::whereIn('role', ['pekerja', 'worker'])->orderBy('name')->get();
         $categories = JobCategory::orderBy('name')->get();
-        $proofs = \App\Models\TransactionProof::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
+        $proofs = TransactionProof::where('user_id', Auth::id())->orderBy('name')->get();
 
         return view('worker_jobs.index', compact('jobs', 'pertanians', 'workers', 'categories', 'proofs'));
     }
 
     public function create()
     {
-        $pertanians = Pertanian::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('name')->get();
-        $workers = User::where('role', 'pekerja')->orderBy('name')->get();
+        $pertanians = Pertanian::where('user_id', Auth::id())->orderBy('name')->get();
+        $workers = User::whereIn('role', ['pekerja', 'worker'])->orderBy('name')->get();
         $categories = JobCategory::orderBy('name')->get();
 
         return view('worker_jobs.create', compact('pertanians', 'workers', 'categories'));
@@ -58,7 +63,7 @@ class WorkerJobController extends Controller
             'data.*.status' => 'nullable|in:paid,unpaid',
         ]);
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $savedData = [];
             foreach ($request->data as $row) {
@@ -69,28 +74,51 @@ class WorkerJobController extends Controller
                 
                 $pertanianId = $row['pertanian_id'];
                 if (!is_numeric($pertanianId)) {
-                    $pertanian = \App\Models\Pertanian::where('user_id', Auth::id())
-                        ->where('name', 'like', '%' . trim($pertanianId) . '%')->first();
+                    $cleanName = trim(preg_replace('/^\[.*?\]\s*-\s*/', '', $pertanianId));
+                    $cleanName = trim(preg_replace('/\s*\(.*?\)$/', '', $cleanName));
+
+                    $pertanian = Pertanian::where('user_id', Auth::id())
+                        ->where(function($q) use ($pertanianId, $cleanName) {
+                            $q->where('name', 'like', '%' . $cleanName . '%')
+                              ->orWhere('name', 'like', '%' . trim($pertanianId) . '%');
+                        })->first();
+
+                    if (!$pertanian) {
+                        $pertanian = Pertanian::where('user_id', Auth::id())->first();
+                    }
+
                     if (!$pertanian) continue;
                     $row['pertanian_id'] = $pertanian->id;
                 }
 
                 $workerId = $row['worker_id'];
                 if (!is_numeric($workerId)) {
-                    $worker = \App\Models\User::firstOrCreate(
-                        ['email' => strtolower(str_replace(' ', '', trim($workerId))) . '@worker.local'],
-                        [
-                            'name' => trim($workerId),
-                            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-                            'role' => 'worker'
-                        ]
-                    );
+                    $workerName = trim($workerId);
+                    $worker = User::where(function($q) use ($workerName) {
+                        $q->where('name', $workerName)
+                          ->orWhere('name', 'like', '%' . $workerName . '%');
+                    })->whereIn('role', ['pekerja', 'worker'])->first();
+
+                    if (!$worker) {
+                        $worker = User::firstOrCreate(
+                            ['email' => strtolower(str_replace(' ', '', $workerName)) . '@worker.local'],
+                            [
+                                'name' => $workerName,
+                                'password' => Hash::make('password123'),
+                                'role' => 'pekerja'
+                            ]
+                        );
+                    }
                     $row['worker_id'] = $worker->id;
                 }
 
                 $catId = $row['job_category_id'];
                 if (!is_numeric($catId)) {
-                    $cat = \App\Models\JobCategory::firstOrCreate(['name' => trim($catId)]);
+                    $catName = trim($catId);
+                    $cat = JobCategory::where('name', 'like', '%' . $catName . '%')->first();
+                    if (!$cat) {
+                        $cat = JobCategory::firstOrCreate(['name' => $catName]);
+                    }
                     $row['job_category_id'] = $cat->id;
                 }
 
@@ -129,15 +157,15 @@ class WorkerJobController extends Controller
                     $savedData[] = ['index' => $row['index'], 'id' => $job->id];
                 }
             }
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return response()->json([
                 'message' => 'Data pekerjaan berhasil disimpan secara massal.',
                 'savedData' => $savedData,
                 'redirect' => route('worker-jobs.index')
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (\Throwable $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Gagal menyimpan data: ' . $e->getMessage()], 422);
         }
     }

@@ -241,7 +241,7 @@ class JobImportController extends Controller
 
             $msg = "Berhasil mengimpor {$result['count']} catatan pekerjaan ke sistem! (Total Upah: Rp " . number_format($result['total_wage'], 0, ',', '.') . ")";
 
-            return redirect()->route('worker-jobs.index')
+            return redirect()->route('worker-jobs.index', ['show_all' => 1])
                 ->with('success', $msg);
         } catch (\Throwable $e) {
             return redirect()->back()

@@ -69,6 +69,19 @@
     </button>
 </div>
 
+<div id="filter-hidden-alert" class="alert alert-warning d-none d-flex align-items-center justify-content-between p-4 mb-4 border border-warning shadow-sm">
+    <div class="d-flex align-items-center">
+        <i class="ki-duotone ki-information-5 fs-2hx text-warning me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        <div>
+            <span class="fw-bold text-gray-800 fs-6" id="filter-hidden-text">Perhatian: Sebagian data pekerjaan disembunyikan oleh filter aktif.</span>
+            <div class="text-muted fs-7">Jika data yang baru Anda simpan atau impor tidak muncul, kemungkinan berada di luar rentang tanggal filter yang aktif.</div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-warning fw-bold text-dark text-nowrap ms-3" onclick="resetAllFilters()">
+        <i class="ki-duotone ki-arrows-circle fs-3 me-1"><span class="path1"></span><span class="path2"></span></i> Tampilkan Semua Data
+    </button>
+</div>
+
 <div class="position-relative" id="spreadsheet-wrapper">
     <!-- Fullscreen Header (hidden by default, shown only in fullscreen) -->
     <div class="spreadsheet-fs-header d-none">
@@ -1228,10 +1241,18 @@
                 });
             }
 
+            // Clear filter if arriving from commit or show_all request
+            @if(request('show_all') || session('success'))
+            try {
+                localStorage.removeItem('worker_jobs_filters');
+            } catch(e) {}
+            @endif
+
             // Universal Column Filter Logic
             let universalFilterModal = new bootstrap.Modal(document.getElementById('universalFilterModal'));
             let activeFilters = {}; // Stores active filters by column index
             try {
+                @if(!request('show_all') && !session('success'))
                 const stored = localStorage.getItem('worker_jobs_filters');
                 if (stored) {
                     activeFilters = JSON.parse(stored);
@@ -1240,13 +1261,7 @@
                         delete activeFilters['1'];
                     }
                 } 
-
-                if (!stored) {
-                    let now = new Date();
-                    let y = now.getFullYear();
-                    let m = now.getMonth();
-                    activeFilters['1'] = [new Date(y, m, 1), new Date(y, m + 1, 0)];
-                }
+                @endif
             } catch (e) {
                 console.error('Failed to load activeFilters:', e);
             }
@@ -1329,10 +1344,17 @@
                 universalFilterModal.hide();
             });
 
-            $('#btn-global-reset-filter').click(function() {
+            window.resetAllFilters = function() {
                 activeFilters = {};
+                try {
+                    localStorage.removeItem('worker_jobs_filters');
+                } catch(e) {}
                 if(datePicker) datePicker.clear();
                 applyAllFilters();
+            };
+
+            $('#btn-global-reset-filter, #btn-global-reset-filter-fs').click(function() {
+                resetAllFilters();
             });
             
             window.removeFilter = function(colIndex) {
@@ -1345,7 +1367,11 @@
 
             function applyAllFilters() {
                 try {
-                    localStorage.setItem('worker_jobs_filters', JSON.stringify(activeFilters));
+                    if (Object.keys(activeFilters).length > 0) {
+                        localStorage.setItem('worker_jobs_filters', JSON.stringify(activeFilters));
+                    } else {
+                        localStorage.removeItem('worker_jobs_filters');
+                    }
                 } catch(e) {
                     console.error('Failed to save activeFilters:', e);
                 }
@@ -1399,6 +1425,9 @@
                     $('#active-filters-display').addClass('d-none');
                 }
 
+                let hiddenCount = 0;
+                let hasActiveFilter = Object.keys(activeFilters).length > 0;
+
                 for(let i = 0; i < data.length; i++) {
                     let rowData = data[i];
                     
@@ -1449,8 +1478,19 @@
                         }
                     }
 
-                    if(match) spreadsheet.showRow(i);
-                    else spreadsheet.hideRow(i);
+                    if(match) {
+                        spreadsheet.showRow(i);
+                    } else {
+                        spreadsheet.hideRow(i);
+                        hiddenCount++;
+                    }
+                }
+
+                if (hasActiveFilter && hiddenCount > 0) {
+                    $('#filter-hidden-alert').removeClass('d-none');
+                    $('#filter-hidden-text').text('Perhatian: Sebanyak ' + hiddenCount + ' baris catatan pekerjaan disembunyikan oleh filter aktif di atas.');
+                } else {
+                    $('#filter-hidden-alert').addClass('d-none');
                 }
 
                 updateTotal();
