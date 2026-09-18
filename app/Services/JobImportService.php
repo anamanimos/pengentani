@@ -186,6 +186,24 @@ class JobImportService
                 $reviewNotesList[] = 'Nominal upah Rp 0.';
             }
 
+            $isDuplicate = false;
+            if ($pertanianId && $workerId && $jobCategoryId && $date) {
+                $dupCheck = WorkerJob::findIdentical([
+                    'pertanian_id' => $pertanianId,
+                    'worker_id' => $workerId,
+                    'job_category_id' => $jobCategoryId,
+                    'date' => $date,
+                    'wage' => $wage,
+                    'konsumsi' => $konsumsi,
+                    'description' => $desc
+                ]);
+                if ($dupCheck) {
+                    $isDuplicate = true;
+                    $statusRow = 'perlu_review';
+                    $reviewNotesList[] = 'Peringatan: Baris ini identik dengan data pekerjaan yang sudah ada di sistem (#ID ' . $dupCheck->id . '). Otomatis tidak dicentang.';
+                }
+            }
+
             ImportStagingRow::create([
                 'import_log_id' => $log->id,
                 'date' => $date ?: now()->toDateString(),
@@ -203,7 +221,7 @@ class JobImportService
                 'confidence_rendah' => $confidenceRendah,
                 'status_baris' => $statusRow,
                 'review_notes' => !empty($reviewNotesList) ? implode('; ', $reviewNotesList) : null,
-                'disertakan' => true,
+                'disertakan' => !$isDuplicate,
             ]);
         }
     }
@@ -427,6 +445,11 @@ class JobImportService
                 throw new \Exception('Tidak ada baris yang dipilih untuk disimpan.');
             }
 
+            $insertedCount = 0;
+            $duplicateCount = 0;
+            $totalWage = 0;
+            $totalKonsumsi = 0;
+
             foreach ($rowsToCommit as $row) {
                 // Validation check
                 if (empty($row->pertanian_id)) {
@@ -437,6 +460,18 @@ class JobImportService
                 }
                 if (empty($row->job_category_id)) {
                     throw new \Exception("Baris tanggal {$row->date->format('d/m/Y')} belum memiliki Kategori Pekerjaan.");
+                }
+
+                // Check duplicate against existing WorkerJob
+                $existingJob = $row->findExistingDuplicate();
+                if ($existingJob) {
+                    $row->update([
+                        'created_worker_job_id' => $existingJob->id,
+                        'status_baris' => 'ok',
+                        'review_notes' => 'Diabaikan saat commit karena data sudah ada di sistem.',
+                    ]);
+                    $duplicateCount++;
+                    continue;
                 }
 
                 $workerJob = WorkerJob::create([
@@ -470,12 +505,13 @@ class JobImportService
             LogService::record(
                 'worker_job',
                 'import_completed',
-                "Berhasil mengimpor {$insertedCount} catatan pekerjaan dari sesi #{$log->id} (Total Upah: Rp " . number_format($totalWage, 0, ',', '.') . ")"
+                "Berhasil mengimpor {$insertedCount} catatan pekerjaan dari sesi #{$log->id} (Total Upah: Rp " . number_format($totalWage, 0, ',', '.') . ")" . ($duplicateCount > 0 ? " ({$duplicateCount} duplikat diabaikan)" : "")
             );
 
             return [
                 'success' => true,
                 'count' => $insertedCount,
+                'duplicate_count' => $duplicateCount,
                 'total_wage' => $totalWage,
                 'total_konsumsi' => $totalKonsumsi,
             ];

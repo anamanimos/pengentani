@@ -239,7 +239,13 @@ class JobImportController extends Controller
             $rowsInput = $request->input('rows', []);
             $result = JobImportService::commitToWorkerJobs($importLog, $rowsInput);
 
-            $msg = "Berhasil mengimpor {$result['count']} catatan pekerjaan ke sistem! (Total Upah: Rp " . number_format($result['total_wage'], 0, ',', '.') . ")";
+            $msg = "Berhasil mengimpor {$result['count']} catatan pekerjaan ke sistem!";
+            if (!empty($result['duplicate_count']) && $result['duplicate_count'] > 0) {
+                $msg .= " ({$result['duplicate_count']} baris diabaikan karena identik dengan data yang sudah ada).";
+            }
+            if ($result['count'] > 0) {
+                $msg .= " (Total Upah: Rp " . number_format($result['total_wage'], 0, ',', '.') . ")";
+            }
 
             return redirect()->route('worker-jobs.index', ['show_all' => 1])
                 ->with('success', $msg);

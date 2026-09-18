@@ -150,6 +150,19 @@
             </div>
         </div>
 
+        @php
+            $duplicateStagingCount = $importLog->stagingRows->filter(fn($r) => $r->findExistingDuplicate())->count();
+        @endphp
+        @if($duplicateStagingCount > 0)
+        <div class="alert alert-warning d-flex align-items-center p-4 mb-5 border border-warning shadow-sm">
+            <i class="ki-duotone ki-information-5 fs-2hx text-warning me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-gray-800 fs-6">Perhatian: Ditemukan {{ $duplicateStagingCount }} baris data yang identik dengan catatan yang sudah ada di database.</span>
+                <span class="text-muted fs-7">Baris yang terdeteksi duplikat otomatis <b>tidak dicentang</b> agar tidak tersimpan ganda ke sistem. Anda dapat melihat penanda merah pada baris terkait.</span>
+            </div>
+        </div>
+        @endif
+
         <!-- Main Form for Review & Commit -->
         <form id="form-commit-import" action="{{ route('worker-jobs.import.commit', $importLog->id) }}" method="POST">
             @csrf
@@ -199,20 +212,25 @@
                             <tbody class="fs-8">
                                 @forelse($importLog->stagingRows as $row)
                                 @php
-                                    $isRowOk = $row->isValidForCommit() && !$row->confidence_rendah;
+                                    $existingDup = $row->findExistingDuplicate();
+                                    $isRowOk = $row->isValidForCommit() && !$row->confidence_rendah && !$existingDup;
                                     $workerRaw = $row->raw_worker_name ?: $importLog->detected_worker_name;
                                 @endphp
-                                <tr id="row-item-{{ $row->id }}" class="staging-row {{ !$isRowOk ? 'bg-light-warning bg-opacity-40' : '' }}" data-row-id="{{ $row->id }}">
+                                <tr id="row-item-{{ $row->id }}" class="staging-row {{ $existingDup ? 'bg-light-danger bg-opacity-20' : (!$isRowOk ? 'bg-light-warning bg-opacity-40' : '') }}" data-row-id="{{ $row->id }}">
                                     <!-- Checkbox Sertakan -->
                                     <td class="text-center">
                                         <div class="form-check form-check-sm form-check-custom form-check-solid justify-content-center">
-                                            <input class="form-check-input row-select-checkbox" type="checkbox" name="rows[{{ $row->id }}][disertakan]" value="1" {{ $row->disertakan ? 'checked' : '' }} />
+                                            <input class="form-check-input row-select-checkbox" type="checkbox" name="rows[{{ $row->id }}][disertakan]" value="1" {{ ($row->disertakan && !$existingDup) ? 'checked' : '' }} />
                                         </div>
                                     </td>
 
                                     <!-- Status Validation Badge -->
                                     <td class="text-center col-status">
-                                        @if(!$isRowOk)
+                                        @if($existingDup)
+                                            <span class="badge badge-light-danger badge-circle w-25px h-25px status-badge" data-bs-toggle="tooltip" title="Data yang persis sama sudah ada di database (#ID {{ $existingDup->id }}). Baris ini otomatis tidak dicentang.">
+                                                <i class="ki-duotone ki-copy fs-7 text-danger"><span class="path1"></span><span class="path2"></span></i>
+                                            </span>
+                                        @elseif(!$isRowOk)
                                             <span class="badge badge-light-warning badge-circle w-25px h-25px status-badge" data-bs-toggle="tooltip" title="{{ $row->review_notes ?: 'Data belum lengkap atau hasil pembacaan AI ragu' }}">
                                                 <i class="ki-duotone ki-information fs-7 text-warning"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                                             </span>

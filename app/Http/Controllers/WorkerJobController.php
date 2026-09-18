@@ -66,6 +66,7 @@ class WorkerJobController extends Controller
         DB::beginTransaction();
         try {
             $savedData = [];
+            $duplicateSkipped = 0;
             foreach ($request->data as $row) {
                 // Skip incomplete rows
                 if (empty($row['pertanian_id']) || empty($row['worker_id']) || empty($row['job_category_id']) || empty($row['date'])) {
@@ -141,27 +142,41 @@ class WorkerJobController extends Controller
                         $savedData[] = ['index' => $row['index'], 'id' => $job->id];
                     }
                 } else {
-                    $job = WorkerJob::create([
-                        'pertanian_id' => $row['pertanian_id'],
-                        'worker_id' => $row['worker_id'],
-                        'job_category_id' => $row['job_category_id'],
-                        'description' => $row['description'] ?? null,
-                        'date' => $row['date'],
-                        'start_time' => $row['start_time'] ?? null,
-                        'end_time' => $row['end_time'] ?? null,
-                        'wage' => $row['wage'] ?? 0,
-                        'konsumsi' => $row['konsumsi'] ?? 0,
-                        'status' => $row['status'] ?? 'unpaid',
-                        'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
-                    ]);
-                    $savedData[] = ['index' => $row['index'], 'id' => $job->id];
+                    // Check if an identical WorkerJob already exists (all row fields match)
+                    $existingJob = WorkerJob::findIdentical($row);
+                    if ($existingJob) {
+                        // Reuse existing record ID without duplicating
+                        $savedData[] = ['index' => $row['index'], 'id' => $existingJob->id];
+                        $duplicateSkipped++;
+                    } else {
+                        $job = WorkerJob::create([
+                            'pertanian_id' => $row['pertanian_id'],
+                            'worker_id' => $row['worker_id'],
+                            'job_category_id' => $row['job_category_id'],
+                            'description' => $row['description'] ?? null,
+                            'date' => $row['date'],
+                            'start_time' => $row['start_time'] ?? null,
+                            'end_time' => $row['end_time'] ?? null,
+                            'wage' => $row['wage'] ?? 0,
+                            'konsumsi' => $row['konsumsi'] ?? 0,
+                            'status' => $row['status'] ?? 'unpaid',
+                            'transaction_proof_id' => $row['transaction_proof_id'] ?? null,
+                        ]);
+                        $savedData[] = ['index' => $row['index'], 'id' => $job->id];
+                    }
                 }
             }
             DB::commit();
 
+            $msg = 'Data pekerjaan berhasil disimpan secara massal.';
+            if ($duplicateSkipped > 0) {
+                $msg = "Data berhasil disimpan ({$duplicateSkipped} baris yang persis sama/duplikat dihubungkan ke data yang sudah ada).";
+            }
+
             return response()->json([
-                'message' => 'Data pekerjaan berhasil disimpan secara massal.',
+                'message' => $msg,
                 'savedData' => $savedData,
+                'duplicate_skipped' => $duplicateSkipped,
                 'redirect' => route('worker-jobs.index')
             ]);
         } catch (\Throwable $e) {
@@ -176,9 +191,85 @@ class WorkerJobController extends Controller
         return response()->json(['message' => 'Data berhasil dihapus.']);
     }
 
+    /**
+     * Check how many duplicate records currently exist in database.
+     */
+    public function checkDuplicatesAjax()
+    {
+        $jobs = WorkerJob::orderBy('id', 'asc')->get();
+        $seen = [];
+        $duplicateIds = [];
+
+        foreach ($jobs as $job) {
+            $sig = $job->getDuplicateSignature();
+            if (!isset($seen[$sig])) {
+                $seen[$sig] = $job->id; // Original record
+            } else {
+                $duplicateIds[] = $job->id;
+            }
+        }
+
+        return response()->json([
+            'count' => count($duplicateIds),
+            'duplicate_ids' => $duplicateIds,
+            'message' => count($duplicateIds) > 0 
+                ? "Ditemukan " . count($duplicateIds) . " baris catatan yang persis sama (duplikat)."
+                : "Semua data rapi, tidak ada duplikat."
+        ]);
+    }
+
+    /**
+     * Clean and delete duplicate records in database, preserving the original (earliest).
+     */
+    public function cleanDuplicatesAjax()
+    {
+        DB::beginTransaction();
+        try {
+            $jobs = WorkerJob::orderBy('id', 'asc')->get();
+            $seen = [];
+            $duplicateIds = [];
+
+            foreach ($jobs as $job) {
+                $sig = $job->getDuplicateSignature();
+                if (!isset($seen[$sig])) {
+                    $seen[$sig] = $job->id;
+                } else {
+                    $duplicateIds[] = $job->id;
+                }
+            }
+
+            $deleted = 0;
+            if (!empty($duplicateIds)) {
+                $deleted = WorkerJob::whereIn('id', $duplicateIds)->delete();
+            }
+
+            DB::commit();
+
+            \App\Services\LogService::record(
+                'worker_job',
+                'clean_duplicates',
+                "Membersihkan {$deleted} data pekerjaan duplikat."
+            );
+
+            return response()->json([
+                'success' => true,
+                'deleted' => $deleted,
+                'message' => $deleted > 0 
+                    ? "Berhasil membersihkan {$deleted} baris data duplikat." 
+                    : "Tidak ada baris duplikat yang ditemukan."
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membersihkan duplikat: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getDropdownsAjax()
     {
-        $workers = \App\Models\User::where('role', 'pekerja')->select('id', 'name')->get()->toArray();
+        $workers = \App\Models\User::whereIn('role', ['pekerja', 'worker'])->select('id', 'name')->get()->toArray();
         $categories = \App\Models\JobCategory::select('id', 'name')->get()->toArray();
         
         return response()->json([

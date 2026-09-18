@@ -71,4 +71,20 @@ class ImportStagingRow extends Model
                !empty($this->date) &&
                $this->wage >= 0;
     }
+
+    /**
+     * Check if an exact identical WorkerJob already exists in the database.
+     */
+    public function findExistingDuplicate(): ?WorkerJob
+    {
+        return WorkerJob::findIdentical([
+            'pertanian_id' => $this->pertanian_id,
+            'worker_id' => $this->worker_id,
+            'job_category_id' => $this->job_category_id,
+            'date' => $this->date ? $this->date->format('Y-m-d') : null,
+            'wage' => $this->wage,
+            'konsumsi' => $this->konsumsi,
+            'description' => $this->description,
+        ]);
+    }
 }

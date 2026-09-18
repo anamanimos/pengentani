@@ -113,6 +113,8 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::post('worker-jobs/ajax-worker', [\App\Http\Controllers\WorkerJobController::class, 'storeWorkerAjax'])->name('worker-jobs.ajax-worker');
     Route::post('worker-jobs/ajax-category', [\App\Http\Controllers\WorkerJobController::class, 'storeCategoryAjax'])->name('worker-jobs.ajax-category');
     Route::get('worker-jobs/export', [\App\Http\Controllers\WorkerJobController::class, 'export'])->name('worker-jobs.export');
+    Route::get('worker-jobs/check-duplicates', [\App\Http\Controllers\WorkerJobController::class, 'checkDuplicatesAjax'])->name('worker-jobs.check-duplicates');
+    Route::post('worker-jobs/clean-duplicates', [\App\Http\Controllers\WorkerJobController::class, 'cleanDuplicatesAjax'])->name('worker-jobs.clean-duplicates');
 
     // Import Pekerja dari Foto / JSON AI
     Route::get('worker-jobs/import', [\App\Http\Controllers\JobImportController::class, 'index'])->name('worker-jobs.import.index');
