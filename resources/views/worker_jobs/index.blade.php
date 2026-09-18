@@ -94,8 +94,8 @@
             <div class="text-muted fs-7">Terdapat baris catatan yang memiliki tanggal, pekerja, lahan, kategori, upah, dan jam yang persis sama.</div>
         </div>
     </div>
-    <button type="button" class="btn btn-sm btn-danger fw-bold text-nowrap ms-3" onclick="confirmCleanDuplicates()">
-        <i class="ki-duotone ki-trash fs-3 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Bersihkan Duplikat (<span id="duplicate-badge-count">0</span>)
+    <button type="button" class="btn btn-sm btn-danger fw-bold text-nowrap ms-3" onclick="openReviewDuplicatesModal()">
+        <i class="ki-duotone ki-eye fs-3 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Tinjau & Bersihkan Duplikat (<span id="duplicate-badge-count">0</span>)
     </button>
 </div>
 
@@ -217,6 +217,77 @@
             </div>
             <div class="modal-body scroll-y pt-5 pb-5 px-5 px-xl-10" id="column-visibility-list">
                 <!-- Checkboxes will be injected here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Review Data Duplikat -->
+<div class="modal fade" id="modalReviewDuplicates" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header pb-3 border-bottom">
+                <div class="d-flex align-items-center">
+                    <div class="symbol symbol-45px symbol-circle bg-light-danger me-3">
+                        <i class="ki-duotone ki-copy fs-1 text-danger"><span class="path1"></span><span class="path2"></span></i>
+                    </div>
+                    <div>
+                        <h4 class="modal-title fw-bold text-gray-800 fs-4">Tinjau Data Pekerjaan Duplikat</h4>
+                        <div class="text-muted fs-7">Periksa rincian data yang identik sebelum memutuskan untuk menghapus salinan ganda</div>
+                    </div>
+                </div>
+                <div class="btn btn-sm btn-icon btn-active-light-primary ms-2" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-2x"><span class="path1"></span><span class="path2"></span></i>
+                </div>
+            </div>
+
+            <div class="modal-body py-5">
+                <div class="alert alert-light-warning d-flex align-items-center p-4 mb-4 border border-warning">
+                    <i class="ki-duotone ki-information-5 fs-2hx text-warning me-3"><span class="path1"></span><span class="path2"></span></i>
+                    <div class="fs-7 text-gray-700">
+                        Sistem mendeteksi catatan di bawah ini memiliki nilai <b>tanggal, lahan, pekerja, kategori, upah, konsumsi, dan jam kerja yang 100% sama</b> dengan catatan asli yang sudah tersimpan sebelumnya. 
+                        Data yang berlabel <span class="badge badge-light-success fw-bold">Data Asli</span> akan <b>tetap aman dipertahankan</b>, dan hanya baris berlabel <span class="badge badge-light-danger fw-bold">Salinan Duplikat</span> yang dicentang yang akan dihapus.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check form-check-custom form-check-solid">
+                        <input class="form-check-input" type="checkbox" id="check-all-duplicates" checked />
+                        <label class="form-check-label fw-bold text-gray-800 fs-7 cursor-pointer ms-2" for="check-all-duplicates">
+                            Pilih Semua Salinan Duplikat (<span id="duplicate-modal-selected-count" class="text-danger fw-bolder">0</span> terpilih)
+                        </label>
+                    </div>
+                    <span class="badge badge-light-danger fw-bold fs-7 px-3 py-2" id="duplicate-modal-total-badge">
+                        0 Data Duplikat
+                    </span>
+                </div>
+
+                <div class="table-responsive rounded border" style="max-height: 420px; overflow-y: auto;">
+                    <table class="table table-hover table-row-bordered table-row-gray-200 align-middle gs-4 gy-3 fs-8 mb-0" id="table-duplicates-list">
+                        <thead class="bg-light fw-bold text-gray-700 text-uppercase fs-9 sticky-top" style="z-index: 2;">
+                            <tr>
+                                <th class="w-40px text-center">Pilih</th>
+                                <th class="min-w-90px">Tanggal</th>
+                                <th class="min-w-160px">Lahan / Kebun</th>
+                                <th class="min-w-130px">Pekerja</th>
+                                <th class="min-w-130px">Kategori</th>
+                                <th class="min-w-100px">Upah</th>
+                                <th class="min-w-90px">Konsumsi</th>
+                                <th class="min-w-220px">Perbandingan Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-duplicates-tbody">
+                            <!-- Injected dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-between py-3 border-top bg-light">
+                <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Tutup / Batal</button>
+                <button type="button" class="btn btn-sm btn-danger fw-bold" id="btn-modal-delete-duplicates" onclick="executeCleanSelectedDuplicates()">
+                    <i class="ki-duotone ki-trash fs-3 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus (<span id="btn-delete-count">0</span>) Salinan Duplikat Terpilih
+                </button>
             </div>
         </div>
     </div>
@@ -1389,8 +1460,16 @@
                 });
             };
 
-            window.confirmCleanDuplicates = function() {
+            window.openReviewDuplicatesModal = function() {
+                Swal.fire({
+                    title: 'Memeriksa data...',
+                    text: 'Sedang memuat rincian data duplikat',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
                 $.get('{{ route("worker-jobs.check-duplicates") }}', function(res) {
+                    Swal.close();
                     if (!res || res.count === 0) {
                         Swal.fire({
                             title: 'Data Rapi',
@@ -1400,48 +1479,122 @@
                             customClass: { confirmButton: 'btn btn-primary' }
                         });
                         $('#duplicate-alert-banner').addClass('d-none');
+                        $('#btn-check-duplicates').html('<i class="ki-duotone ki-copy fs-2 me-1"><span class="path1"></span><span class="path2"></span></i> Cek Duplikasi').removeClass('btn-warning').addClass('btn-light-warning');
                         return;
                     }
 
-                    Swal.fire({
-                        title: 'Bersihkan ' + res.count + ' Data Duplikat?',
-                        text: 'Sistem akan mempertahankan 1 baris data asli dan menghapus ' + res.count + ' baris salinan yang identik (seluruh kolom sama). Tindakan ini tidak dapat dibatalkan.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Bersihkan Sekarang',
-                        cancelButtonText: 'Batal',
-                        customClass: {
-                            confirmButton: 'btn btn-danger',
-                            cancelButton: 'btn btn-light'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                title: 'Membersihkan data...',
-                                text: 'Mohon tunggu sebentar',
-                                allowOutsideClick: false,
-                                didOpen: () => { Swal.showLoading(); }
-                            });
-                            $.post('{{ route("worker-jobs.clean-duplicates") }}', { _token: '{{ csrf_token() }}' }, function(cleanRes) {
-                                Swal.fire({
-                                    title: 'Berhasil!',
-                                    text: cleanRes.message,
-                                    icon: 'success',
-                                    confirmButtonText: 'OK',
-                                    customClass: { confirmButton: 'btn btn-primary' }
-                                }).then(() => {
-                                    location.reload();
-                                });
-                            }).fail(function(xhr) {
-                                Swal.fire('Gagal', xhr.responseJSON?.message || 'Terjadi kesalahan saat membersihkan data.', 'error');
-                            });
-                        }
+                    let tbody = $('#table-duplicates-tbody');
+                    tbody.empty();
+
+                    res.duplicates.forEach(function(d) {
+                        let rowHtml = `
+                            <tr id="dup-row-${d.id}">
+                                <td class="text-center">
+                                    <div class="form-check form-check-custom form-check-solid justify-content-center">
+                                        <input class="form-check-input dup-checkbox" type="checkbox" value="${d.id}" checked onchange="updateDuplicateSelectedCount()" />
+                                    </div>
+                                </td>
+                                <td class="fw-bold text-gray-800">${d.date}</td>
+                                <td><span class="text-gray-800 fw-semibold">${d.pertanian_name}</span></td>
+                                <td><span class="badge badge-light-primary fw-bold">${d.worker_name}</span></td>
+                                <td><span class="text-gray-700">${d.category_name}</span></td>
+                                <td class="fw-bold text-success">${d.wage_formatted}</td>
+                                <td class="text-gray-600">${d.konsumsi_formatted}</td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge badge-light-success fs-9 me-2">Data Asli: #ID ${d.original_id}</span>
+                                            <span class="text-muted fs-9">(Tersimpan ${d.original_created_at})</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge badge-light-danger fs-9 me-2">Salinan: #ID ${d.id}</span>
+                                            <span class="text-danger fs-9 fw-semibold">(Diinput ${d.created_at})</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.append(rowHtml);
                     });
+
+                    $('#duplicate-modal-total-badge').text(res.count + ' Data Duplikat');
+                    $('#check-all-duplicates').prop('checked', true);
+                    updateDuplicateSelectedCount();
+
+                    let modal = new bootstrap.Modal(document.getElementById('modalReviewDuplicates'));
+                    modal.show();
+                }).fail(function() {
+                    Swal.fire('Gagal', 'Terjadi kesalahan saat memeriksa data duplikat.', 'error');
+                });
+            };
+
+            window.updateDuplicateSelectedCount = function() {
+                let checkedCount = $('.dup-checkbox:checked').length;
+                let totalCount = $('.dup-checkbox').length;
+                $('#duplicate-modal-selected-count, #btn-delete-count').text(checkedCount);
+                $('#check-all-duplicates').prop('checked', checkedCount === totalCount && totalCount > 0);
+                $('#btn-modal-delete-duplicates').prop('disabled', checkedCount === 0);
+            };
+
+            $('#check-all-duplicates').change(function() {
+                let isChecked = $(this).is(':checked');
+                $('.dup-checkbox').prop('checked', isChecked);
+                updateDuplicateSelectedCount();
+            });
+
+            window.executeCleanSelectedDuplicates = function() {
+                let ids = [];
+                $('.dup-checkbox:checked').each(function() {
+                    ids.push(parseInt($(this).val()));
+                });
+
+                if (ids.length === 0) {
+                    Swal.fire('Perhatian', 'Pilih minimal satu baris duplikat untuk dihapus.', 'warning');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Hapus ' + ids.length + ' Salinan Duplikat?',
+                    text: 'Sistem akan menghapus ' + ids.length + ' baris salinan duplikat yang dicentang. Data asli pertama akan tetap tersimpan dan tidak terpengaruh.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus Sekarang!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-light'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Menghapus data...',
+                            text: 'Mohon tunggu sebentar',
+                            allowOutsideClick: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+                        $.post('{{ route("worker-jobs.clean-duplicates") }}', {
+                            _token: '{{ csrf_token() }}',
+                            duplicate_ids: ids
+                        }, function(cleanRes) {
+                            $('#modalReviewDuplicates').modal('hide');
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: cleanRes.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                                customClass: { confirmButton: 'btn btn-primary' }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }).fail(function(xhr) {
+                            Swal.fire('Gagal', xhr.responseJSON?.message || 'Terjadi kesalahan saat menghapus data.', 'error');
+                        });
+                    }
                 });
             };
 
             $('#btn-check-duplicates').click(function() {
-                confirmCleanDuplicates();
+                openReviewDuplicatesModal();
             });
             
             window.removeFilter = function(colIndex) {

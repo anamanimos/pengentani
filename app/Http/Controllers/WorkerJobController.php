@@ -192,28 +192,51 @@ class WorkerJobController extends Controller
     }
 
     /**
-     * Check how many duplicate records currently exist in database.
+     * Check how many duplicate records currently exist in database and return details for user review.
      */
     public function checkDuplicatesAjax()
     {
-        $jobs = WorkerJob::orderBy('id', 'asc')->get();
+        $jobs = WorkerJob::with(['pertanian.kebun', 'worker', 'category'])
+            ->whereHas('pertanian', function($q) {
+                $q->where('user_id', Auth::id());
+            })
+            ->orderBy('id', 'asc')
+            ->get();
+
         $seen = [];
-        $duplicateIds = [];
+        $duplicates = [];
 
         foreach ($jobs as $job) {
             $sig = $job->getDuplicateSignature();
             if (!isset($seen[$sig])) {
-                $seen[$sig] = $job->id; // Original record
+                $seen[$sig] = $job; // Original record
             } else {
-                $duplicateIds[] = $job->id;
+                $original = $seen[$sig];
+                $duplicates[] = [
+                    'id' => $job->id,
+                    'original_id' => $original->id,
+                    'date' => $job->date ? \Carbon\Carbon::parse($job->date)->format('d/m/Y') : '-',
+                    'pertanian_name' => ($original->pertanian && $original->pertanian->kebun ? '[' . $original->pertanian->kebun->name . '] ' : '') . ($original->pertanian->name ?? '-'),
+                    'worker_name' => $original->worker->name ?? '-',
+                    'category_name' => $original->category->name ?? '-',
+                    'wage' => (float)$job->wage,
+                    'wage_formatted' => 'Rp ' . number_format($job->wage, 0, ',', '.'),
+                    'konsumsi' => (float)$job->konsumsi,
+                    'konsumsi_formatted' => 'Rp ' . number_format($job->konsumsi, 0, ',', '.'),
+                    'description' => $job->description ?: '-',
+                    'start_time' => $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format('H:i') : null,
+                    'end_time' => $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format('H:i') : null,
+                    'created_at' => $job->created_at ? $job->created_at->format('d/m/Y H:i') : '-',
+                    'original_created_at' => $original->created_at ? $original->created_at->format('d/m/Y H:i') : '-',
+                ];
             }
         }
 
         return response()->json([
-            'count' => count($duplicateIds),
-            'duplicate_ids' => $duplicateIds,
-            'message' => count($duplicateIds) > 0 
-                ? "Ditemukan " . count($duplicateIds) . " baris catatan yang persis sama (duplikat)."
+            'count' => count($duplicates),
+            'duplicates' => $duplicates,
+            'message' => count($duplicates) > 0 
+                ? "Ditemukan " . count($duplicates) . " baris catatan yang persis sama (duplikat)."
                 : "Semua data rapi, tidak ada duplikat."
         ]);
     }
@@ -221,26 +244,39 @@ class WorkerJobController extends Controller
     /**
      * Clean and delete duplicate records in database, preserving the original (earliest).
      */
-    public function cleanDuplicatesAjax()
+    public function cleanDuplicatesAjax(Request $request)
     {
         DB::beginTransaction();
         try {
-            $jobs = WorkerJob::orderBy('id', 'asc')->get();
+            $selectedIds = $request->input('duplicate_ids', []);
+
+            $jobs = WorkerJob::with('pertanian')
+                ->whereHas('pertanian', function($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->orderBy('id', 'asc')
+                ->get();
+
             $seen = [];
-            $duplicateIds = [];
+            $validDuplicateIds = [];
 
             foreach ($jobs as $job) {
                 $sig = $job->getDuplicateSignature();
                 if (!isset($seen[$sig])) {
                     $seen[$sig] = $job->id;
                 } else {
-                    $duplicateIds[] = $job->id;
+                    $validDuplicateIds[] = $job->id;
                 }
             }
 
+            // If user passed specific duplicate IDs, only delete those that are verified duplicates
+            $toDelete = !empty($selectedIds) 
+                ? array_values(array_intersect($selectedIds, $validDuplicateIds))
+                : $validDuplicateIds;
+
             $deleted = 0;
-            if (!empty($duplicateIds)) {
-                $deleted = WorkerJob::whereIn('id', $duplicateIds)->delete();
+            if (!empty($toDelete)) {
+                $deleted = WorkerJob::whereIn('id', $toDelete)->delete();
             }
 
             DB::commit();
@@ -256,7 +292,7 @@ class WorkerJobController extends Controller
                 'deleted' => $deleted,
                 'message' => $deleted > 0 
                     ? "Berhasil membersihkan {$deleted} baris data duplikat." 
-                    : "Tidak ada baris duplikat yang ditemukan."
+                    : "Tidak ada baris duplikat yang dihapus."
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
