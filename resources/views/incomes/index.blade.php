@@ -694,6 +694,11 @@
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
+                onload: function() {
+                    setTimeout(function() {
+                        initHeadersAndFilters();
+                    }, 100);
+                },
                 minDimensions: [10, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
@@ -862,21 +867,26 @@
                 }
             }, true);
 
-            setTimeout(function() {
-                var headers = $('#spreadsheet > div > table > thead > tr:first-child > td');
-                headers.each(function(index) {
-                    if (index >= 0 && index < spreadsheet.options.columns.length) {
-                        var colIndex = index;
-                        if(index > 0) { 
-                            var originalTitle = spreadsheet.options.columns[index].title;
-                            var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+index+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+index+')"><span class="path1"></span><span class="path2"></span></i>';
-                            $(this).html(originalTitle + iconHtml);
-                        }
+            function initHeadersAndFilters() {
+                var headers = $('#spreadsheet .jexcel > thead > tr:first-child > td[data-x]');
+                if (headers.length === 0) {
+                    headers = $('#spreadsheet > div > table > thead > tr:first-child > td[data-x]');
+                }
+                headers.each(function() {
+                    var colIndex = parseInt($(this).attr('data-x'));
+                    if (colIndex > 0 && colIndex < spreadsheet.options.columns.length) {
+                        var originalTitle = spreadsheet.options.columns[colIndex].title;
+                        var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+colIndex+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+colIndex+')"><span class="path1"></span><span class="path2"></span></i>';
+                        $(this).html(originalTitle + iconHtml);
                     }
                 });
                 applyAllFilters();
                 applyHiddenColumns();
                 updateTotal();
+            }
+
+            setTimeout(function() {
+                initHeadersAndFilters();
                 
                 // Scroll to bottom (WhatsApp style) robustly for lazy loading
                 var contentDiv = document.querySelector('.jexcel_content');
@@ -1186,12 +1196,6 @@
                  console.error('Failed to load activeFilters:', e);
              }
 
-             if (!stored) {
-                 let now = new Date();
-                 let y = now.getFullYear();
-                 let m = now.getMonth();
-                 activeFilters['1'] = [new Date(y, m, 1), new Date(y, m + 1, 0)];
-             }
             let datePicker = flatpickr("#filter-date-picker", {
                 mode: "range",
                 dateFormat: "Y-m-d",
