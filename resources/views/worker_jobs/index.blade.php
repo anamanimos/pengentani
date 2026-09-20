@@ -715,6 +715,7 @@
                         $job->worker_id,
                         $job->job_category_id,
                         $job->description,
+                        $job->key ?? '',
                         $job->start_time ? \Carbon\Carbon::parse($job->start_time)->format("H:i") : null,
                         $job->end_time ? \Carbon\Carbon::parse($job->end_time)->format("H:i") : null,
                         $job->wage,
@@ -750,7 +751,7 @@
 
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '', '', '']);
             }
 
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
@@ -812,25 +813,26 @@
                 tableWidth: '100%',
                 search: false,
                 columns: [
-                    { type: 'hidden', title: 'ID' },
-                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 140, options: { format: 'YYYY-MM-DD' } },
-                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians, autocomplete: true },
-                    { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true },
-                    { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true },
-                    { type: 'text', title: 'Deskripsi', width: 250 },
-                    { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' },
-                    { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' },
-                    { type: 'numeric', title: 'Upah (Rp)', width: 130, mask: '#,##0' },
-                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: '#,##0' },
-                    { type: 'dropdown', title: 'Status', width: 120, source: statuses, autocomplete: true },
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true }
+                    { type: 'hidden', title: 'ID' }, // 0
+                    { type: 'calendar', title: 'Tanggal <span class="text-danger">*</span>', width: 140, options: { format: 'YYYY-MM-DD' } }, // 1
+                    { type: 'dropdown', title: 'Pertanian <span class="text-danger">*</span>', width: 200, source: pertanians, autocomplete: true }, // 2
+                    { type: 'dropdown', title: 'Pekerja <span class="text-danger">*</span>', width: 200, source: workers, autocomplete: true }, // 3
+                    { type: 'dropdown', title: 'Kategori Pekerjaan <span class="text-danger">*</span>', width: 180, source: categories, autocomplete: true }, // 4
+                    { type: 'text', title: 'Deskripsi', width: 250 }, // 5
+                    { type: 'text', title: 'Key', width: 130 }, // 6
+                    { type: 'text', title: 'Jam Mulai (HH:mm)', width: 120, mask: '00:00' }, // 7
+                    { type: 'text', title: 'Jam Selesai (HH:mm)', width: 120, mask: '00:00' }, // 8
+                    { type: 'numeric', title: 'Upah (Rp)', width: 130, mask: '#,##0' }, // 9
+                    { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: '#,##0' }, // 10
+                    { type: 'dropdown', title: 'Status', width: 120, source: statuses, autocomplete: true }, // 11
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true } // 12
                 ],
                 onselection: function(instance, x1, y1, x2, y2, origin) {
                     var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                     handleSelection(sheetInstance, x1, y1, x2, y2);
                 },
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 11 && val && proofUrls[val]) {
+                    if (col == 12 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
@@ -867,7 +869,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [12, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
+                minDimensions: [13, {{ count($jobs) > 20 ? count($jobs) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
                 allowInsertRow: true,
@@ -913,7 +915,7 @@
                                 });
                             }
                         });
-                    } else if (x == 11 && value === 'NEW_PROOF') {
+                    } else if (x == 12 && value === 'NEW_PROOF') {
                         spreadsheet.setValueFromCoords(x, y, '', true);
                         
                         // Set cell coord
@@ -935,11 +937,11 @@
                     }
 
                     // Auto-fill status to 'unpaid' if left empty and other fields are edited
-                    if (x != 10) {
-                        var currentStatus = spreadsheet.getValueFromCoords(10, y);
+                    if (x != 11) {
+                        var currentStatus = spreadsheet.getValueFromCoords(11, y);
                         if (!currentStatus) {
                             // The 4th argument 'true' prevents triggering onchange again
-                            spreadsheet.setValueFromCoords(10, y, 'unpaid', true);
+                            spreadsheet.setValueFromCoords(11, y, 'unpaid', true);
                         }
                     }
 
@@ -1135,8 +1137,8 @@
                                 styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
 
-                            let cleanWage = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
-                            let cleanKonsumsi = row[9] !== null && row[9] !== '' ? String(row[9]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanWage = row[9] !== null && row[9] !== '' ? String(row[9]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanKonsumsi = row[10] !== null && row[10] !== '' ? String(row[10]).replace(/[^0-9.-]+/g, '') : 0;
 
                             validData.push({
                                 index: i,
@@ -1146,12 +1148,13 @@
                                 worker_id: workerVal || null,
                                 job_category_id: categoryVal || null,
                                 description: row[5] || null,
-                                start_time: row[6] || null,
-                                end_time: row[7] || null,
+                                key: row[6] || null,
+                                start_time: row[7] || null,
+                                end_time: row[8] || null,
                                 wage: cleanWage,
                                 konsumsi: cleanKonsumsi,
-                                status: row[10] || 'unpaid',
-                                transaction_proof_id: row[11] || null
+                                status: row[11] || 'unpaid',
+                                transaction_proof_id: row[12] || null
                             });
                         }
                     } else if (hasAnyData) {
@@ -1673,7 +1676,7 @@
                     
                     // Always show completely empty rows (for new entries)
                     let isEmpty = true;
-                    for(let j=1; j<=9; j++) { // Columns 1 to 9 contain data
+                    for(let j=1; j<=12; j++) { // Columns 1 to 12 contain data
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {
@@ -1746,7 +1749,7 @@
                 for(var i = 0; i < data.length; i++) {
                     // Skip completely empty rows
                     var isEmpty = true;
-                    for(var j=1; j<=9; j++) {
+                    for(var j=1; j<=12; j++) {
                         if(data[i][j]) { isEmpty = false; break; }
                     }
                     if (isEmpty) continue;
@@ -1757,13 +1760,13 @@
                         continue;
                     }
 
-                    var wageVal = data[i][8];
+                    var wageVal = data[i][9];
                     if (wageVal !== null && wageVal !== undefined && wageVal !== '') {
                         var cleanWage = String(wageVal).replace(/Rp|[\s,]/g, '');
                         var valWage = parseFloat(cleanWage);
                         if (!isNaN(valWage)) sumUpah += valWage;
                     }
-                    var konsumsiVal = data[i][9];
+                    var konsumsiVal = data[i][10];
                     if (konsumsiVal !== null && konsumsiVal !== undefined && konsumsiVal !== '') {
                         var cleanKonsumsi = String(konsumsiVal).replace(/Rp|[\s,]/g, '');
                         var valKonsumsi = parseFloat(cleanKonsumsi);
@@ -2015,11 +2018,11 @@
                     e.stopImmediatePropagation();
 
                     if (!$(modalEl).is(':visible')) {
-                        // Check if focused on column 11 (Bukti Transaksi)
+                        // Check if focused on column 12 (Bukti Transaksi)
                         if (typeof spreadsheet !== 'undefined' && spreadsheet.selectedCell) {
                             let x = parseInt(spreadsheet.selectedCell[0]);
                             let y = parseInt(spreadsheet.selectedCell[1]);
-                            if (x === 11) {
+                            if (x === 12) {
                                 window._activeProofCell = { x: x, y: y };
                             } else {
                                 window._activeProofCell = null;
@@ -2086,7 +2089,7 @@
 
                             proofs.push({ id: res.proof.id, name: res.proof.name });
                             proofUrls[res.proof.id] = res.proof.url || ('/storage/' + res.proof.file_path);
-                            spreadsheet.options.columns[10].source = proofs;
+                            spreadsheet.options.columns[12].source = proofs;
                             
                             if (window._activeProofCell) {
                                 spreadsheet.setValueFromCoords(window._activeProofCell.x, window._activeProofCell.y, res.proof.id, true);

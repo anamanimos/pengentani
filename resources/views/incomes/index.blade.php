@@ -572,6 +572,7 @@
                         $income->tengkulak_id,
                         $income->income_category_id,
                         $income->description,
+                        $income->key ?? '',
                         $income->qty !== null ? str_replace('.', ',', (string)(float)$income->qty) : '',
                         (float) $income->unit_price,
                         (float) $income->amount,
@@ -594,7 +595,7 @@
 
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
             }
 
             function parseQty(val) {
@@ -625,7 +626,7 @@
                     if (tr && (tr.style.display === 'none' || tr.classList.contains('jexcel_row_hidden') || tr.classList.contains('jss_row_hidden'))) {
                         continue;
                     }
-                    let amountStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/[^0-9.-]/g, '') : '0';
+                    let amountStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/[^0-9.-]/g, '') : '0';
                     let val = parseFloat(amountStr);
                     if(!isNaN(val)) total += val;
                 }
@@ -677,7 +678,7 @@
 
                                 var num = parseFloat(cleanVal);
                                 if (!isNaN(num)) {
-                                    if (targetCol === 6) {
+                                    if (targetCol === 7) {
                                         val = (Math.round(num * 100) / 100).toString().replace('.', ',');
                                     } else {
                                         val = Math.round(num).toString();
@@ -705,13 +706,14 @@
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks, autocomplete: true },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types, autocomplete: true },
                     { type: 'text', title: 'Deskripsi', width: 250 },
+                    { type: 'text', title: 'Key', width: 130 },
                     { type: 'numeric', title: 'Qty', width: 100, allowEmpty: true },
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true }
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 9 && val && proofUrls[val]) {
+                    if (col == 10 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
@@ -720,7 +722,7 @@
                         initHeadersAndFilters();
                     }, 100);
                 },
-                minDimensions: [10, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
+                minDimensions: [11, {{ count($incomes) > 20 ? count($incomes) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
                 allowInsertRow: true,
@@ -786,13 +788,13 @@
                         return;
                     }
 
-                    if (x == 6 || x == 7) {
-                        var qty = sheetInstance.getValueFromCoords(6, y);
-                        var price = sheetInstance.getValueFromCoords(7, y);
+                    if (x == 7 || x == 8) {
+                        var qty = sheetInstance.getValueFromCoords(7, y);
+                        var price = sheetInstance.getValueFromCoords(8, y);
                         var qVal = parseQty(qty) || 0;
                         var pClean = price !== null && price !== '' ? String(price).replace(/[^0-9.-]/g, '') : '0';
                         var pVal = parseFloat(pClean) || 0;
-                        sheetInstance.setValueFromCoords(8, y, qVal * pVal, true);
+                        sheetInstance.setValueFromCoords(9, y, qVal * pVal, true);
                     }
                     updateTotal();
                     dirtyRows.add(parseInt(y));
@@ -1022,9 +1024,9 @@
                                 styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
 
-                            let cleanQty = parseQty(row[6]);
-                            let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
-                            let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanQty = parseQty(row[7]);
+                            let cleanUnitPrice = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanAmount = row[9] !== null && row[9] !== '' ? String(row[9]).replace(/[^0-9.-]+/g, '') : 0;
 
                             validData.push({
                                 index: i,
@@ -1034,10 +1036,11 @@
                                 tengkulak_id: tengkulakVal || null,
                                 income_category_id: typeVal || null,
                                 description: row[5] || null,
+                                key: row[6] || null,
                                 qty: cleanQty,
                                 unit_price: cleanUnitPrice,
                                 amount: cleanAmount,
-                                transaction_proof_id: row[9] || null
+                                transaction_proof_id: row[10] || null
                             });
                         }
                     } else if (hasAnyData) {
@@ -1358,7 +1361,7 @@
                     let rowData = data[i];
                     
                     let isEmpty = true;
-                    for(let j=1; j<=8; j++) {
+                    for(let j=1; j<=10; j++) {
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {

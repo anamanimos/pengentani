@@ -37,6 +37,7 @@ class IncomeController extends Controller
             'data.*.date' => 'nullable|date',
             'data.*.income_category_id' => 'nullable|exists:income_categories,id',
             'data.*.description' => 'nullable|string|max:255',
+            'data.*.key' => 'nullable|string|max:255',
             'data.*.qty' => 'nullable',
             'data.*.unit_price' => 'nullable',
             'data.*.transaction_proof_id' => 'nullable|exists:transaction_proofs,id',
@@ -117,6 +118,7 @@ class IncomeController extends Controller
                             'date' => $row['date'],
                             'income_category_id' => $row['income_category_id'] ?? null,
                             'description' => $row['description'] ?? null,
+                            'key' => $row['key'] ?? null,
                             'qty' => $qty,
                             'unit_price' => $unitPrice,
                             'amount' => $amount,
@@ -131,6 +133,7 @@ class IncomeController extends Controller
                         'date' => $row['date'],
                         'income_category_id' => $row['income_category_id'] ?? null,
                         'description' => $row['description'] ?? null,
+                        'key' => $row['key'] ?? null,
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'amount' => $amount,
@@ -196,9 +199,10 @@ class IncomeController extends Controller
         $sheet->setCellValue('D1', 'Tengkulak / Pembeli');
         $sheet->setCellValue('E1', 'Kategori');
         $sheet->setCellValue('F1', 'Nama Barang / Deskripsi');
-        $sheet->setCellValue('G1', 'Qty');
-        $sheet->setCellValue('H1', 'Harga Satuan (Rp)');
-        $sheet->setCellValue('I1', 'Total (Rp)');
+        $sheet->setCellValue('G1', 'Key');
+        $sheet->setCellValue('H1', 'Qty');
+        $sheet->setCellValue('I1', 'Harga Satuan (Rp)');
+        $sheet->setCellValue('J1', 'Total (Rp)');
 
         $rowNum = 2;
         $index = 1;
@@ -209,9 +213,10 @@ class IncomeController extends Controller
             $sheet->setCellValue('D' . $rowNum, $income->tengkulak->name ?? '-');
             $sheet->setCellValue('E' . $rowNum, $income->category->name ?? '-');
             $sheet->setCellValue('F' . $rowNum, $income->description ?? '-');
-            $sheet->setCellValue('G' . $rowNum, (float) $income->qty);
-            $sheet->setCellValue('H' . $rowNum, (float) $income->unit_price);
-            $sheet->setCellValue('I' . $rowNum, (float) $income->amount);
+            $sheet->setCellValue('G' . $rowNum, $income->key ?? '-');
+            $sheet->setCellValue('H' . $rowNum, (float) $income->qty);
+            $sheet->setCellValue('I' . $rowNum, (float) $income->unit_price);
+            $sheet->setCellValue('J' . $rowNum, (float) $income->amount);
             $rowNum++;
             $index++;
         }

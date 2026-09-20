@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkerJob extends Model
 {
     protected $fillable = [
-        'pertanian_id', 'worker_id', 'job_category_id', 'description',
+        'pertanian_id', 'worker_id', 'job_category_id', 'description', 'key',
         'date', 'start_time', 'end_time', 'wage', 'konsumsi', 'status', 'transaction_proof_id'
     ];
 
@@ -49,6 +49,7 @@ class WorkerJob extends Model
             round((float)$this->wage, 2),
             round((float)$this->konsumsi, 2),
             trim((string)$this->description),
+            trim((string)$this->key),
             trim((string)$this->start_time),
             trim((string)$this->end_time),
         ]);
@@ -67,6 +68,7 @@ class WorkerJob extends Model
         $wage = round((float)($attributes['wage'] ?? 0), 2);
         $konsumsi = round((float)($attributes['konsumsi'] ?? 0), 2);
         $desc = trim((string)($attributes['description'] ?? ''));
+        $key = trim((string)($attributes['key'] ?? ''));
         $startTime = trim((string)($attributes['start_time'] ?? ''));
         $endTime = trim((string)($attributes['end_time'] ?? ''));
 
@@ -81,6 +83,13 @@ class WorkerJob extends Model
                     $q->whereNull('description')->orWhere('description', '');
                 } else {
                     $q->where('description', $desc);
+                }
+            })
+            ->where(function ($q) use ($key) {
+                if ($key === '') {
+                    $q->whereNull('key')->orWhere('key', '');
+                } else {
+                    $q->where('key', $key);
                 }
             })
             ->where(function ($q) use ($startTime) {

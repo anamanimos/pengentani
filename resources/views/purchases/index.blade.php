@@ -583,7 +583,7 @@
 
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
-                initialData.push(['', '', '', '', '', '', '', '', '', '']);
+                initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
             }
 
             function updateTotalAndRow() {
@@ -593,21 +593,21 @@
                 let total = 0;
                 for(let i=0; i<data.length; i++) {
                      let isSoftDeleted = false;
-                     if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7]) {
+                     if (!data[i][1] && !data[i][2] && !data[i][5] && !data[i][6] && !data[i][7] && !data[i][8]) {
                          isSoftDeleted = true;
                      }
 
-                     let qtyStr = data[i][6] !== null && data[i][6] !== '' ? String(data[i][6]).replace(/,/g, '') : '0';
-                     let priceStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                     let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
+                     let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
                      let qty = parseFloat(qtyStr);
                      let price = parseFloat(priceStr);
                      
                      if(!isNaN(qty) && !isNaN(price)) {
                          let rowTotal = qty * price;
-                         let currentTotalStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
+                         let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
                          let currentTotal = parseFloat(currentTotalStr);
                          if(currentTotal !== rowTotal) {
-                             spreadsheet.setValueFromCoords(8, i, rowTotal, true);
+                             spreadsheet.setValueFromCoords(9, i, rowTotal, true);
                          }
                          
                          if (!isSoftDeleted) {
@@ -690,13 +690,14 @@
                     { type: 'dropdown', title: 'Toko / Vendor', width: 180, source: stores, autocomplete: true }, // 3
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 4
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 5
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 6
-                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 7
-                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 8
-                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true } // 9
+                    { type: 'text', title: 'Key', width: 130 }, // 6
+                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
+                    { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
+                    { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
+                    { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true } // 10
                 ],
                 updateTable: function(instance, cell, col, row, val, label, cellName) {
-                    if (col == 9 && val && proofUrls[val]) {
+                    if (col == 10 && val && proofUrls[val]) {
                         cell.innerHTML = '<span onclick="openLightbox(event, \'' + proofUrls[val] + '\')" class="cursor-pointer me-2" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + label;
                     }
                 },
@@ -729,7 +730,7 @@
                         }
                     }, 100);
                 },
-                minDimensions: [10, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
+                minDimensions: [11, {{ count($initialData) > 20 ? count($initialData) + 10 : 30 }}],
                 defaultColAlign: 'left',
                 lazyLoading: false,
                 allowInsertRow: true,
@@ -983,7 +984,7 @@
                             });
                         }
 
-                        let cleanTotal = row[8];
+                        let cleanTotal = row[9];
                         if (typeof cleanTotal === 'string') cleanTotal = cleanTotal.replace(/,/g, '');
 
                         validData.push({
@@ -994,10 +995,11 @@
                             store_id: storeVal || null,
                             category_id: categoryVal || null,
                             description: row[5] || null,
-                            qty: row[6] !== "" && row[6] !== null ? row[6] : null,
-                            unit_price: row[7] !== "" && row[7] !== null ? row[7] : null,
+                            key: row[6] || null,
+                            qty: row[7] !== "" && row[7] !== null ? row[7] : null,
+                            unit_price: row[8] !== "" && row[8] !== null ? row[8] : null,
                             total_price: cleanTotal,
-                            transaction_proof_id: row[9] || null
+                            transaction_proof_id: row[10] || null
                         });
                     } else if (hasAnyData) {
                         hasIncompleteRow = true;
@@ -1128,7 +1130,7 @@
                         spreadsheet.options.columns[4].source = categories;
 
                         if (res.proofs) {
-                            spreadsheet.options.columns[9].source = res.proofs;
+                            spreadsheet.options.columns[10].source = res.proofs;
                             res.proofs.forEach(function(p) {
                                 proofUrls[p.id] = p.url;
                             });
@@ -1343,7 +1345,7 @@
                     let rowData = data[i];
                     
                     let isEmpty = true;
-                    for(let j=1; j<=8; j++) {
+                    for(let j=1; j<=10; j++) {
                         if(rowData[j]) { isEmpty = false; break; }
                     }
                     if(isEmpty) {

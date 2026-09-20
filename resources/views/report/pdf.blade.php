@@ -204,16 +204,17 @@
             <tr>
                 <th width="3%" class="text-center">No</th>
                 <th width="8%">Tanggal</th>
-                <th width="10%">Jenis Transaksi</th>
-                <th width="13%">Pertanian</th>
-                <th width="11%">Kategori</th>
-                <th width="10%">Pihak Terkait</th>
-                <th width="11%">Catatan</th>
+                <th width="9%">Jenis Transaksi</th>
+                <th width="11%">Pertanian</th>
+                <th width="10%">Kategori</th>
+                <th width="9%">Pihak Terkait</th>
+                <th width="10%">Catatan</th>
+                <th width="8%">Key</th>
                 <th width="5%" class="text-right">Qty</th>
                 <th width="8%" class="text-right">Satuan / Upah</th>
-                <th width="7%" class="text-right">Konsumsi</th>
+                <th width="6%" class="text-right">Konsumsi</th>
                 <th width="8%" class="text-right">Total</th>
-                <th width="9%" class="text-right">Saldo Kas</th>
+                <th width="8%" class="text-right">Saldo Kas</th>
                 <th width="7%" class="text-center">Bukti</th>
             </tr>
         </thead>
@@ -235,6 +236,7 @@
                     <td>{{ $row['item_name'] }}</td>
                     <td>{{ $row['party_name'] }}</td>
                     <td>{{ $row['notes'] }}</td>
+                    <td>{{ $row['key'] ?? '-' }}</td>
                     <td class="text-right">{{ number_format($row['qty'], 2, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($row['unit_price'], 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($row['konsumsi'], 0, ',', '.') }}</td>
@@ -254,7 +256,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="13" class="text-center" style="padding: 20px; color: #a1a5b7;">
+                    <td colspan="14" class="text-center" style="padding: 20px; color: #a1a5b7;">
                         Tidak ada data transaksi yang ditemukan untuk filter ini.
                     </td>
                 </tr>

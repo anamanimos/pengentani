@@ -13,6 +13,7 @@ class Purchase extends Model
         'pertanian_id',
         'store_id',
         'invoice_number',
+        'key',
         'date',
         'total_amount',
     ];

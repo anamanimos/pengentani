@@ -56,6 +56,8 @@ class WorkerJobController extends Controller
             'data.*.worker_id' => 'nullable',
             'data.*.job_category_id' => 'nullable',
             'data.*.date' => 'nullable|date',
+            'data.*.description' => 'nullable|string',
+            'data.*.key' => 'nullable|string|max:255',
             'data.*.start_time' => 'nullable',
             'data.*.end_time' => 'nullable',
             'data.*.wage' => 'nullable|numeric',
@@ -131,6 +133,7 @@ class WorkerJobController extends Controller
                             'worker_id' => $row['worker_id'],
                             'job_category_id' => $row['job_category_id'],
                             'description' => $row['description'] ?? null,
+                            'key' => $row['key'] ?? null,
                             'date' => $row['date'],
                             'start_time' => $row['start_time'] ?? null,
                             'end_time' => $row['end_time'] ?? null,
@@ -154,6 +157,7 @@ class WorkerJobController extends Controller
                             'worker_id' => $row['worker_id'],
                             'job_category_id' => $row['job_category_id'],
                             'description' => $row['description'] ?? null,
+                            'key' => $row['key'] ?? null,
                             'date' => $row['date'],
                             'start_time' => $row['start_time'] ?? null,
                             'end_time' => $row['end_time'] ?? null,
@@ -357,11 +361,13 @@ class WorkerJobController extends Controller
         $sheet->setCellValue('C1', 'Pertanian');
         $sheet->setCellValue('D1', 'Nama Pekerja');
         $sheet->setCellValue('E1', 'Kategori Pekerjaan');
-        $sheet->setCellValue('F1', 'Jam Mulai');
-        $sheet->setCellValue('G1', 'Jam Selesai');
-        $sheet->setCellValue('H1', 'Upah (Rp)');
-        $sheet->setCellValue('I1', 'Konsumsi (Rp)');
-        $sheet->setCellValue('J1', 'Status');
+        $sheet->setCellValue('F1', 'Deskripsi');
+        $sheet->setCellValue('G1', 'Key');
+        $sheet->setCellValue('H1', 'Jam Mulai');
+        $sheet->setCellValue('I1', 'Jam Selesai');
+        $sheet->setCellValue('J1', 'Upah (Rp)');
+        $sheet->setCellValue('K1', 'Konsumsi (Rp)');
+        $sheet->setCellValue('L1', 'Status');
 
         $rowNum = 2;
         foreach ($jobs as $index => $job) {
@@ -370,13 +376,15 @@ class WorkerJobController extends Controller
             $sheet->setCellValue('C' . $rowNum, $job->pertanian->name ?? '-');
             $sheet->setCellValue('D' . $rowNum, $job->worker->name ?? '-');
             $sheet->setCellValue('E' . $rowNum, $job->category->name ?? '-');
-            $sheet->setCellValue('F' . $rowNum, $job->start_time);
-            $sheet->setCellValue('G' . $rowNum, $job->end_time);
+            $sheet->setCellValue('F' . $rowNum, $job->description ?? '-');
+            $sheet->setCellValue('G' . $rowNum, $job->key ?? '-');
+            $sheet->setCellValue('H' . $rowNum, $job->start_time);
+            $sheet->setCellValue('I' . $rowNum, $job->end_time);
             $wageStr = str_replace(',', '', $job->wage);
-            $sheet->setCellValue('H' . $rowNum, (float) $wageStr);
+            $sheet->setCellValue('J' . $rowNum, (float) $wageStr);
             $konsumsiStr = str_replace(',', '', $job->konsumsi);
-            $sheet->setCellValue('I' . $rowNum, (float) $konsumsiStr);
-            $sheet->setCellValue('J' . $rowNum, ucfirst($job->status));
+            $sheet->setCellValue('K' . $rowNum, (float) $konsumsiStr);
+            $sheet->setCellValue('L' . $rowNum, ucfirst($job->status));
             $rowNum++;
         }
 

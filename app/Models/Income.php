@@ -14,6 +14,7 @@ class Income extends Model
         'date',
         'income_category_id',
         'description',
+        'key',
         'qty',
         'unit_price',
         'amount',

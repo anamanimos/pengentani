@@ -14,6 +14,7 @@ class PurchaseItem extends Model
         'purchase_category_id',
         'category',
         'description',
+        'key',
         'qty',
         'unit_price',
         'total_price',

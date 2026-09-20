@@ -253,6 +253,7 @@
                         <option value="type_label">🏷️ Jenis Transaksi</option>
                         <option value="pertanian_name">🌱 Proyek Pertanian</option>
                         <option value="item_name">📂 Kategori</option>
+                        <option value="key">🔑 Key</option>
                     </select>
                 </div>
 
@@ -455,6 +456,7 @@
                         $item['item_name'],
                         $item['party_name'],
                         $item['notes'],
+                        $item['key'] ?? '-',
                         (float) $item['qty'],
                         (float) $item['unit_price'],
                         (float) $item['konsumsi'],
@@ -760,7 +762,7 @@
                     let rowData = data[i];
 
                     let isEmpty = true;
-                    for (let j = 1; j <= 10; j++) {
+                    for (let j = 1; j <= 12; j++) {
                         if (rowData[j]) { isEmpty = false; break; }
                     }
                     if (isEmpty) {
@@ -812,9 +814,9 @@
                     if (match) {
                         spreadsheet.showRow(i);
                         var typeVal = rowData[2]; // Col 2 is Jenis Transaksi
-                        var totalVal = parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0; // Col 10 is Total
-                        var unitPriceVal = parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0; // Col 8 is Satuan / Upah
-                        var konsumsiVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Konsumsi
+                        var unitPriceVal = parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0; // Col 9 is Satuan / Upah
+                        var konsumsiVal = parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0; // Col 10 is Konsumsi
+                        var totalVal = parseFloat(String(rowData[11]).replace(/[^0-9.-]/g, '')) || 0; // Col 11 is Total
 
                         if (typeVal === 'Pendapatan') {
                             sumIncome += totalVal;
@@ -828,12 +830,12 @@
                             runningSaldo -= totalVal;
                         }
 
-                        rowData[11] = runningSaldo;
+                        rowData[12] = runningSaldo;
                         if (spreadsheet.options && spreadsheet.options.data && spreadsheet.options.data[i]) {
-                            spreadsheet.options.data[i][11] = runningSaldo;
+                            spreadsheet.options.data[i][12] = runningSaldo;
                         }
-                        if (spreadsheet.records && spreadsheet.records[i] && spreadsheet.records[i][11]) {
-                            var saldoTd = spreadsheet.records[i][11];
+                        if (spreadsheet.records && spreadsheet.records[i] && spreadsheet.records[i][12]) {
+                            var saldoTd = spreadsheet.records[i][12];
                             saldoTd.innerText = 'Rp ' + Math.round(runningSaldo).toLocaleString('id-ID');
                             if (runningSaldo >= 0) {
                                 saldoTd.style.color = '#50cd89';
@@ -858,7 +860,7 @@
                 else $('#total-net-amount').removeClass('text-danger').addClass('text-primary');
             }
 
-            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Qty, Satuan/Upah, Konsumsi, Total, Saldo Kas, Bukti Transaksi
+            // Requested column order: Tanggal, Jenis Transaksi, Pertanian, Kategori, Pihak Terkait, Catatan, Key, Qty, Satuan/Upah, Konsumsi, Total, Saldo Kas, Bukti Transaksi
             var spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
                 data: initialData,
                 tableOverflow: true,
@@ -880,6 +882,7 @@
                     { type: 'text', title: 'Kategori', width: 180, readOnly: true },
                     { type: 'text', title: 'Pihak Terkait', width: 180, readOnly: true },
                     { type: 'text', title: 'Catatan', width: 220, readOnly: true },
+                    { type: 'text', title: 'Key', width: 130, readOnly: true },
                     { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0.00', readOnly: true },
                     { type: 'numeric', title: 'Satuan / Upah (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'numeric', title: 'Konsumsi (Rp)', width: 130, mask: 'Rp #,##0', readOnly: true },
@@ -903,8 +906,8 @@
                         }
                     }
 
-                    // Col 10: Total Nominal styling
-                    if (col == 10 && val) {
+                    // Col 11: Total Nominal styling
+                    if (col == 11 && val) {
                         var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
                         var typeVal = sheetInstance.getValueFromCoords(2, row);
                         if (typeVal === 'Pendapatan') {
@@ -916,8 +919,8 @@
                         }
                     }
 
-                    // Col 11: Saldo Kas styling
-                    if (col == 11 && (val || val === 0)) {
+                    // Col 12: Saldo Kas styling
+                    if (col == 12 && (val || val === 0)) {
                         var numericVal = parseFloat(String(val).replace(/[^0-9.-]/g, '')) || 0;
                         if (numericVal >= 0) {
                             cell.style.color = '#50cd89';
@@ -928,8 +931,8 @@
                         }
                     }
 
-                    // Col 12: Bukti Transaksi
-                    if (col == 12 && val) {
+                    // Col 13: Bukti Transaksi
+                    if (col == 13 && val) {
                         var targetUrl = proofUrls[val] || (String(val).startsWith('http') ? val : null);
                         if (targetUrl) {
                             cell.innerHTML = '<span onmousedown="event.stopPropagation();" onclick="openLightbox(event, \'' + targetUrl + '\')" class="cursor-pointer me-2 p-1 rounded hover-bg-light custom-proof-eye" data-url="' + targetUrl + '" title="Lihat Bukti"><i class="ki-duotone ki-eye text-primary fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span> ' + (label || '');
@@ -953,7 +956,7 @@
                         initColumnVisibilityModal();
                     }, 100);
                 },
-                minDimensions: [13, Math.max(30, initialData.length)],
+                minDimensions: [14, Math.max(30, initialData.length)],
                 defaultColAlign: 'left',
                 allowInsertRow: false,
                 allowDeleteRow: false
@@ -1002,7 +1005,7 @@
 
                         // Skip empty rows
                         let isEmpty = true;
-                        for (let j = 1; j <= 11; j++) {
+                        for (let j = 1; j <= 12; j++) {
                             if (rowData[j]) { isEmpty = false; break; }
                         }
                         if (isEmpty) continue;
@@ -1054,7 +1057,7 @@
                         }
                         if (!match) continue;
 
-                        let rawProof = rowData[12] || '';
+                        let rawProof = rowData[13] || '';
                         let targetProofUrl = (typeof proofUrls !== 'undefined' && proofUrls[rawProof]) ? proofUrls[rawProof] : (String(rawProof).startsWith('http') ? rawProof : '');
                         let resolvedPertanianName = getDropdownLabel(3, rowData[3]);
 
@@ -1065,10 +1068,11 @@
                             item_name: rowData[4] || '',
                             party_name: rowData[5] || '',
                             notes: rowData[6] || '',
-                            qty: parseFloat(String(rowData[7]).replace(/[^0-9.-]/g, '')) || 0,
-                            unit_price: parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0,
-                            konsumsi: parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0,
-                            total: parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0,
+                            key: rowData[7] || '',
+                            qty: parseFloat(String(rowData[8]).replace(/[^0-9.-]/g, '')) || 0,
+                            unit_price: parseFloat(String(rowData[9]).replace(/[^0-9.-]/g, '')) || 0,
+                            konsumsi: parseFloat(String(rowData[10]).replace(/[^0-9.-]/g, '')) || 0,
+                            total: parseFloat(String(rowData[11]).replace(/[^0-9.-]/g, '')) || 0,
                             saldo: 0,
                             proof_url: targetProofUrl
                         });

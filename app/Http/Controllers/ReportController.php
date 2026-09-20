@@ -68,6 +68,7 @@ class ReportController extends Controller
                     'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                     'party_name' => $income->tengkulak->name ?? '-',
                     'notes' => $income->description ?? '-',
+                    'key' => $income->key ?? '-',
                     'qty' => (float) ($income->qty ?? 1),
                     'unit_price' => (float) ($income->unit_price ?? $income->amount),
                     'konsumsi' => 0.0,
@@ -103,6 +104,7 @@ class ReportController extends Controller
                     'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                     'party_name' => $job->worker->name ?? 'Pekerja',
                     'notes' => $job->description ?? '-',
+                    'key' => $job->key ?? '-',
                     'qty' => 1.0,
                     'unit_price' => (float) $job->wage,
                     'konsumsi' => (float) ($job->konsumsi ?? 0),
@@ -139,6 +141,7 @@ class ReportController extends Controller
                     'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                     'party_name' => $item->purchase->store->name ?? 'Toko',
                     'notes' => $item->description ?? '-',
+                    'key' => $item->key ?? '-',
                     'qty' => (float) ($item->qty ?? 1),
                     'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                     'konsumsi' => 0.0,
@@ -225,6 +228,7 @@ class ReportController extends Controller
                         'item_name' => $item['item_name'] ?? '-',
                         'party_name' => $item['party_name'] ?? '-',
                         'notes' => $item['notes'] ?? '-',
+                        'key' => $item['key'] ?? '-',
                         'qty' => (float) ($item['qty'] ?? 1),
                         'unit_price' => (float) ($item['unit_price'] ?? 0),
                         'konsumsi' => (float) ($item['konsumsi'] ?? 0),
@@ -267,6 +271,7 @@ class ReportController extends Controller
                         'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                         'party_name' => $income->tengkulak->name ?? '-',
                         'notes' => $income->description ?? '-',
+                        'key' => $income->key ?? '-',
                         'qty' => (float) ($income->qty ?? 1),
                         'unit_price' => (float) ($income->unit_price ?? $income->amount),
                         'konsumsi' => 0.0,
@@ -293,6 +298,7 @@ class ReportController extends Controller
                         'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                         'party_name' => $job->worker->name ?? 'Pekerja',
                         'notes' => $job->description ?? '-',
+                        'key' => $job->key ?? '-',
                         'qty' => 1.0,
                         'unit_price' => (float) $job->wage,
                         'konsumsi' => (float) ($job->konsumsi ?? 0),
@@ -320,6 +326,7 @@ class ReportController extends Controller
                         'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                         'party_name' => $item->purchase->store->name ?? 'Toko',
                         'notes' => $item->description ?? '-',
+                        'key' => $item->key ?? '-',
                         'qty' => (float) ($item->qty ?? 1),
                         'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                         'konsumsi' => 0.0,
@@ -382,14 +389,14 @@ class ReportController extends Controller
             ],
         ];
 
-        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Saldo Kas (Rp)', 'Bukti Transaksi'];
-        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+        $headers = ['No', 'Tanggal', 'Jenis Transaksi', 'Proyek Pertanian', 'Kategori', 'Pihak Terkait', 'Catatan', 'Key', 'Qty', 'Satuan / Upah (Rp)', 'Konsumsi (Rp)', 'Total (Rp)', 'Saldo Kas (Rp)', 'Bukti Transaksi'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'];
 
         foreach ($headers as $index => $headerText) {
             $colLetter = $cols[$index];
             $sheet->setCellValue($colLetter . '1', $headerText);
         }
-        $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:N1')->applyFromArray($headerStyle);
         $sheet->getRowDimension(1)->setRowHeight(25);
 
         // Data Rows
@@ -402,19 +409,20 @@ class ReportController extends Controller
             $sheet->setCellValue('E' . $rowNum, $row['item_name']);
             $sheet->setCellValue('F' . $rowNum, $row['party_name']);
             $sheet->setCellValue('G' . $rowNum, $row['notes']);
-            $sheet->setCellValue('H' . $rowNum, $row['qty']);
-            $sheet->setCellValue('I' . $rowNum, $row['unit_price']);
-            $sheet->setCellValue('J' . $rowNum, $row['konsumsi']);
-            $sheet->setCellValue('K' . $rowNum, $row['total']);
-            $sheet->setCellValue('L' . $rowNum, $row['saldo'] ?? 0);
-            $sheet->setCellValue('M' . $rowNum, $row['proof_name']);
+            $sheet->setCellValue('H' . $rowNum, $row['key'] ?? '-');
+            $sheet->setCellValue('I' . $rowNum, $row['qty']);
+            $sheet->setCellValue('J' . $rowNum, $row['unit_price']);
+            $sheet->setCellValue('K' . $rowNum, $row['konsumsi']);
+            $sheet->setCellValue('L' . $rowNum, $row['total']);
+            $sheet->setCellValue('M' . $rowNum, $row['saldo'] ?? 0);
+            $sheet->setCellValue('N' . $rowNum, $row['proof_name']);
 
             // Format numbers
-            $sheet->getStyle('H' . $rowNum)->getNumberFormat()->setFormatCode('#,##0.00');
-            $sheet->getStyle('I' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
+            $sheet->getStyle('I' . $rowNum)->getNumberFormat()->setFormatCode('#,##0.00');
             $sheet->getStyle('J' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
             $sheet->getStyle('K' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
             $sheet->getStyle('L' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
+            $sheet->getStyle('M' . $rowNum)->getNumberFormat()->setFormatCode('"Rp "#,##0');
 
             $rowNum++;
         }
@@ -474,6 +482,7 @@ class ReportController extends Controller
                         'item_name' => $item['item_name'] ?? '-',
                         'party_name' => $item['party_name'] ?? '-',
                         'notes' => $item['notes'] ?? '-',
+                        'key' => $item['key'] ?? '-',
                         'qty' => (float) ($item['qty'] ?? 1),
                         'unit_price' => (float) ($item['unit_price'] ?? 0),
                         'konsumsi' => (float) ($item['konsumsi'] ?? 0),
@@ -527,6 +536,7 @@ class ReportController extends Controller
                         'item_name' => $income->category->name ?? $income->description ?? 'Pendapatan',
                         'party_name' => $income->tengkulak->name ?? '-',
                         'notes' => $income->description ?? '-',
+                        'key' => $income->key ?? '-',
                         'qty' => (float) ($income->qty ?? 1),
                         'unit_price' => (float) ($income->unit_price ?? $income->amount),
                         'konsumsi' => 0.0,
@@ -554,6 +564,7 @@ class ReportController extends Controller
                         'item_name' => $job->category->name ?? $job->description ?? 'Upah Pekerja',
                         'party_name' => $job->worker->name ?? 'Pekerja',
                         'notes' => $job->description ?? '-',
+                        'key' => $job->key ?? '-',
                         'qty' => 1.0,
                         'unit_price' => (float) $job->wage,
                         'konsumsi' => (float) ($job->konsumsi ?? 0),
@@ -582,6 +593,7 @@ class ReportController extends Controller
                         'item_name' => $item->purchaseCategory->name ?? $item->category ?? $item->description ?? 'Material',
                         'party_name' => $item->purchase->store->name ?? 'Toko',
                         'notes' => $item->description ?? '-',
+                        'key' => $item->key ?? '-',
                         'qty' => (float) ($item->qty ?? 1),
                         'unit_price' => (float) ($item->unit_price ?? $item->total_price),
                         'konsumsi' => 0.0,

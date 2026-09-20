@@ -43,10 +43,11 @@ class PurchaseController extends Controller
                     $p->store_id,               // 3: Toko / Vendor
                     $item->purchase_category_id,// 4: Kategori Barang
                     $item->description,         // 5: Deskripsi
-                    (float) $item->qty,                 // 6: Qty
-                    (float) $item->unit_price,          // 7: Harga Satuan
-                    (float) $item->total_price,         // 8: Total (Read-only view)
-                    $item->transaction_proof_id         // 9: Bukti Transaksi
+                    $item->key ?? '',           // 6: Key
+                    (float) $item->qty,         // 7: Qty
+                    (float) $item->unit_price,  // 8: Harga Satuan
+                    (float) $item->total_price, // 9: Total (Read-only view)
+                    $item->transaction_proof_id // 10: Bukti Transaksi
                 ];
                 $totalPengeluaran += $item->total_price;
             }
@@ -183,6 +184,7 @@ class PurchaseController extends Controller
                         'purchase_category_id' => $catId,
                         'category' => $categoryName,
                         'description' => $row['description'] ?? '-',
+                        'key' => $row['key'] ?? null,
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'total_price' => $totalPrice,
@@ -204,6 +206,7 @@ class PurchaseController extends Controller
                     'purchase_category_id' => $catId,
                     'category' => $categoryName,
                     'description' => $row['description'] ?? '-',
+                    'key' => $row['key'] ?? null,
                     'qty' => $qty,
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
@@ -338,9 +341,10 @@ class PurchaseController extends Controller
         $sheet->setCellValue('D1', 'Toko / Vendor');
         $sheet->setCellValue('E1', 'Kategori Barang');
         $sheet->setCellValue('F1', 'Nama Barang / Deskripsi');
-        $sheet->setCellValue('G1', 'Qty');
-        $sheet->setCellValue('H1', 'Harga Satuan (Rp)');
-        $sheet->setCellValue('I1', 'Total (Rp)');
+        $sheet->setCellValue('G1', 'Key');
+        $sheet->setCellValue('H1', 'Qty');
+        $sheet->setCellValue('I1', 'Harga Satuan (Rp)');
+        $sheet->setCellValue('J1', 'Total (Rp)');
 
         $rowNum = 2;
         $index = 1;
@@ -352,9 +356,10 @@ class PurchaseController extends Controller
                 $sheet->setCellValue('D' . $rowNum, $p->store->name ?? '-');
                 $sheet->setCellValue('E' . $rowNum, $item->category->name ?? '-');
                 $sheet->setCellValue('F' . $rowNum, $item->description ?? '-');
-                $sheet->setCellValue('G' . $rowNum, (float) $item->qty);
-                $sheet->setCellValue('H' . $rowNum, (float) $item->unit_price);
-                $sheet->setCellValue('I' . $rowNum, (float) $item->total_price);
+                $sheet->setCellValue('G' . $rowNum, $item->key ?? '-');
+                $sheet->setCellValue('H' . $rowNum, (float) $item->qty);
+                $sheet->setCellValue('I' . $rowNum, (float) $item->unit_price);
+                $sheet->setCellValue('J' . $rowNum, (float) $item->total_price);
                 $rowNum++;
                 $index++;
             }
