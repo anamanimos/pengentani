@@ -572,7 +572,7 @@
                         $income->tengkulak_id,
                         $income->income_category_id,
                         $income->description,
-                        (float) $income->qty,
+                        $income->qty !== null ? str_replace('.', ',', (string)(float)$income->qty) : '',
                         (float) $income->unit_price,
                         (float) $income->amount,
                         $income->transaction_proof_id
@@ -595,6 +595,24 @@
             // Always add 10 empty rows at the bottom for easy data entry
             for (let i = 0; i < 10; i++) {
                 initialData.push(['', '', '', '', '', '', '', '', '', '']);
+            }
+
+            function parseQty(val) {
+                if (val === null || val === undefined || val === '') return null;
+                if (typeof val === 'number') return isNaN(val) ? null : val;
+                var s = String(val).trim().replace(/\s/g, '');
+                if (!s) return null;
+                if (s.indexOf(',') !== -1 && s.indexOf('.') !== -1) {
+                    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                        s = s.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        s = s.replace(/,/g, '');
+                    }
+                } else if (s.indexOf(',') !== -1) {
+                    s = s.replace(',', '.');
+                }
+                var num = parseFloat(s);
+                return isNaN(num) ? null : num;
             }
 
             function updateTotal() {
@@ -632,7 +650,6 @@
                         var processedCols = [];
                         for (var col = 0; col < cols.length; col++) {
                             var targetCol = parseInt(x) + col;
-                            var targetCol = parseInt(x) + col;
                             var colOptions = sheetInstance.options.columns[targetCol];
                             var val = String(cols[col]);
 
@@ -660,7 +677,11 @@
 
                                 var num = parseFloat(cleanVal);
                                 if (!isNaN(num)) {
-                                    val = Math.round(num).toString();
+                                    if (targetCol === 6) {
+                                        val = (Math.round(num * 100) / 100).toString().replace('.', ',');
+                                    } else {
+                                        val = Math.round(num).toString();
+                                    }
                                 }
                             }
                             processedCols.push(val);
@@ -684,7 +705,7 @@
                     { type: 'dropdown', title: 'Tengkulak', width: 200, source: tengkulaks, autocomplete: true },
                     { type: 'dropdown', title: 'Kategori', width: 150, source: types, autocomplete: true },
                     { type: 'text', title: 'Deskripsi', width: 250 },
-                    { type: 'numeric', title: 'Qty', width: 100, mask: '#,##0' },
+                    { type: 'numeric', title: 'Qty', width: 100, allowEmpty: true },
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 150, mask: 'Rp #,##0' },
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: 'Rp #,##0', readOnly: true },
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true }
@@ -766,11 +787,10 @@
                     }
 
                     if (x == 6 || x == 7) {
-                        var qty = sheetInstance.getValueFromCoords(6, y) || 0;
-                        var price = sheetInstance.getValueFromCoords(7, y) || 0;
-                        var qClean = String(qty).replace(/[^0-9.-]/g, '');
-                        var pClean = String(price).replace(/[^0-9.-]/g, '');
-                        var qVal = parseFloat(qClean) || 0;
+                        var qty = sheetInstance.getValueFromCoords(6, y);
+                        var price = sheetInstance.getValueFromCoords(7, y);
+                        var qVal = parseQty(qty) || 0;
+                        var pClean = price !== null && price !== '' ? String(price).replace(/[^0-9.-]/g, '') : '0';
                         var pVal = parseFloat(pClean) || 0;
                         sheetInstance.setValueFromCoords(8, y, qVal * pVal, true);
                     }
@@ -1002,7 +1022,7 @@
                                 styles[jspreadsheet.helpers.getColumnNameFromCoords(colIdx, i)] = '';
                             });
 
-                            let cleanQty = row[6] !== null && row[6] !== '' ? String(row[6]).replace(/[^0-9.-]+/g, '') : 0;
+                            let cleanQty = parseQty(row[6]);
                             let cleanUnitPrice = row[7] !== null && row[7] !== '' ? String(row[7]).replace(/[^0-9.-]+/g, '') : 0;
                             let cleanAmount = row[8] !== null && row[8] !== '' ? String(row[8]).replace(/[^0-9.-]+/g, '') : 0;
 
@@ -1421,11 +1441,15 @@
                     for (let col = startX; col <= endX; col++) {
                         let valStr = instance.getValueFromCoords(col, row);
                         if (valStr !== null && valStr !== undefined && valStr !== '') {
-                            // Strip currency signs, spaces, and commas
-                            let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
-                            if (cleanValStr.trim() === '') continue;
-                            let val = parseFloat(cleanValStr);
-                            if (!isNaN(val)) {
+                            let val;
+                            if (hasCurrency) {
+                                let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                                if (cleanValStr.trim() === '') continue;
+                                val = parseFloat(cleanValStr);
+                            } else {
+                                val = parseQty(valStr);
+                            }
+                            if (val !== null && !isNaN(val)) {
                                 sum += val;
                                 numericCount++;
                             }
