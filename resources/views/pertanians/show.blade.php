@@ -547,7 +547,7 @@
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
-                            @forelse($realisasiList as $realisasi)
+                            @foreach($realisasiList as $realisasi)
                             <tr data-date="{{ $realisasi->date }}" data-category="{{ $realisasi->kategori }}">
                                 <td class="text-start" data-order="{{ $realisasi->date }}">{{ \Carbon\Carbon::parse($realisasi->date)->format('d M Y') }}</td>
                                 <td class="text-start">
@@ -559,11 +559,7 @@
                                 <td class="text-start">{{ $realisasi->deskripsi }}</td>
                                 <td class="text-start fw-bold text-gray-800">Rp {{ number_format($realisasi->nominal, 0, ',', '.') }}</td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="text-start text-muted py-5">Belum ada data realisasi.</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -898,7 +894,7 @@
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
-                            @forelse($withdrawalsAll as $withdrawal)
+                            @foreach($withdrawalsAll as $withdrawal)
                             <tr data-date="{{ $withdrawal->date }}" data-category="{{ $withdrawal->type }}">
                                 <td class="text-start" data-order="{{ $withdrawal->date }}">{{ \Carbon\Carbon::parse($withdrawal->date)->format('d M Y') }}</td>
                                 <td class="text-start" data-order="{{ $withdrawal->created_at }}">{{ $withdrawal->created_at->format('d M Y H:i') }}</td>
@@ -952,11 +948,7 @@
                                     </form>
                                 </td>
                             </tr>
-                            @empty
-                            <tr>
-                                <td colspan="7" class="text-start text-muted py-5">Belum ada data penarikan keuntungan.</td>
-                            </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -1330,8 +1322,12 @@
                 "info": false,
                 "order": [],
                 "pageLength": 10,
+                "language": {
+                    "emptyTable": "Belum ada data penarikan keuntungan.",
+                    "zeroRecords": "Tidak ada data yang cocok dengan filter."
+                },
                 "columnDefs": [
-                    { orderable: false, targets: [5, 6] } // Disable sorting on Bukti and Aksi columns
+                    { orderable: false, targets: [6, 7] } // Disable sorting on Bukti and Aksi columns
                 ]
             });
 
@@ -1485,7 +1481,11 @@
             var realisasiTable = $('#kt_table_realisasi').DataTable({
                 "info": false,
                 "order": [],
-                "pageLength": 10
+                "pageLength": 10,
+                "language": {
+                    "emptyTable": "Belum ada data realisasi.",
+                    "zeroRecords": "Tidak ada data yang cocok dengan filter."
+                }
             });
 
             // Filter logic for Realisasi
