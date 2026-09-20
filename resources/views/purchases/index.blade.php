@@ -703,15 +703,16 @@
                 },
                 onload: function() {
                     setTimeout(function() {
-                        var headers = $('#spreadsheet .jexcel > thead > tr:first-child > td:not(.jexcel_selectall)');
-                        headers.each(function(index) {
-                            if (index >= 0 && index < spreadsheet.options.columns.length) {
-                                var colIndex = index;
-                                if(index > 0) { 
-                                    var originalTitle = spreadsheet.options.columns[index].title;
-                                    var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+index+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+index+')"><span class="path1"></span><span class="path2"></span></i>';
-                                    $(this).html(originalTitle + iconHtml);
-                                }
+                        var headers = $('#spreadsheet .jexcel > thead > tr:first-child > td[data-x]');
+                        if (headers.length === 0) {
+                            headers = $('#spreadsheet > div > table > thead > tr:first-child > td[data-x]');
+                        }
+                        headers.each(function() {
+                            var colIndex = parseInt($(this).attr('data-x'));
+                            if (colIndex > 0 && colIndex < spreadsheet.options.columns.length) {
+                                var originalTitle = spreadsheet.options.columns[colIndex].title;
+                                var iconHtml = ' <i class="ki-duotone ki-filter ms-2 custom-filter-icon text-gray-500" data-col="'+colIndex+'" style="cursor: pointer;" onclick="openUniversalFilter(event, '+colIndex+')"><span class="path1"></span><span class="path2"></span></i>';
+                                $(this).html(originalTitle + iconHtml);
                             }
                         });
                         applyAllFilters();
@@ -1142,7 +1143,10 @@
             // Column Visibility Logic
             let hiddenColumns = [];
             try {
-                const storedCols = localStorage.getItem('purchases_hidden_cols');
+                if (localStorage.getItem('purchases_hidden_cols') && !localStorage.getItem('purchases_hidden_cols_v2')) {
+                    localStorage.removeItem('purchases_hidden_cols');
+                }
+                const storedCols = localStorage.getItem('purchases_hidden_cols_v2');
                 if (storedCols) hiddenColumns = JSON.parse(storedCols);
             } catch(e) {}
 
@@ -1179,7 +1183,7 @@
                         if (!hiddenColumns.includes(cIdx)) hiddenColumns.push(cIdx);
                     }
                     try {
-                        localStorage.setItem('purchases_hidden_cols', JSON.stringify(hiddenColumns));
+                        localStorage.setItem('purchases_hidden_cols_v2', JSON.stringify(hiddenColumns));
                     } catch(e) {}
                 });
             }
