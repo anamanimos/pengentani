@@ -10,37 +10,30 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Scheduled Automated Database Backup to Telegram
-Schedule::command('backup:database --telegram --clean')
-    ->hourly()
-    ->when(function () {
-        try {
-            $schedule = Setting::get('telegram_backup_schedule', 'disabled');
-            $backupTime = Setting::get('telegram_backup_time', '02:00');
-            $botToken = Setting::get('telegram_bot_token');
-            $chatId = Setting::get('telegram_chat_id');
+try {
+    $scheduleType = Setting::get('telegram_backup_schedule', 'disabled');
+    $backupTime = Setting::get('telegram_backup_time', '02:00');
+    $botToken = Setting::get('telegram_bot_token', config('services.telegram.bot_token', env('TELEGRAM_BOT_TOKEN', '')));
+    $chatId = Setting::get('telegram_chat_id', config('services.telegram.chat_id', env('TELEGRAM_CHAT_ID', '')));
 
-            if ($schedule === 'disabled' || empty($botToken) || empty($chatId)) {
-                return false;
-            }
+    if ($scheduleType !== 'disabled' && !empty($botToken) && !empty($chatId)) {
+        $timeParts = explode(':', $backupTime ?: '02:00');
+        $hour = str_pad($timeParts[0] ?? '02', 2, '0', STR_PAD_LEFT);
+        $minute = str_pad($timeParts[1] ?? '00', 2, '0', STR_PAD_LEFT);
+        $timeString = "{$hour}:{$minute}";
 
-            $targetHour = !empty($backupTime) ? substr($backupTime, 0, 2) . ':00' : '02:00';
-            $currentHourOnly = date('H:00');
+        $scheduled = Schedule::command('backup:database --telegram --clean')
+            ->timezone('Asia/Jakarta')
+            ->name('automated-database-telegram-backup');
 
-            if ($schedule === 'daily') {
-                return $currentHourOnly === $targetHour;
-            }
-
-            if ($schedule === 'weekly') {
-                return date('w') === '0' && $currentHourOnly === $targetHour; // Sunday
-            }
-
-            if ($schedule === 'monthly') {
-                return date('j') === '1' && $currentHourOnly === $targetHour; // 1st of month
-            }
-
-            return false;
-        } catch (\Throwable $e) {
-            return false;
+        if ($scheduleType === 'daily') {
+            $scheduled->dailyAt($timeString);
+        } elseif ($scheduleType === 'weekly') {
+            $scheduled->weeklyOn(0, $timeString); // Sunday
+        } elseif ($scheduleType === 'monthly') {
+            $scheduled->monthlyOn(1, $timeString); // 1st of month
         }
-    })
-    ->name('automated-database-telegram-backup');
+    }
+} catch (\Throwable $e) {
+    // Silently handle if database/settings table is not yet accessible
+}

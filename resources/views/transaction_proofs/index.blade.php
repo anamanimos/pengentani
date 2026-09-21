@@ -666,7 +666,7 @@
                 if (items[i].type.indexOf("image") !== -1) {
                     var file = items[i].getAsFile();
                     if (file) {
-                        var timeStamp = new Date().toISOString().replace(/[-:T.]/g, "").slice(0, 14);
+                        var timeStamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
                         var ext = file.type.split('/')[1] || 'png';
                         var newFileName = "Pasted_Proof_" + timeStamp + "." + ext;
                         
