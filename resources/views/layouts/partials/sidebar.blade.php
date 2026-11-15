@@ -9,7 +9,7 @@
         </a>
         <!--end::Logo image-->
         <!--begin::Sidebar toggle-->
-        <div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
+        <div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate {{ request()->cookie('sidebar_minimize_state') === 'on' ? 'active' : '' }}" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
             <i class="ki-duotone ki-black-left-line fs-3 rotate-180">
                 <span class="path1"></span>
                 <span class="path2"></span>
@@ -178,7 +178,7 @@
                     <!--end:Menu item-->
 
                     <!--begin:Menu item (Master Dropdown)-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'entities.*', 'kebuns.*', 'tanamans.*']) ? 'here' : '' }}">
+                    <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="right-start" class="menu-item menu-accordion {{ request()->routeIs(['users.*', 'entities.*', 'kebuns.*', 'tanamans.*']) ? 'here show' : '' }}">
                         <span class="menu-link">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-abstract-26 fs-2">
@@ -188,7 +188,7 @@
                             <span class="menu-title">Master</span>
                             <span class="menu-arrow"></span>
                         </span>
-                        <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-sub menu-sub-accordion menu-sub-dropdown px-2 py-4 w-200px mh-75 overflow-auto">
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">

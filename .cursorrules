@@ -1,0 +1,7 @@
+# Aturan Pengembangan UI Pengen Tani Admin Console
+
+1. **Design System**: Aplikasi menggunakan framework Bootstrap 5 dengan komponen Metronic 8 (KeenThemes) yang berada di repository.
+2. **Hindari CSS Inline**: Dilarang keras menggunakan atribut `style="..."` untuk tata letak, warna, ukuran, atau tipografi. Selalu gunakan utility class template (`d-flex`, `gap-*`, `mb-*`, `text-*`, `bg-light-*`, `fs-*`, `fw-*`).
+3. **Hindari JS Inline**: Dilarang keras menggunakan event inline seperti `onclick="..."`, `onchange="..."`. Selalu gunakan atribut data HTML5 (`data-id`, `data-action`) dan kelola event handler melalui blok `@push('scripts')`.
+4. **Hindari Membuat Class Baru di Luar Template**: Dilarang mendefinisikan class kustom ad-hoc. Manfaatkan class resmi yang sudah disediakan template (`card`, `card-flush`, `btn-light-primary`, `badge-light-success`, `table-row-dashed`, dll.).
+5. **Kompatibilitas Sidebar Minimized**: Pastikan menu bertingkat selalu menyertakan `menu-sub-dropdown` dan `data-kt-menu-placement="right-start"` agar dapat terbuka dengan rapi saat sidebar dalam mode mini. Trigger `window.dispatchEvent(new Event('resize'))` setiap kali ukuran kontainer berubah.
