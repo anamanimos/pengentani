@@ -101,6 +101,15 @@
                                     <span class="fs-9 text-muted">Gzip Dump & Telegram</span>
                                 </div>
                             </a>
+
+                            <!-- Pembaruan Sistem (Git & Migrasi) -->
+                            <a href="{{ route('settings.system.index') }}" class="nav-link d-flex align-items-center py-3 px-4 mb-2 rounded-3 text-gray-700 text-hover-primary fw-semibold fs-7 {{ request()->routeIs('settings.system.*') ? 'active bg-light-primary text-primary fw-bold border border-primary border-opacity-25' : 'bg-hover-light' }}">
+                                <i class="ki-duotone ki-cloud-download fs-2 me-3 {{ request()->routeIs('settings.system.*') ? 'text-primary' : 'text-gray-500' }}"><span class="path1"></span><span class="path2"></span></i>
+                                <div class="d-flex flex-column">
+                                    <span class="fs-7 fw-bold">Pembaruan Sistem</span>
+                                    <span class="fs-9 text-muted">Git Pull & Migrasi Database</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>

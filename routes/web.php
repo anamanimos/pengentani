@@ -58,6 +58,15 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::delete('/settings/backup/delete/{filename}', [\App\Http\Controllers\BackupSettingController::class, 'delete'])->name('settings.backup.delete');
     Route::post('/settings/backup/test-telegram', [\App\Http\Controllers\BackupSettingController::class, 'testTelegram'])->name('settings.backup.test-telegram');
 
+    // System Update & Migration Routes
+    Route::get('/settings/system', [\App\Http\Controllers\SystemUpdateController::class, 'index'])->name('settings.system.index');
+    Route::post('/settings/system/pull', [\App\Http\Controllers\SystemUpdateController::class, 'pull'])->name('settings.system.pull');
+    Route::post('/settings/system/migrate', [\App\Http\Controllers\SystemUpdateController::class, 'migrate'])->name('settings.system.migrate');
+    Route::post('/settings/system/migrate-status', [\App\Http\Controllers\SystemUpdateController::class, 'migrateStatus'])->name('settings.system.migrate-status');
+    Route::post('/settings/system/clear-cache', [\App\Http\Controllers\SystemUpdateController::class, 'clearCache'])->name('settings.system.clear-cache');
+    Route::post('/settings/system/git-status', [\App\Http\Controllers\SystemUpdateController::class, 'gitStatus'])->name('settings.system.git-status');
+    Route::post('/settings/system/check-remote', [\App\Http\Controllers\SystemUpdateController::class, 'checkRemote'])->name('settings.system.check-remote');
+
     Route::get('/activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
