@@ -33,6 +33,11 @@ class ImportLog extends Model
         return $this->hasMany(ImportStagingRow::class, 'import_log_id');
     }
 
+    public function rows()
+    {
+        return $this->stagingRows();
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');

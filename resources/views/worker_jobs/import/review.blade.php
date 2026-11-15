@@ -345,7 +345,7 @@
 
                                     <!-- Aksi -->
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-icon btn-light-danger btn-sm h-25px w-25px btn-remove-row" data-id="{{ $row->id }}" title="Hapus Baris">
+                                        <button type="button" class="btn btn-icon btn-light-danger btn-sm h-25px w-25px btn-remove-row" data-id="{{ $row->id }}" data-delete-url="{{ route('worker-jobs.import.delete-row', [$importLog->id, $row->id]) }}" title="Hapus Baris">
                                             <i class="ki-duotone ki-trash fs-7"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                                         </button>
                                     </td>
@@ -1087,96 +1087,129 @@
         }
 
         // 11. Delete Single Row
-        document.querySelectorAll('.btn-remove-row').forEach(button => {
-            button.addEventListener('click', function() {
-                const rowId = this.dataset.id;
-                const rowElem = document.getElementById('row-item-' + rowId);
+        $(document).on('click', '.btn-remove-row', function(e) {
+            e.preventDefault();
+            const $btn = $(this);
+            const rowId = $btn.data('id');
+            const rowElem = document.getElementById('row-item-' + rowId);
+            const deleteUrl = $btn.data('delete-url') || ('{{ route("worker-jobs.import.delete-row", ["importLog" => $importLog->id, "row" => ":rowId"]) }}'.replace(':rowId', rowId));
 
-                Swal.fire({
-                    title: 'Hapus baris ini?',
-                    text: 'Baris ini akan dihapus dari daftar review import.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Hapus',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        confirmButton: 'btn btn-danger',
-                        cancelButton: 'btn btn-light'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '{{ url("console/worker-jobs/import/{$importLog->id}/rows") }}/' + rowId,
-                            type: 'DELETE',
-                            data: { _token: '{{ csrf_token() }}' },
-                            success: function(res) {
-                                if (res.success) {
-                                    rowElem.remove();
-                                    updateTotals();
-                                    checkRowValidity();
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Terhapus',
-                                        text: 'Baris berhasil dihapus.',
-                                        timer: 1500,
-                                        showConfirmButton: false
+            Swal.fire({
+                title: 'Hapus baris ini?',
+                text: 'Baris ini akan dihapus dari daftar review import.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $btn.prop('disabled', true);
+                    $.ajax({
+                        url: deleteUrl,
+                        type: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        data: { _token: '{{ csrf_token() }}' },
+                        dataType: 'json',
+                        success: function(res) {
+                            if (res.success) {
+                                if (rowElem) {
+                                    $(rowElem).fadeOut(300, function() {
+                                        $(this).remove();
+                                        updateTotals();
+                                        checkRowValidity();
                                     });
                                 }
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Terhapus',
+                                    text: 'Baris berhasil dihapus.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                $btn.prop('disabled', false);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal Menghapus',
+                                    text: res.message || 'Gagal menghapus baris.'
+                                });
                             }
-                        });
-                    }
-                });
+                        },
+                        error: function(xhr) {
+                            $btn.prop('disabled', false);
+                            const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Terjadi kesalahan sistem saat menghapus baris.';
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal Menghapus',
+                                text: msg
+                            });
+                        }
+                    });
+                }
             });
         });
 
         // 12. Delete Unselected Rows
-        const btnDeleteUnselected = document.getElementById('btn-delete-unselected');
-        if (btnDeleteUnselected) {
-            btnDeleteUnselected.addEventListener('click', function() {
-                const unselectedRows = [];
-                document.querySelectorAll('#table-staging-rows tbody tr.staging-row').forEach(function(tr) {
-                    const cb = tr.querySelector('.row-select-checkbox');
-                    if (cb && !cb.checked) {
-                        const rowId = tr.dataset.rowId;
-                        if (rowId) unselectedRows.push({ id: rowId, element: tr });
-                    }
-                });
-
-                if (unselectedRows.length === 0) {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Tidak Ada Baris Tidak Dicentang',
-                        text: 'Semua baris saat ini dalam kondisi dicentang.',
-                        customClass: { confirmButton: 'btn btn-primary' }
-                    });
-                    return;
+        $('#btn-delete-unselected').on('click', function() {
+            const unselectedRows = [];
+            document.querySelectorAll('#table-staging-rows tbody tr.staging-row').forEach(function(tr) {
+                const cb = tr.querySelector('.row-select-checkbox');
+                if (cb && !cb.checked) {
+                    const rowId = tr.dataset.rowId;
+                    if (rowId) unselectedRows.push({ id: rowId, element: tr });
                 }
+            });
 
+            if (unselectedRows.length === 0) {
                 Swal.fire({
-                    title: `Hapus ${unselectedRows.length} baris?`,
-                    text: 'Baris yang tidak dicentang akan dihapus dari review ini.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Hapus',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        confirmButton: 'btn btn-danger',
-                        cancelButton: 'btn btn-light'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        unselectedRows.forEach(item => {
-                            $.ajax({
-                                url: '{{ url("console/worker-jobs/import/{$importLog->id}/rows") }}/' + item.id,
-                                type: 'DELETE',
-                                data: { _token: '{{ csrf_token() }}' },
-                                success: function() {
-                                    item.element.remove();
-                                    updateTotals();
-                                    checkRowValidity();
-                                }
-                            });
+                    icon: 'info',
+                    title: 'Tidak Ada Baris Tidak Dicentang',
+                    text: 'Semua baris saat ini dalam kondisi dicentang.',
+                    customClass: { confirmButton: 'btn btn-primary' }
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: `Hapus ${unselectedRows.length} baris?`,
+                text: 'Baris yang tidak dicentang akan dihapus dari review ini.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-light'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const deletePromises = unselectedRows.map(item => {
+                        const deleteUrl = '{{ route("worker-jobs.import.delete-row", ["importLog" => $importLog->id, "row" => ":rowId"]) }}'.replace(':rowId', item.id);
+                        return $.ajax({
+                            url: deleteUrl,
+                            type: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            data: { _token: '{{ csrf_token() }}' },
+                            dataType: 'json',
+                            success: function() {
+                                $(item.element).remove();
+                            }
                         });
+                    });
+
+                    Promise.allSettled(deletePromises).then(() => {
+                        updateTotals();
+                        checkRowValidity();
                         Swal.fire({
                             icon: 'success',
                             title: 'Dibersihkan',
@@ -1184,10 +1217,10 @@
                             timer: 1500,
                             showConfirmButton: false
                         });
-                    }
-                });
+                    });
+                }
             });
-        }
+        });
     });
 </script>
 @endpush

@@ -167,9 +167,18 @@ class JobImportController extends Controller
     /**
      * Update a single staging row (AJAX / Realtime inline update).
      */
-    public function updateRow(Request $request, ImportLog $importLog, ImportStagingRow $row)
+    public function updateRow(Request $request, ImportLog $importLog, $row)
     {
-        if ($row->import_log_id !== $importLog->id) {
+        if (!$row instanceof ImportStagingRow) {
+            $row = ImportStagingRow::where('id', $row)
+                ->where('import_log_id', $importLog->id)
+                ->first();
+            if (!$row) {
+                return response()->json(['success' => false, 'message' => 'Baris tidak ditemukan dalam sesi import ini.'], 404);
+            }
+        }
+
+        if ((int)$row->import_log_id !== (int)$importLog->id) {
             return response()->json(['success' => false, 'message' => 'Baris tidak cocok dengan sesi import ini.'], 404);
         }
 
@@ -214,20 +223,29 @@ class JobImportController extends Controller
     /**
      * Delete a single staging row.
      */
-    public function deleteRow(ImportLog $importLog, ImportStagingRow $row)
+    public function deleteRow(ImportLog $importLog, $row)
     {
-        if ($row->import_log_id !== $importLog->id) {
-            return response()->json(['success' => false, 'message' => 'Baris tidak ditemukan.'], 404);
+        if (!$row instanceof ImportStagingRow) {
+            $row = ImportStagingRow::where('id', $row)
+                ->where('import_log_id', $importLog->id)
+                ->first();
+            if (!$row) {
+                return response()->json(['success' => false, 'message' => 'Baris tidak ditemukan dalam sesi import ini.'], 404);
+            }
+        }
+
+        if ((int)$row->import_log_id !== (int)$importLog->id) {
+            return response()->json(['success' => false, 'message' => 'Baris tidak cocok dengan sesi import ini.'], 404);
         }
 
         $row->delete();
         $importLog->recalculateTotals();
 
-        if (request()->wantsJson()) {
+        if (request()->wantsJson() || request()->ajax()) {
             return response()->json(['success' => true, 'message' => 'Baris berhasil dihapus.']);
         }
 
-        return redirect()->back()->with('success', 'Baris catatan berhasil dihapus.');
+        return response()->json(['success' => true, 'message' => 'Baris berhasil dihapus.']);
     }
 
     /**
