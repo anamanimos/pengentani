@@ -586,6 +586,24 @@
                 initialData.push(['', '', '', '', '', '', '', '', '', '', '']);
             }
 
+            function parseQty(val) {
+                if (val === null || val === undefined || val === '') return null;
+                if (typeof val === 'number') return isNaN(val) ? null : val;
+                var s = String(val).trim().replace(/\s/g, '');
+                if (!s) return null;
+                if (s.indexOf(',') !== -1 && s.indexOf('.') !== -1) {
+                    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                        s = s.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        s = s.replace(/,/g, '');
+                    }
+                } else if (s.indexOf(',') !== -1) {
+                    s = s.replace(',', '.');
+                }
+                var num = parseFloat(s);
+                return isNaN(num) ? null : num;
+            }
+
             function updateTotalAndRow() {
                 if (!spreadsheet) return;
                 let data = spreadsheet.getData();
@@ -597,16 +615,15 @@
                          isSoftDeleted = true;
                      }
 
-                     let qtyStr = data[i][7] !== null && data[i][7] !== '' ? String(data[i][7]).replace(/,/g, '') : '0';
-                     let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/,/g, '') : '0';
-                     let qty = parseFloat(qtyStr);
+                     let qty = parseQty(data[i][7]);
+                     let priceStr = data[i][8] !== null && data[i][8] !== '' ? String(data[i][8]).replace(/[^0-9.-]/g, '') : '0';
                      let price = parseFloat(priceStr);
                      
-                     if(!isNaN(qty) && !isNaN(price)) {
-                         let rowTotal = qty * price;
-                         let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/,/g, '') : '0';
+                     if(qty !== null && !isNaN(qty) && !isNaN(price)) {
+                         let rowTotal = Math.round(qty * price);
+                         let currentTotalStr = data[i][9] !== null && data[i][9] !== '' ? String(data[i][9]).replace(/[^0-9.-]/g, '') : '0';
                          let currentTotal = parseFloat(currentTotalStr);
-                         if(currentTotal !== rowTotal) {
+                         if(Math.abs(currentTotal - rowTotal) > 0.001) {
                              spreadsheet.setValueFromCoords(9, i, rowTotal, true);
                          }
                          
@@ -666,7 +683,11 @@
 
                                 var num = parseFloat(cleanVal);
                                 if (!isNaN(num)) {
-                                    val = Math.round(num).toString();
+                                    if (targetCol === 7) {
+                                        val = (Math.round(num * 100) / 100).toString().replace('.', ',');
+                                    } else {
+                                        val = Math.round(num).toString();
+                                    }
                                 }
                             }
                             processedCols.push(val);
@@ -691,7 +712,7 @@
                     { type: 'dropdown', title: 'Kategori Barang', width: 150, source: categories, autocomplete: true }, // 4
                     { type: 'text', title: 'Nama Barang / Deskripsi', width: 220 }, // 5
                     { type: 'text', title: 'Key', width: 130 }, // 6
-                    { type: 'numeric', title: 'Qty', width: 80, mask: '#,##0' }, // 7
+                    { type: 'numeric', title: 'Qty', width: 80, allowEmpty: true }, // 7
                     { type: 'numeric', title: 'Harga Satuan (Rp)', width: 130, mask: '#,##0' }, // 8
                     { type: 'numeric', title: 'Total (Rp)', width: 150, mask: '#,##0', readOnly: true }, // 9
                     { type: 'dropdown', title: 'Bukti Transaksi', width: 250, source: proofs, autocomplete: true } // 10
@@ -781,6 +802,15 @@
                             }
                         });
                     } else {
+                        if (x == 7 || x == 8) {
+                            var sheetInstance = instance.jexcel || instance.jspreadsheet || spreadsheet;
+                            var qty = sheetInstance.getValueFromCoords(7, y);
+                            var price = sheetInstance.getValueFromCoords(8, y);
+                            var qVal = parseQty(qty) || 0;
+                            var pClean = price !== null && price !== '' ? String(price).replace(/[^0-9.-]/g, '') : '0';
+                            var pVal = parseFloat(pClean) || 0;
+                            sheetInstance.setValueFromCoords(9, y, Math.round(qVal * pVal), true);
+                        }
                         updateTotalAndRow();
                     }
                     dirtyRows.add(parseInt(y));
@@ -997,7 +1027,7 @@
                             category_id: categoryVal || null,
                             description: row[5] || null,
                             key: row[6] || null,
-                            qty: row[7] !== "" && row[7] !== null ? row[7] : null,
+                            qty: row[7] !== "" && row[7] !== null ? parseQty(row[7]) : null,
                             unit_price: row[8] !== "" && row[8] !== null ? row[8] : null,
                             total_price: cleanTotal,
                             transaction_proof_id: row[10] || null
@@ -1432,11 +1462,15 @@
                     for (let col = startX; col <= endX; col++) {
                         let valStr = instance.getValueFromCoords(col, row);
                         if (valStr !== null && valStr !== undefined && valStr !== '') {
-                            // Strip currency signs, spaces, and commas
-                            let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
-                            if (cleanValStr.trim() === '') continue;
-                            let val = parseFloat(cleanValStr);
-                            if (!isNaN(val)) {
+                            let val;
+                            if (hasCurrency) {
+                                let cleanValStr = String(valStr).replace(/Rp|[\s,]/g, '');
+                                if (cleanValStr.trim() === '') continue;
+                                val = parseFloat(cleanValStr);
+                            } else {
+                                val = parseQty(valStr);
+                            }
+                            if (val !== null && !isNaN(val)) {
                                 sum += val;
                                 numericCount++;
                             }

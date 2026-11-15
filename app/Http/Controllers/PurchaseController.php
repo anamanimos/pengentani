@@ -44,7 +44,7 @@ class PurchaseController extends Controller
                     $item->purchase_category_id,// 4: Kategori Barang
                     $item->description,         // 5: Deskripsi
                     $item->key ?? '',           // 6: Key
-                    (float) $item->qty,         // 7: Qty
+                    $item->qty !== null ? str_replace('.', ',', (string)(float)$item->qty) : '', // 7: Qty
                     (float) $item->unit_price,  // 8: Harga Satuan
                     (float) $item->total_price, // 9: Total (Read-only view)
                     $item->transaction_proof_id // 10: Bukti Transaksi
@@ -136,10 +136,31 @@ class PurchaseController extends Controller
 
             $validPurchaseIds[$purchase->id] = $purchase;
 
-            $qtyStr = str_replace(',', '', $row['qty']);
-            $qty = (float) $qtyStr;
-            $unitPriceStr = str_replace(',', '', $row['unit_price']);
-            $unitPrice = (float) $unitPriceStr;
+            $rawQty = isset($row['qty']) && $row['qty'] !== null && $row['qty'] !== '' ? trim((string)$row['qty']) : null;
+            if ($rawQty !== null) {
+                if (str_contains($rawQty, ',') && str_contains($rawQty, '.')) {
+                    if (strrpos($rawQty, ',') > strrpos($rawQty, '.')) {
+                        $rawQty = str_replace('.', '', $rawQty);
+                        $rawQty = str_replace(',', '.', $rawQty);
+                    } else {
+                        $rawQty = str_replace(',', '', $rawQty);
+                    }
+                } elseif (str_contains($rawQty, ',')) {
+                    $rawQty = str_replace(',', '.', $rawQty);
+                }
+                $qty = (float) $rawQty;
+            } else {
+                $qty = 0;
+            }
+
+            $rawUnitPrice = isset($row['unit_price']) && $row['unit_price'] !== null && $row['unit_price'] !== '' ? trim((string)$row['unit_price']) : null;
+            if ($rawUnitPrice !== null) {
+                $unitPriceStr = preg_replace('/[^0-9.-]/', '', str_replace(',', '', $rawUnitPrice));
+                $unitPrice = (float) $unitPriceStr;
+            } else {
+                $unitPrice = 0;
+            }
+
             $totalPrice = $qty * $unitPrice;
 
             $catId = $row['category_id'] ?? null;
