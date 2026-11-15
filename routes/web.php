@@ -133,6 +133,7 @@ Route::prefix('console')->middleware('auth')->group(function () {
     Route::get('worker-jobs/import/{importLog}/review', [\App\Http\Controllers\JobImportController::class, 'review'])->name('worker-jobs.import.review');
     Route::post('worker-jobs/import/{importLog}/rows/{row}', [\App\Http\Controllers\JobImportController::class, 'updateRow'])->name('worker-jobs.import.update-row');
     Route::delete('worker-jobs/import/{importLog}/rows/{row}', [\App\Http\Controllers\JobImportController::class, 'deleteRow'])->name('worker-jobs.import.delete-row');
+    Route::post('worker-jobs/import/{importLog}/bulk-status', [\App\Http\Controllers\JobImportController::class, 'bulkStatus'])->name('worker-jobs.import.bulk-status');
     Route::post('worker-jobs/import/{importLog}/commit', [\App\Http\Controllers\JobImportController::class, 'commit'])->name('worker-jobs.import.commit');
     Route::delete('worker-jobs/import/{importLog}', [\App\Http\Controllers\JobImportController::class, 'destroy'])->name('worker-jobs.import.destroy');
     Route::post('worker-jobs/import/save-mapping', [\App\Http\Controllers\JobImportController::class, 'saveMappingAjax'])->name('worker-jobs.import.save-mapping');

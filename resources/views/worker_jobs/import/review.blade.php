@@ -181,6 +181,39 @@
                             <i class="ki-duotone ki-eye fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Buka Foto Asli
                         </button>
                         @endif
+
+                        <!-- Bulk Payment Status Dropdown -->
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-light-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btn-dropdown-bulk-status">
+                                <i class="ki-duotone ki-wallet fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Ubah Status Bayar
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm fs-7 py-2" aria-labelledby="btn-dropdown-bulk-status">
+                                <li><h6 class="dropdown-header text-uppercase fs-9 fw-bold text-gray-500">Semua Baris</h6></li>
+                                <li>
+                                    <a class="dropdown-item py-2 action-bulk-status" href="javascript:;" data-target="all" data-status="paid">
+                                        <i class="ki-duotone ki-check-circle text-success fs-5 me-2"><span class="path1"></span><span class="path2"></span></i> Set Semua: <strong>Lunas (Dibayar)</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 action-bulk-status" href="javascript:;" data-target="all" data-status="unpaid">
+                                        <i class="ki-duotone ki-cross-circle text-warning fs-5 me-2"><span class="path1"></span><span class="path2"></span></i> Set Semua: <strong>Belum Dibayar</strong>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-2"></li>
+                                <li><h6 class="dropdown-header text-uppercase fs-9 fw-bold text-gray-500">Hanya Baris Dicentang</h6></li>
+                                <li>
+                                    <a class="dropdown-item py-2 action-bulk-status" href="javascript:;" data-target="selected" data-status="paid">
+                                        <i class="ki-duotone ki-check text-success fs-5 me-2"></i> Set Dicentang: <strong>Lunas (Dibayar)</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 action-bulk-status" href="javascript:;" data-target="selected" data-status="unpaid">
+                                        <i class="ki-duotone ki-cross text-warning fs-5 me-2"></i> Set Dicentang: <strong>Belum Dibayar</strong>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
                         <button type="button" class="btn btn-sm btn-light-danger" id="btn-delete-unselected">
                             <i class="ki-duotone ki-trash fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Hapus Yang Tidak Dicentang
                         </button>
@@ -205,7 +238,20 @@
                                     <th class="min-w-180px">Deskripsi / Catatan Mentah</th>
                                     <th class="min-w-100px">Upah (Rp)</th>
                                     <th class="min-w-90px">Konsumsi (Rp)</th>
-                                    <th class="min-w-100px">Status Bayar</th>
+                                    <th class="min-w-120px">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span>Status Bayar</span>
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-icon btn-xs btn-light-primary w-20px h-20px" data-bs-toggle="dropdown" title="Ubah status bayar semua baris">
+                                                    <i class="ki-duotone ki-setting-4 fs-8"><span class="path1"></span><span class="path2"></span></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-xs fs-8 py-2">
+                                                    <li><a class="dropdown-item py-1 action-bulk-status" href="javascript:;" data-target="all" data-status="paid"><i class="ki-duotone ki-check text-success me-1"></i> Semua Lunas</a></li>
+                                                    <li><a class="dropdown-item py-1 action-bulk-status" href="javascript:;" data-target="all" data-status="unpaid"><i class="ki-duotone ki-cross text-warning me-1"></i> Semua Belum Dibayar</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th class="w-60px text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -337,7 +383,7 @@
 
                                     <!-- Status Bayar -->
                                     <td>
-                                        <select name="rows[{{ $row->id }}][status]" class="form-select form-select-sm form-select-solid fs-8 row-input">
+                                        <select name="rows[{{ $row->id }}][status]" class="form-select form-select-sm form-select-solid fs-8 row-input select-status">
                                             <option value="unpaid" {{ $row->status == 'unpaid' ? 'selected' : '' }}>Belum Dibayar</option>
                                             <option value="paid" {{ $row->status == 'paid' ? 'selected' : '' }}>Lunas (Dibayar)</option>
                                         </select>
@@ -1217,6 +1263,82 @@
                             timer: 1500,
                             showConfirmButton: false
                         });
+                    });
+                }
+            });
+        });
+
+        // 13. Bulk Update Payment Status
+        $(document).on('click', '.action-bulk-status', function(e) {
+            e.preventDefault();
+            const target = $(this).data('target'); // 'all' or 'selected'
+            const status = $(this).data('status'); // 'paid' or 'unpaid'
+            const statusLabel = status === 'paid' ? 'Lunas (Dibayar)' : 'Belum Dibayar';
+
+            let $rows;
+            let targetIds = [];
+
+            if (target === 'selected') {
+                $rows = $('#table-staging-rows tbody tr.staging-row').filter(function() {
+                    const cb = $(this).find('.row-select-checkbox');
+                    return cb.length > 0 && cb.is(':checked');
+                });
+
+                if ($rows.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak Ada Baris Terpilih',
+                        text: 'Pilih (centang) minimal 1 baris untuk mengubah status secara massal.',
+                        customClass: { confirmButton: 'btn btn-primary' }
+                    });
+                    return;
+                }
+            } else {
+                $rows = $('#table-staging-rows tbody tr.staging-row');
+            }
+
+            $rows.each(function() {
+                const id = $(this).data('row-id');
+                if (id) targetIds.push(id);
+            });
+
+            if (targetIds.length === 0) {
+                return;
+            }
+
+            // Immediately update the DOM selects for instant user feedback
+            $rows.each(function() {
+                const $select = $(this).find('.select-status, select[name*="[status]"]');
+                $select.val(status);
+            });
+
+            // Send AJAX request to persist in database
+            $.ajax({
+                url: '{{ route("worker-jobs.import.bulk-status", $importLog->id) }}',
+                type: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    status: status,
+                    target: target,
+                    row_ids: targetIds
+                },
+                dataType: 'json',
+                success: function(res) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: res.message || `${targetIds.length} baris diubah menjadi ${statusLabel}.`
+                    });
+                },
+                error: function(xhr) {
+                    const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gagal memperbarui status di database.';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: msg
                     });
                 }
             });

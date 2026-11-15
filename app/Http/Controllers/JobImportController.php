@@ -249,6 +249,42 @@ class JobImportController extends Controller
     }
 
     /**
+     * Bulk update payment status for staging rows.
+     */
+    public function bulkStatus(Request $request, ImportLog $importLog)
+    {
+        $request->validate([
+            'status' => 'required|in:paid,unpaid',
+            'target' => 'required|in:all,selected',
+            'row_ids' => 'nullable|array',
+            'row_ids.*' => 'integer',
+        ]);
+
+        $query = $importLog->stagingRows();
+        if ($request->target === 'selected') {
+            $rowIds = $request->input('row_ids', []);
+            if (empty($rowIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada baris yang dipilih.'
+                ], 422);
+            }
+            $query->whereIn('id', $rowIds);
+        }
+
+        $count = $query->update(['status' => $request->status]);
+
+        $statusLabel = $request->status === 'paid' ? 'Lunas (Dibayar)' : 'Belum Dibayar';
+
+        return response()->json([
+            'success' => true,
+            'count' => $count,
+            'status' => $request->status,
+            'message' => "Status bayar {$count} baris berhasil diubah menjadi {$statusLabel}."
+        ]);
+    }
+
+    /**
      * Commit staging rows into worker_jobs table.
      */
     public function commit(Request $request, ImportLog $importLog)
