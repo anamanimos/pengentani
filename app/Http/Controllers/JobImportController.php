@@ -105,7 +105,7 @@ class JobImportController extends Controller
     public function review(ImportLog $importLog)
     {
         $importLog->load(['stagingRows' => function ($q) {
-            $q->orderBy('date', 'asc')->orderBy('id', 'asc');
+            $q->with(['pertanian.kebun'])->orderBy('date', 'asc')->orderBy('id', 'asc');
         }]);
 
         $pertanians = Pertanian::with('kebun')->orderBy('name', 'asc')->get();

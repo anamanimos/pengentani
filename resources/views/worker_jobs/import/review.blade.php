@@ -151,6 +151,116 @@
         </div>
 
         @php
+            $perLahanSummary = [];
+            $totalLahanWage = 0;
+            $totalLahanKonsumsi = 0;
+            $totalLahanRows = 0;
+
+            foreach($importLog->stagingRows as $row) {
+                $isIncluded = $row->disertakan && !$row->findExistingDuplicate();
+                if (!$isIncluded) continue;
+
+                $pertanianId = $row->pertanian_id ?: 0;
+                $label = $row->pertanian 
+                    ? $row->pertanian->name . ($row->pertanian->kebun ? ' (' . $row->pertanian->kebun->name . ')' : '') 
+                    : ($row->raw_kebun_code ? 'Belum Dipetakan (Kode: ' . $row->raw_kebun_code . ')' : 'Belum Dipilih');
+
+                $key = $pertanianId ? 'pertanian_' . $pertanianId : 'unmapped_' . ($row->raw_kebun_code ?: 'empty');
+
+                if (!isset($perLahanSummary[$key])) {
+                    $perLahanSummary[$key] = [
+                        'label' => $label,
+                        'is_unmapped' => empty($row->pertanian_id),
+                        'rows_count' => 0,
+                        'wage' => 0,
+                        'konsumsi' => 0,
+                    ];
+                }
+
+                $perLahanSummary[$key]['rows_count']++;
+                $perLahanSummary[$key]['wage'] += (float)$row->wage;
+                $perLahanSummary[$key]['konsumsi'] += (float)$row->konsumsi;
+
+                $totalLahanRows++;
+                $totalLahanWage += (float)$row->wage;
+                $totalLahanKonsumsi += (float)$row->konsumsi;
+            }
+        @endphp
+
+        <!-- Ringkasan Upah & Konsumsi per Lahan / Kebun -->
+        <div class="card card-flush shadow-sm mb-6" id="card-summary-per-lahan">
+            <div class="card-header pt-4 pb-2 min-h-auto border-0">
+                <div class="card-title">
+                    <h4 class="fw-bold text-gray-800 fs-6 mb-0 d-flex align-items-center">
+                        <i class="ki-duotone ki-geolocation fs-3 text-success me-2"><span class="path1"></span><span class="path2"></span></i>
+                        Total Upah &amp; Konsumsi per Lahan / Kebun
+                    </h4>
+                </div>
+                <div class="card-toolbar">
+                    <span class="badge badge-light-primary fs-8 fw-bold" id="badge-total-lahan-count">{{ count($perLahanSummary) }} Lahan Terdeteksi</span>
+                </div>
+            </div>
+            <div class="card-body p-5 pt-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-row-dashed align-middle fs-7 gy-2 mb-0" id="table-summary-per-lahan">
+                        <thead>
+                            <tr class="fw-bold text-muted bg-light fs-8">
+                                <th class="ps-3 min-w-200px">Lahan / Kebun</th>
+                                <th class="min-w-90px text-center">Jumlah Baris</th>
+                                <th class="min-w-120px text-end">Total Upah</th>
+                                <th class="min-w-120px text-end">Total Konsumsi</th>
+                                <th class="pe-3 min-w-140px text-end">Subtotal (Upah + Konsumsi)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700 fw-semibold" id="tbody-summary-per-lahan">
+                            @forelse($perLahanSummary as $item)
+                            <tr>
+                                <td class="ps-3">
+                                    @if($item['is_unmapped'])
+                                        <span class="badge badge-light-warning fs-8 text-warning fw-bold">
+                                            <i class="ki-duotone ki-information-5 text-warning fs-7 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                                            {{ $item['label'] }}
+                                        </span>
+                                    @else
+                                        <span class="fw-bold text-gray-800">{{ $item['label'] }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-light-secondary fs-8">{{ $item['rows_count'] }} baris</span>
+                                </td>
+                                <td class="text-end fw-bold text-gray-800">
+                                    Rp {{ number_format($item['wage'], 0, ',', '.') }}
+                                </td>
+                                <td class="text-end fw-bold text-warning">
+                                    Rp {{ number_format($item['konsumsi'], 0, ',', '.') }}
+                                </td>
+                                <td class="pe-3 text-end fw-bold text-success">
+                                    Rp {{ number_format($item['wage'] + $item['konsumsi'], 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr id="row-empty-summary-lahan">
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    Belum ada baris terpilih untuk dihitung.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="border-top border-top-dashed fw-bold text-gray-800 bg-light-subtle" id="tfoot-summary-per-lahan">
+                            <tr>
+                                <td class="ps-3">Total Terpilih</td>
+                                <td class="text-center" id="foot-per-lahan-total-rows">{{ $totalLahanRows }} baris</td>
+                                <td class="text-end text-primary" id="foot-per-lahan-total-wage">Rp {{ number_format($totalLahanWage, 0, ',', '.') }}</td>
+                                <td class="text-end text-warning" id="foot-per-lahan-total-konsumsi">Rp {{ number_format($totalLahanKonsumsi, 0, ',', '.') }}</td>
+                                <td class="pe-3 text-end text-success" id="foot-per-lahan-grand-total">Rp {{ number_format($totalLahanWage + $totalLahanKonsumsi, 0, ',', '.') }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @php
             $duplicateStagingCount = $importLog->stagingRows->filter(fn($r) => $r->findExistingDuplicate())->count();
         @endphp
         @if($duplicateStagingCount > 0)
@@ -564,22 +674,119 @@
             return 'Rp ' + Number(num).toLocaleString('id-ID');
         }
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function updateTotals() {
             let totalWage = 0;
             let totalKonsumsi = 0;
+            let totalRows = 0;
+            const perLahan = {};
 
             document.querySelectorAll('#table-staging-rows tbody tr.staging-row').forEach(function(tr) {
                 const cb = tr.querySelector('.row-select-checkbox');
                 if (cb && cb.checked) {
                     const wInput = tr.querySelector('.wage-input');
                     const kInput = tr.querySelector('.konsumsi-input');
-                    totalWage += Number(wInput ? wInput.value : 0) || 0;
-                    totalKonsumsi += Number(kInput ? kInput.value : 0) || 0;
+                    const wage = Number(wInput ? wInput.value : 0) || 0;
+                    const konsumsi = Number(kInput ? kInput.value : 0) || 0;
+
+                    totalWage += wage;
+                    totalKonsumsi += konsumsi;
+                    totalRows++;
+
+                    const selectP = tr.querySelector('.select-pertanian');
+                    const pVal = selectP ? selectP.value : '';
+                    const rawKebun = selectP ? (selectP.dataset.rawKebun || '').trim() : '';
+
+                    let key, label, isUnmapped;
+                    if (pVal) {
+                        key = 'pertanian_' + pVal;
+                        label = selectP.options[selectP.selectedIndex] ? selectP.options[selectP.selectedIndex].text.trim() : 'Lahan #' + pVal;
+                        isUnmapped = false;
+                    } else {
+                        key = 'unmapped_' + (rawKebun || 'empty');
+                        label = rawKebun ? `Belum Dipetakan (Kode: ${rawKebun})` : 'Belum Dipilih';
+                        isUnmapped = true;
+                    }
+
+                    if (!perLahan[key]) {
+                        perLahan[key] = {
+                            label: label,
+                            isUnmapped: isUnmapped,
+                            rowsCount: 0,
+                            wage: 0,
+                            konsumsi: 0
+                        };
+                    }
+
+                    perLahan[key].rowsCount++;
+                    perLahan[key].wage += wage;
+                    perLahan[key].konsumsi += konsumsi;
                 }
             });
 
             if (summaryWage) summaryWage.textContent = formatRupiah(totalWage);
             if (summaryKonsumsi) summaryKonsumsi.textContent = formatRupiah(totalKonsumsi);
+
+            // Update Per Lahan Summary Table
+            const tbodyLahan = document.getElementById('tbody-summary-per-lahan');
+            const badgeLahanCount = document.getElementById('badge-total-lahan-count');
+            const footTotalRows = document.getElementById('foot-per-lahan-total-rows');
+            const footTotalWage = document.getElementById('foot-per-lahan-total-wage');
+            const footTotalKonsumsi = document.getElementById('foot-per-lahan-total-konsumsi');
+            const footGrandTotal = document.getElementById('foot-per-lahan-grand-total');
+
+            if (tbodyLahan) {
+                const keys = Object.keys(perLahan);
+                if (badgeLahanCount) {
+                    badgeLahanCount.textContent = `${keys.length} Lahan Terdeteksi`;
+                }
+
+                if (keys.length === 0) {
+                    tbodyLahan.innerHTML = `
+                        <tr id="row-empty-summary-lahan">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                Belum ada baris terpilih untuk dihitung.
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    let html = '';
+                    keys.forEach(k => {
+                        const item = perLahan[k];
+                        const subtotal = item.wage + item.konsumsi;
+                        const labelHtml = item.isUnmapped
+                            ? `<span class="badge badge-light-warning fs-8 text-warning fw-bold"><i class="ki-duotone ki-information-5 text-warning fs-7 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> ${escapeHtml(item.label)}</span>`
+                            : `<span class="fw-bold text-gray-800">${escapeHtml(item.label)}</span>`;
+
+                        html += `
+                            <tr>
+                                <td class="ps-3">${labelHtml}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-light-secondary fs-8">${item.rowsCount} baris</span>
+                                </td>
+                                <td class="text-end fw-bold text-gray-800">${formatRupiah(item.wage)}</td>
+                                <td class="text-end fw-bold text-warning">${formatRupiah(item.konsumsi)}</td>
+                                <td class="pe-3 text-end fw-bold text-success">${formatRupiah(subtotal)}</td>
+                            </tr>
+                        `;
+                    });
+                    tbodyLahan.innerHTML = html;
+                }
+
+                if (footTotalRows) footTotalRows.textContent = `${totalRows} baris`;
+                if (footTotalWage) footTotalWage.textContent = formatRupiah(totalWage);
+                if (footTotalKonsumsi) footTotalKonsumsi.textContent = formatRupiah(totalKonsumsi);
+                if (footGrandTotal) footGrandTotal.textContent = formatRupiah(totalWage + totalKonsumsi);
+            }
         }
 
         function checkRowValidity($tr) {
@@ -722,6 +929,8 @@
                     updateDictionaryUI(res.mapping);
                 });
             }
+
+            updateTotals();
         });
 
         // 2. Cascade & Auto-Learning for Pekerja
@@ -1039,6 +1248,8 @@
         }
 
         $(document).on('change', '.row-select-checkbox', updateTotals);
+        $(document).on('change', '.select-pertanian', updateTotals);
+        $(document).on('input', '.wage-input, .konsumsi-input', updateTotals);
 
         wageInputs.forEach(input => {
             input.addEventListener('input', updateTotals);
